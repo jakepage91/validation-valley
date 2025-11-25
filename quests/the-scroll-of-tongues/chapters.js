@@ -1,0 +1,1 @@
+export const THE_SCROLL_OF_TONGUES_CHAPTERS = {};

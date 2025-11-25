@@ -1,0 +1,99 @@
+import { LitElement, html, css } from 'lit';
+import '@awesome.me/webawesome/dist/components/dialog/dialog.js';
+import '@awesome.me/webawesome/dist/components/carousel/carousel.js';
+import '@awesome.me/webawesome/dist/components/carousel-item/carousel-item.js';
+import '@awesome.me/webawesome/dist/components/button/button.js';
+import { sharedStyles } from '../styles/shared.js';
+
+export class AboutSlides extends LitElement {
+	static styles = [
+		...sharedStyles,
+		css`
+			:host {
+				display: block;
+			}
+
+			wa-carousel {
+				--aspect-ratio: 16/9;
+				width: 100%;
+			}
+
+			wa-carousel-item {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				text-align: center;
+				padding: 2rem;
+				background-color: var(--wa-color-neutral-fill-subtle);
+				color: var(--wa-color-text-normal);
+			}
+
+			h2 {
+				font-family: 'Press Start 2P', monospace;
+				font-size: 1.5rem;
+				margin-bottom: 1rem;
+				color: var(--wa-color-primary-text);
+			}
+
+			p {
+				font-family: var(--wa-font-sans);
+				font-size: 1.2rem;
+				line-height: 1.6;
+				margin-bottom: 1rem;
+			}
+
+			ul {
+				list-style-type: none;
+				padding: 0;
+			}
+
+			li {
+				margin: 0.5rem 0;
+				font-size: 1.1rem;
+			}
+		`
+	];
+
+	render() {
+		return html`
+			<wa-dialog label="About Legacy's End" class="about-dialog" style="--width: 800px;">
+				<wa-carousel navigation pagination mouse-dragging>
+					<wa-carousel-item>
+						<h2>Jorge del Casar</h2>
+						<p>Head of Tech at ActioGlobal</p>
+						<p>Google Developer Expert</p>
+						<p>+20 years working on web</p>
+					</wa-carousel-item>
+
+					<wa-carousel-item>
+						<h2>Web Components Expert</h2>
+						<p>Creating reusable, encapsulated, and standard-based UI components.</p>
+					</wa-carousel-item>
+
+					<wa-carousel-item>
+						<h2>Legacy's End</h2>
+						<p>A game built with Lit and Web Awesome.</p>
+						<p>Demonstrating the power of modern web standards.</p>
+					</wa-carousel-item>
+				</wa-carousel>
+			</wa-dialog>
+		`;
+	}
+
+	show() {
+		const dialog = this.shadowRoot.querySelector('wa-dialog');
+		if (dialog) {
+			dialog.show();
+		}
+	}
+
+	hide() {
+		const dialog = this.shadowRoot.querySelector('wa-dialog');
+		if (dialog) {
+			dialog.hide();
+		}
+	}
+}
+
+customElements.define('about-slides', AboutSlides);
