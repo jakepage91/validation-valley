@@ -1,4 +1,4 @@
-import { getAvailableQuests, getQuest } from "../quests/quest-registry.js";
+import * as DefaultRegistry from "../quests/quest-registry.js";
 import { ProgressService } from "../services/progress-service.js";
 
 /**
@@ -14,6 +14,7 @@ import { ProgressService } from "../services/progress-service.js";
  * ```js
  * this.questController = new QuestController(this, {
  *   progressService: new ProgressService(),
+ *   registry: QuestRegistry,
  *   onQuestStart: (quest) => { ... },
  *   onChapterChange: (chapter) => { ... },
  *   onQuestComplete: (quest) => { ... },
@@ -26,15 +27,17 @@ export class QuestController {
 		this.host = host;
 		this.options = {
 			progressService: null,
-			onQuestStart: () => {},
-			onChapterChange: () => {},
-			onQuestComplete: () => {},
-			onReturnToHub: () => {},
+			registry: DefaultRegistry,
+			onQuestStart: () => { },
+			onChapterChange: () => { },
+			onQuestComplete: () => { },
+			onReturnToHub: () => { },
 			...options,
 		};
 
 		this.progressService =
 			this.options.progressService || new ProgressService();
+		this.registry = this.options.registry;
 		this.currentQuest = null;
 		this.currentChapter = null;
 		this.currentChapterIndex = 0;
@@ -46,7 +49,7 @@ export class QuestController {
 		// Restore current quest/chapter from progress
 		const progress = this.progressService.getProgress();
 		if (progress.currentQuest) {
-			this.currentQuest = getQuest(progress.currentQuest);
+			this.currentQuest = this.registry.getQuest(progress.currentQuest);
 			if (progress.currentChapter !== null) {
 				this.currentChapterIndex = progress.currentChapter;
 				this.currentChapter = this.getCurrentChapterData();
@@ -69,7 +72,7 @@ export class QuestController {
 	 * @param {string} questId - Quest ID to start
 	 */
 	startQuest(questId) {
-		const quest = getQuest(questId);
+		const quest = this.registry.getQuest(questId);
 		if (!quest) {
 			console.error(`Quest not found: ${questId}`);
 			return;
@@ -135,7 +138,7 @@ export class QuestController {
 	 * @param {string} questId
 	 */
 	continueQuest(questId) {
-		const quest = getQuest(questId);
+		const quest = this.registry.getQuest(questId);
 		if (!quest) {
 			console.error(`Quest not found: ${questId}`);
 			return;
@@ -316,7 +319,7 @@ export class QuestController {
 	 */
 	getAvailableQuests() {
 		const progress = this.progressService.getProgress();
-		return getAvailableQuests(progress.completedQuests);
+		return this.registry.getAvailableQuests(progress.completedQuests);
 	}
 
 	/**
