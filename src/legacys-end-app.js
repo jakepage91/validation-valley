@@ -22,6 +22,7 @@ import {
 	NewUserService,
 } from "./services/user-services.js";
 import { ServiceType } from "./types.js";
+import { GameStateMapper } from "./utils/game-state-mapper.js";
 import { Router } from "./utils/router.js";
 import "./components/quest-hub.js";
 import "./components/about-slides.js";
@@ -757,37 +758,12 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 			effectiveConfig.backgroundStyle = currentConfig.postDialogBackgroundStyle;
 		}
 
-		const isCloseToTarget = this.interaction.isCloseToNpc();
-		const isLastChapter = this.questController?.isLastChapter();
+
 
 		// Dialog Config Logic
 		const _dialogConfig = currentConfig;
 
-		const gameState = {
-			config: effectiveConfig,
-			ui: {
-				isPaused: this.isPaused || false,
-				showDialog: this.showDialog,
-				lockedMessage: this.interaction?.lockedMessage,
-			},
-			quest: {
-				title: this.currentQuest?.name,
-				chapterNumber: this.questController.getCurrentChapterNumber(),
-				totalChapters: this.questController.getTotalChapters(),
-				isLastChapter: isLastChapter,
-				levelId: this.chapterId,
-			},
-			hero: {
-				pos: this.heroPos || { x: 0, y: 0 },
-				isEvolving: this.isEvolving || false,
-				hotSwitchState: this.hotSwitchState,
-			},
-			levelState: {
-				hasCollectedItem: this.hasCollectedItem || false,
-				isRewardCollected: this.isRewardCollected || false,
-				isCloseToTarget: isCloseToTarget,
-			},
-		};
+		const gameState = GameStateMapper.map(this, effectiveConfig);
 
 		return html`
 			<game-view
