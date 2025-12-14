@@ -1,11 +1,15 @@
 import { css, html, LitElement } from "lit";
-import { classMap } from "lit/directives/class-map.js";
 import "./hero-profile.js";
 import "./npc-element.js";
 import "./reward-element.js";
 import "./game-hud.js";
 import "@awesome.me/webawesome/dist/components/card/card.js";
 import "@awesome.me/webawesome/dist/components/details/details.js";
+import "./viewport-elements/game-controls.js";
+import "./viewport-elements/game-theme-zones.js";
+import "./viewport-elements/game-context-zones.js";
+import "./viewport-elements/game-exit-zone.js";
+import { classMap } from "lit/directives/class-map.js";
 import { GAME_CONFIG } from "../constants/game-config.js";
 import { sharedStyles } from "../styles/shared.js";
 
@@ -70,7 +74,7 @@ export class GameViewport extends LitElement {
 	render() {
 		if (!this.gameState || !this.gameState.config) return html``;
 
-		const { config, quest } = this.gameState;
+		const { config, quest, levelState, hero } = this.gameState;
 		const backgroundStyle = config.backgroundStyle || "#374151";
 
 		return html`
@@ -82,94 +86,25 @@ export class GameViewport extends LitElement {
 			></game-hud>
 
 			<div class="game-area" style="background: ${backgroundStyle}">
-				${this._renderControls()}
-				${this._renderThemeZones()}
-				${this._renderExitZone()}
-				${this._renderContextZones()}
+				<game-controls></game-controls>
+				
+				<game-theme-zones 
+					?active="${config.hasThemeZones}"
+				></game-theme-zones>
+
+				<game-exit-zone 
+					.zoneConfig="${config.exitZone}" 
+					?active="${levelState?.hasCollectedItem}"
+				></game-exit-zone>
+
+				<game-context-zones 
+					?active="${config?.hasHotSwitch}"
+					.state="${hero?.hotSwitchState}"
+				></game-context-zones>
+
 				${this._renderNPC()}
 				${this._renderReward()}
 				${this._renderHero()}
-			</div>
-		`;
-	}
-
-	_renderControls() {
-		return html`
-			<wa-details class="controls-details">
-				<div slot="summary">CONTROLS</div>
-				<p>ARROWS TO MOVE</p>
-				<p>SPACE TO INTERACT</p>
-				<p>ESC TO MENU</p>
-			</wa-details>
-		`;
-	}
-
-	_renderThemeZones() {
-		const { config } = this.gameState;
-		if (!config.hasThemeZones) return "";
-		return html`
-			<div class="zone zone-light">
-				<small class="zone-label">Light Theme</small>
-			</div>
-			<div class="zone zone-dark">
-				<small class="zone-label">Dark Theme</small>
-			</div>
-		`;
-	}
-
-	_renderExitZone() {
-		const { config, levelState } = this.gameState;
-		if (!levelState?.hasCollectedItem || !config.exitZone) return "";
-
-		const { x, y, width, height, label } = config.exitZone;
-		// Determine layout based on position relative to legacy/new zones
-		const isRight = x > GAME_CONFIG.VIEWPORT.ZONES.LEGACY.minX; // Previously 80
-		const isLeft = x < GAME_CONFIG.VIEWPORT.ZONES.NEW.maxX; // Using NEW.maxX as a left boundary threshold
-
-		const justifyContent = isRight ? "flex-end" : isLeft ? "flex-start" : "center";
-		const paddingRight = isRight ? "1rem" : "0";
-		const paddingLeft = isLeft ? "1rem" : "0";
-
-		return html`
-			<div class="exit-zone" style="
-				left: ${x}%; 
-				top: ${y}%; 
-				width: ${width}%; 
-				height: ${height}%;
-				justify-content: ${justifyContent};
-				padding-right: ${paddingRight};
-				padding-left: ${paddingLeft};
-			">
-				<wa-tag variant="neutral" class="exit-text">${label || "EXIT"}</wa-tag>
-			</div>
-		`;
-	}
-
-	_renderContextZones() {
-		const { config, hero } = this.gameState;
-		if (!config?.hasHotSwitch) return "";
-
-		const isLegacyActive = hero?.hotSwitchState === "legacy";
-		const isNewActive = hero?.hotSwitchState === "new";
-
-		// Use constants implies defining the zones here using them? 
-		// The CSS defines the positions: .ctx-legacy { left: 50% }.
-		// We should probably inject these styles dynamically if we want them configurable, 
-		// OR just acknowledge they are in CSS and the controller uses the logic.
-		// The controller (GameZoneController) logic matches these visual zones.
-		// Here it's just rendering the DOM elements.
-		// The Implementation Plan said: "Extract layout values (50, 40, etc.)"
-		// The rendered DOM helpers don't hardcode them except in styles?
-		// Ah, the CSS block at the bottom has them.
-
-		return html`
-			<div class="ctx-zone ctx-legacy ${isLegacyActive ? "active" : "inactive"}">
-				<h6 class="ctx-title" style="color: ${isLegacyActive ? "white" : "#991b1b"}">Legacy</h6>
-				<small class="ctx-sub" style="color: #fca5a5">LegacyUserService</small>
-			</div>
-			<div class="ctx-zone ctx-new ${isNewActive ? "active" : "inactive"}">
-				<h6 class="ctx-title" style="color: ${isNewActive ? "white" : "#1e40af"}">New API V2</h6>
-				<small class="ctx-sub" style="color: #93c5fd">NewUserService</small>
 			</div>
 		`;
 	}
