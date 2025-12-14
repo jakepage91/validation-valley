@@ -350,10 +350,6 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 				this.isInHub = false;
 				this.showDialog = false;
 				logger.info(`🎮 Started quest: ${quest.name} `);
-				// Ensure URL matches
-				// this.router.navigate(`/quest/${quest.id}`); // Duplicate navigation if caused by route match?
-				// Better: check current route? or just replace state?
-				// For now let's assume route match triggered this or user action triggered this
 
 				// Allow a brief moment for state to settle if needed, but primarily reliance on native async
 				this.isLoading = false;

@@ -11,49 +11,33 @@ import { sharedStyles } from "../styles/shared.js";
 
 /**
  * @element game-viewport
- * @property {Object} currentConfig
- * @property {{x: number, y: number}} heroPos
- * @property {Boolean} isEvolving
- * @property {String} hotSwitchState
- * @property {Boolean} isRewardCollected
- * @property {Object} currentQuest
- * @property {Boolean} isInHub
- * @property {Boolean} hasSeenIntro
- * @property {Boolean} hasCollectedItem
- * @property {Boolean} isCloseToTarget
- * @property {Number} currentChapterNumber
- * @property {Number} totalChapters
- * @property {String} questTitle
+ * @property {Object} gameState
  */
 export class GameViewport extends LitElement {
 	static properties = {
-		currentConfig: { type: Object },
-		heroPos: { type: Object },
-		isEvolving: { type: Boolean },
-		hotSwitchState: { type: String },
-		hasCollectedItem: { type: Boolean },
-		lockedMessage: { type: String },
-		isCloseToTarget: { type: Boolean },
-		currentChapterNumber: { type: Number },
-		totalChapters: { type: Number },
-		questTitle: { type: String },
+		gameState: { type: Object },
 		isAnimatingReward: { state: true },
 		rewardAnimState: { state: true },
 		isRewardCollected: { type: Boolean },
 	};
 
 	willUpdate(changedProperties) {
-		if (changedProperties.has("hasCollectedItem")) {
-			if (!this.hasCollectedItem) {
-				this.isRewardCollected = false;
-			} else if (this.hasCollectedItem) {
+		if (changedProperties.has("gameState")) {
+			// Check if hasCollectedItem changed from false to true
+			const oldState = changedProperties.get("gameState");
+			const wasCollected = oldState?.levelState?.hasCollectedItem;
+			const isCollected = this.gameState?.levelState?.hasCollectedItem;
+
+			if (!wasCollected && isCollected) {
 				this.isAnimatingReward = true;
 				this.rewardAnimState = "start";
 				// ... animation logic ...
+			} else if (!isCollected) {
+				this.isRewardCollected = false;
 			}
 		}
 
-		if (changedProperties.has("hasCollectedItem") && this.hasCollectedItem) {
+		if (this.isAnimatingReward && this.rewardAnimState === "start") {
 			// Step 1: Grow to center
 			setTimeout(() => {
 				this.rewardAnimState = "growing";
@@ -84,14 +68,17 @@ export class GameViewport extends LitElement {
 	}
 
 	render() {
-		const backgroundStyle = this.currentConfig.backgroundStyle || "#374151";
+		if (!this.gameState || !this.gameState.config) return html``;
+
+		const { config, quest } = this.gameState;
+		const backgroundStyle = config.backgroundStyle || "#374151";
 
 		return html`
 			<game-hud 
-				.currentChapterNumber="${this.currentChapterNumber}" 
-				.totalChapters="${this.totalChapters}"
-				.levelTitle="${this.currentConfig.title}"
-				.questTitle="${this.questTitle}"
+				.currentChapterNumber="${quest?.chapterNumber}" 
+				.totalChapters="${quest?.totalChapters}"
+				.levelTitle="${config.title}"
+				.questTitle="${quest?.title}"
 			></game-hud>
 
 			<div class="game-area" style="background: ${backgroundStyle}">
@@ -118,7 +105,8 @@ export class GameViewport extends LitElement {
 	}
 
 	_renderThemeZones() {
-		if (!this.currentConfig.hasThemeZones) return "";
+		const { config } = this.gameState;
+		if (!config.hasThemeZones) return "";
 		return html`
 			<div class="zone zone-light">
 				<small class="zone-label">Light Theme</small>
@@ -130,9 +118,10 @@ export class GameViewport extends LitElement {
 	}
 
 	_renderExitZone() {
-		if (!this.hasCollectedItem || !this.currentConfig.exitZone) return "";
+		const { config, levelState } = this.gameState;
+		if (!levelState?.hasCollectedItem || !config.exitZone) return "";
 
-		const { x, y, width, height, label } = this.currentConfig.exitZone;
+		const { x, y, width, height, label } = config.exitZone;
 		// Determine layout based on position relative to legacy/new zones
 		const isRight = x > GAME_CONFIG.VIEWPORT.ZONES.LEGACY.minX; // Previously 80
 		const isLeft = x < GAME_CONFIG.VIEWPORT.ZONES.NEW.maxX; // Using NEW.maxX as a left boundary threshold
@@ -157,10 +146,11 @@ export class GameViewport extends LitElement {
 	}
 
 	_renderContextZones() {
-		if (!this.currentConfig?.hasHotSwitch) return "";
+		const { config, hero } = this.gameState;
+		if (!config?.hasHotSwitch) return "";
 
-		const isLegacyActive = this.hotSwitchState === "legacy";
-		const isNewActive = this.hotSwitchState === "new";
+		const isLegacyActive = hero?.hotSwitchState === "legacy";
+		const isNewActive = hero?.hotSwitchState === "new";
 
 		// Use constants implies defining the zones here using them? 
 		// The CSS defines the positions: .ctx-legacy { left: 50% }.
@@ -185,48 +175,50 @@ export class GameViewport extends LitElement {
 	}
 
 	_renderNPC() {
-		if (!this.currentConfig.npc) return "";
+		const { config, levelState } = this.gameState;
+		if (!config.npc) return "";
 
 		return html`
 			<npc-element
-				.name="${this.currentConfig.npc.name}"
-				.image="${this.currentConfig.npc.image}"
-				.icon="${this.currentConfig.npc.icon}"
-				.x="${this.currentConfig.npc.position.x}"
-				.y="${this.currentConfig.npc.position.y}"
-				.isClose="${this.isCloseToTarget}"
-				.action="${this.lockedMessage}"
-				.hasCollectedItem="${this.hasCollectedItem}"
+				.name="${config.npc.name}"
+				.image="${config.npc.image}"
+				.icon="${config.npc.icon}"
+				.x="${config.npc.position.x}"
+				.y="${config.npc.position.y}"
+				.isClose="${levelState?.isCloseToTarget}"
+				.action="${this.gameState.ui?.lockedMessage}"
+				.hasCollectedItem="${levelState?.hasCollectedItem}"
 			></npc-element>
 		`;
 	}
 
 	_renderReward() {
+		const { config, levelState, hero } = this.gameState;
 		if (
 			!this.isAnimatingReward &&
-			(this.hasCollectedItem || !this.currentConfig.reward)
+			(levelState?.hasCollectedItem || !config.reward)
 		) {
 			return "";
 		}
 
 		// Calculations for animation or static position
-		let x = this.currentConfig.reward.position.x;
-		let y = this.currentConfig.reward.position.y;
+		let x = config.reward.position.x;
+		let y = config.reward.position.y;
 
 		if (this.isAnimatingReward) {
 			if (this.rewardAnimState === "growing") {
 				x = 50;
 				y = 50;
 			} else if (this.rewardAnimState === "moving") {
-				x = this.heroPos.x;
-				y = this.heroPos.y;
+				x = hero?.pos?.x;
+				y = hero?.pos?.y;
 			}
 		}
 
 		return html`
 			<reward-element
-				.image="${this.currentConfig.reward.image}"
-				.icon="${this.currentConfig.reward.icon}"
+				.image="${config.reward.image}"
+				.icon="${config.reward.icon}"
 				.x="${x}"
 				.y="${y}"
 				class=${classMap({ [this.rewardAnimState]: this.isAnimatingReward })}
@@ -235,26 +227,27 @@ export class GameViewport extends LitElement {
 	}
 
 	_renderHero() {
-		const transition = this.isEvolving
+		const { config, hero } = this.gameState;
+		const transition = hero?.isEvolving
 			? "opacity 0.5s ease-out"
 			: "left 0.075s linear, top 0.075s linear";
 
 		// Use reward image if collected, otherwise normal hero image
 		const imageSrc =
-			this.isRewardCollected && this.currentConfig.hero?.reward
-				? this.currentConfig.hero.reward
-				: this.currentConfig.hero?.image;
+			this.isRewardCollected && config.hero?.reward
+				? config.hero.reward
+				: config.hero?.image;
 
 		return html`
 			<hero-profile 
 				style="
-					left: ${this.heroPos.x}%; 
-					top: ${this.heroPos.y}%;
-					opacity: ${this.isEvolving ? 0 : 1};
+					left: ${hero.pos.x}%; 
+					top: ${hero.pos.y}%;
+					opacity: ${hero.isEvolving ? 0 : 1};
 					transition: ${transition};
 				"
 				.imageSrc="${imageSrc}"
-				.hotSwitchState="${this.hotSwitchState}"
+				.hotSwitchState="${hero.hotSwitchState}"
 			></hero-profile>
 		`;
 	}

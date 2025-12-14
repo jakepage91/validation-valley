@@ -12,21 +12,7 @@ import { sharedStyles } from "../styles/shared.js";
 
 /**
  * @element game-view
- * @property {Object} currentConfig
- * @property {Boolean} isPaused
- * @property {Number} currentChapterNumber
- * @property {Number} totalChapters
- * @property {String} questTitle
- * @property {Object} heroPos
- * @property {Boolean} isEvolving
- * @property {String} hotSwitchState
- * @property {Boolean} hasCollectedItem
- * @property {String} lockedMessage
- * @property {Boolean} isCloseToTarget
- * @property {Boolean} showDialog
- * @property {String} level
- * @property {Boolean} isLastChapter
- * @property {Boolean} isRewardCollected
+ * @property {Object} gameState
  */
 export class GameView extends LitElement {
 	static properties = {
@@ -34,7 +20,7 @@ export class GameView extends LitElement {
 	};
 
 	render() {
-		const { config, ui, quest, hero, levelState } = this.gameState || {};
+		const { config, ui, quest, hero } = this.gameState || {};
 
 		if (!config) {
 			return html`<div>Loading level data...</div>`;
@@ -59,23 +45,12 @@ export class GameView extends LitElement {
 
 			<main>
 				<game-viewport
-					.currentConfig="${config}"
-					.heroPos="${hero?.pos}"
-					.isEvolving="${hero?.isEvolving}"
-					.hotSwitchState="${hero?.hotSwitchState}"
-					.hasCollectedItem="${levelState?.hasCollectedItem}"
-					.isRewardCollected="${levelState?.isRewardCollected}"
-					.lockedMessage="${ui?.lockedMessage}"
-					.isCloseToTarget="${levelState?.isCloseToTarget}"
-					.currentChapterNumber="${quest?.chapterNumber}" 
-					.totalChapters="${quest?.totalChapters}"
-					.questTitle="${quest?.title}"
+					.gameState="${this.gameState}"
 				></game-viewport>
 			</main>
 
-			${
-				ui?.showDialog
-					? html`
+			${ui?.showDialog
+				? html`
 				<level-dialog
 					.config="${dialogConfig}"
 					.level="${quest?.levelId}"
@@ -84,7 +59,7 @@ export class GameView extends LitElement {
 					@close="${() => this.dispatchEvent(new CustomEvent("close-dialog"))}"
 				></level-dialog>
 			`
-					: ""
+				: ""
 			}
 		`;
 	}
