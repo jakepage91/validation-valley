@@ -1,4 +1,5 @@
 import * as DefaultRegistry from "../quests/quest-registry.js";
+import { logger } from "./logger-service.js";
 import { LocalStorageAdapter } from "./storage-service.js";
 
 /** @typedef {import('./storage-service').StorageAdapter} StorageAdapter */
@@ -32,12 +33,12 @@ export class ProgressService {
 	loadProgress() {
 		const data = this.storage.getItem(this.storageKey);
 		if (data) {
-			console.log("💾 Loaded progress:", data);
+			logger.info("💾 Loaded progress:", data);
 			return data;
 		}
 
 		// Default progress for new players
-		console.log("🆕 Creating new progress");
+		logger.info("🆕 Creating new progress");
 		return {
 			completedQuests: [],
 			completedChapters: [],
@@ -58,7 +59,7 @@ export class ProgressService {
 	 * Save progress to storage
 	 */
 	saveProgress() {
-		console.log("💾 Saving progress:", this.progress);
+		logger.info("💾 Saving progress:", this.progress);
 		this.storage.setItem(this.storageKey, this.progress);
 	}
 
@@ -112,7 +113,7 @@ export class ProgressService {
 		}
 
 		this.saveProgress();
-		console.log(`🔄 Reset progress for quest: ${questId}`);
+		logger.info(`🔄 Reset progress for quest: ${questId}`);
 	}
 
 	/**
@@ -123,9 +124,9 @@ export class ProgressService {
 			this.progress.completedChapters.push(chapterId);
 			this.progress.stats.chaptersCompleted++;
 			this.saveProgress();
-			console.log(`💾 Completing chapter: ${chapterId}`);
+			logger.info(`💾 Completing chapter: ${chapterId}`);
 		} else {
-			console.warn(`⚠️ Chapter ${chapterId} already completed`);
+			logger.warn(`⚠️ Chapter ${chapterId} already completed`);
 		}
 
 		// Removed auto-check for quest completion here.
@@ -190,7 +191,9 @@ export class ProgressService {
 		allQuests.forEach((quest) => {
 			if (!this.progress.unlockedQuests.includes(quest.id)) {
 				// Check if all prerequisites are completed
-				if (!this.registry.isQuestLocked(quest.id, this.progress.completedQuests)) {
+				if (
+					!this.registry.isQuestLocked(quest.id, this.progress.completedQuests)
+				) {
 					this.progress.unlockedQuests.push(quest.id);
 				}
 			}
@@ -264,9 +267,9 @@ export class ProgressService {
 	getOverallProgress() {
 		// Use registry.getAllQuests() instead of Object.values(QUESTS)
 		// Assuming getAllQuests() returns the main quests.
-		const allQuests = this.registry.getAllQuests().filter(
-			(q) => q.status !== "coming-soon",
-		);
+		const allQuests = this.registry
+			.getAllQuests()
+			.filter((q) => q.status !== "coming-soon");
 
 		if (allQuests.length === 0) return 0;
 

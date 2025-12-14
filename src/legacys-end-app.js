@@ -11,13 +11,15 @@ import { ContextMixin } from "./mixins/context-mixin.js";
 import { getComingSoonQuests } from "./quests/quest-registry.js";
 // Services
 import { GameStateService } from "./services/game-state-service.js";
+import { logger } from "./services/logger-service.js";
 import { ProgressService } from "./services/progress-service.js";
+import { container } from "./services/service-container.js";
 import { LocalStorageAdapter } from "./services/storage-service.js";
 import {
 	LegacyUserService,
 	MockUserService,
 	NewUserService,
-} from "./services/userServices.js";
+} from "./services/user-services.js";
 import { ServiceType } from "./types.js";
 import "./components/quest-hub.js";
 import "./components/about-slides.js";
@@ -86,18 +88,23 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 		this.hasSeenIntro = false;
 		this.showQuestCompleteDialog = false;
 
-		// Initialize Services
+		// Initialize Services & Register to Container
 		this.storageAdapter = new LocalStorageAdapter();
 		this.gameState = new GameStateService();
 		this.progressService = new ProgressService(this.storageAdapter);
+
+		container.register("gameState", this.gameState);
+		container.register("progress", this.progressService);
+		container.register("logger", logger);
 
 		this.services = {
 			legacy: new LegacyUserService(),
 			mock: new MockUserService(),
 			new: new NewUserService(),
 		};
+		container.register("userServices", this.services);
 
-		// Sync local properties with GameStateService
+		// Sync local properties with GameStateService (Observable pattern)
 		this.syncState();
 		this.gameState.subscribe(() => this.syncState());
 
@@ -129,17 +136,17 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 					const data = this.getChapterData(levelId);
 					if (data) {
 						this.gameState.setHeroPosition(data.startPos.x, data.startPos.y);
-						console.log(`🎮 Jumped to Chapter ${levelId} `);
+						logger.info(`🎮 Jumped to Chapter ${levelId} `);
 					}
 				}
 			},
 			giveItem: () => {
 				this.gameState.setCollectedItem(true);
-				console.log(`✨ Item collected!`);
+				logger.info(`✨ Item collected!`);
 			},
 			teleport: (x, y) => {
 				this.gameState.setHeroPosition(x, y);
-				console.log(`📍 Teleported to(${x}, ${y})`);
+				logger.info(`📍 Teleported to(${x}, ${y})`);
 			},
 			getState: () => ({
 				level: this.chapterId,
@@ -153,9 +160,9 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 				if (mode === "light" || mode === "dark") {
 					this.gameState.setThemeMode(mode);
 					this.applyTheme();
-					console.log(`🎨 Theme set to: ${mode} `);
+					logger.info(`🎨 Theme set to: ${mode} `);
 				} else {
-					console.error(`❌ Invalid theme: ${mode}. Use 'light' or 'dark'`);
+					logger.error(`❌ Invalid theme: ${mode}. Use 'light' or 'dark'`);
 				}
 			},
 			// Quest commands
@@ -166,14 +173,14 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 				if (this.questController.currentQuest) {
 					this.questController.completeQuest();
 				} else {
-					console.warn("⚠️ No active quest to complete");
+					logger.warn("⚠️ No active quest to complete");
 				}
 			},
 			completeChapter: () => {
 				if (this.questController.currentQuest) {
 					this.questController.completeChapter();
 				} else {
-					console.warn("⚠️ No active quest");
+					logger.warn("⚠️ No active quest");
 				}
 			},
 			returnToHub: () => {
@@ -181,11 +188,11 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 			},
 			listQuests: () => {
 				const available = this.questController.getAvailableQuests();
-				console.log("📋 Available Quests:");
+				logger.info("📋 Available Quests:");
 				available.forEach((q) => {
 					const progress = this.questController.getQuestProgress(q.id);
 					const completed = this.questController.isQuestCompleted(q.id);
-					console.log(`  ${completed ? "✅" : "⏳"} ${q.name} (${progress}%)`);
+					logger.info(`  ${completed ? "✅" : "⏳"} ${q.name} (${progress}%)`);
 				});
 				return available;
 			},
@@ -279,7 +286,7 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 				this.currentQuest = quest;
 				this.isInHub = false;
 				this.showDialog = false;
-				console.log(`🎮 Started quest: ${quest.name} `);
+				logger.info(`🎮 Started quest: ${quest.name} `);
 			},
 			onChapterChange: (chapter, index) => {
 				// Map chapter to level
@@ -318,24 +325,24 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 				if (state.collectedItem) {
 					this.gameState.setCollectedItem(true);
 					this.gameState.setRewardCollected(true); // Assume animation already happened if restoring state
-					console.log(
+					logger.info(
 						`🔄 Restored collected item state for chapter ${chapter.id}`,
 					);
 				}
 
-				console.log(
+				logger.info(
 					`📖 Chapter ${index + 1}/${chapter.total}: ${chapterData?.name || chapter.id}`,
 				);
 			},
 			onQuestComplete: (quest) => {
-				console.log(`✅ Completed quest: ${quest.name}`);
-				console.log(`🏆 Earned badge: ${quest.reward.badge}`);
+				logger.info(`✅ Completed quest: ${quest.name}`);
+				logger.info(`🏆 Earned badge: ${quest.reward.badge}`);
 				this.showQuestCompleteDialog = true; // Show quest complete message
 			},
 			onReturnToHub: () => {
 				this.isInHub = true;
 				this.currentQuest = null;
-				console.log(`🏛️ Returned to Hub`);
+				logger.info(`🏛️ Returned to Hub`);
 			},
 		});
 	}
@@ -692,10 +699,10 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 				@toggle-hot-switch="${() => {
 				const newState = this.hotSwitchState === "legacy" ? "new" : "legacy";
 				this.gameState.setHotSwitchState(newState);
-				console.log("🔄 Hot Switch toggled to:", newState);
+				logger.info("🔄 Hot Switch toggled to:", newState);
 			}}"
 				@reward-collected="${() => {
-				console.log("🎉 LegacysEndApp received reward-collected event");
+				logger.info("🎉 LegacysEndApp received reward-collected event");
 				this.gameState.setRewardCollected(true);
 				this.requestUpdate(); // Force update just in case
 			}}"

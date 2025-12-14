@@ -1,3 +1,5 @@
+import { Observable } from "../utils/observable.js";
+
 /**
  * GameStateService - Manages ephemeral game state
  *
@@ -8,9 +10,9 @@
  * - UI state (paused, evolving, locked messages)
  * - Theme mode
  */
-export class GameStateService {
+export class GameStateService extends Observable {
 	constructor() {
-		this.listeners = new Set();
+		super();
 		this.state = {
 			heroPos: { x: 50, y: 15 },
 			hasCollectedItem: false,
@@ -37,26 +39,7 @@ export class GameStateService {
 	setState(partialState) {
 		const oldState = { ...this.state };
 		this.state = { ...this.state, ...partialState };
-		this.notifyListeners(this.state, oldState);
-	}
-
-	/**
-	 * Subscribe to state changes
-	 * @param {Function} listener
-	 * @returns {Function} Unsubscribe function
-	 */
-	subscribe(listener) {
-		this.listeners.add(listener);
-		return () => this.listeners.delete(listener);
-	}
-
-	/**
-	 * Notify all listeners of state change
-	 */
-	notifyListeners(newState, oldState) {
-		this.listeners.forEach((listener) => {
-			listener(newState, oldState);
-		});
+		this.notify(this.state, oldState);
 	}
 
 	// --- Convenience Methods ---
@@ -102,3 +85,4 @@ export class GameStateService {
 		});
 	}
 }
+

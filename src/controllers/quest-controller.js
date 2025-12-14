@@ -1,4 +1,5 @@
 import * as DefaultRegistry from "../quests/quest-registry.js";
+import { logger } from "../services/logger-service.js";
 import { ProgressService } from "../services/progress-service.js";
 
 /**
@@ -70,7 +71,7 @@ export class QuestController {
 			try {
 				quest.chapters = await quest.loadChapters();
 			} catch (e) {
-				console.error(`Failed to load chapters for quest ${quest.id}:`, e);
+				logger.error(`Failed to load chapters for quest ${quest.id}:`, e);
 			}
 		}
 	}
@@ -92,7 +93,7 @@ export class QuestController {
 	async startQuest(questId) {
 		const quest = this.registry.getQuest(questId);
 		if (!quest) {
-			console.error(`Quest not found: ${questId}`);
+			logger.error(`Quest not found: ${questId}`);
 			return;
 		}
 
@@ -164,7 +165,7 @@ export class QuestController {
 	async continueQuest(questId) {
 		const quest = this.registry.getQuest(questId);
 		if (!quest) {
-			console.error(`Quest not found: ${questId}`);
+			logger.error(`Quest not found: ${questId}`);
 			return;
 		}
 
