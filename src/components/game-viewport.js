@@ -87,118 +87,160 @@ export class GameViewport extends LitElement {
 	}
 
 	render() {
-		const canToggleTheme = this.currentConfig.canToggleTheme;
-		const hasHotSwitch = this.currentConfig.hasHotSwitch;
-		const _isFinalBoss = this.currentConfig.isFinalBoss;
 		const backgroundStyle = this.currentConfig.backgroundStyle || "#374151";
 
 		return html`
-				<game-hud 
-					.currentChapterNumber="${this.currentChapterNumber}" 
-					.totalChapters="${this.totalChapters}"
-					.levelTitle="${this.currentConfig.title}"
-					.questTitle="${this.questTitle}"
-				></game-hud>
+			<game-hud 
+				.currentChapterNumber="${this.currentChapterNumber}" 
+				.totalChapters="${this.totalChapters}"
+				.levelTitle="${this.currentConfig.title}"
+				.questTitle="${this.questTitle}"
+			></game-hud>
 
-				<div class="game-area" style="background: ${backgroundStyle}">
-					<wa-details class="controls-details">
-						<div slot="summary">CONTROLS</div>
-						<p>ARROWS TO MOVE</p>
-						<p>SPACE TO INTERACT</p>
-						<p>ESC TO MENU</p>
-					</wa-details>
-					
-					<!-- Theme Zones (Level 2 Equivalent) -->
-					${canToggleTheme
-				? html`
-						<div class="zone zone-light">
-							<small class="zone-label">Light Theme</small>
-						</div>
-						<div class="zone zone-dark">
-							<small class="zone-label">Dark Theme</small>
-						</div>
-					`
-				: ""
+			<div class="game-area" style="background: ${backgroundStyle}">
+				${this._renderControls()}
+				${this._renderThemeZones()}
+				${this._renderExitZone()}
+				${this._renderContextZones()}
+				${this._renderNPC()}
+				${this._renderReward()}
+				${this._renderHero()}
+			</div>
+		`;
+	}
+
+	_renderControls() {
+		return html`
+			<wa-details class="controls-details">
+				<div slot="summary">CONTROLS</div>
+				<p>ARROWS TO MOVE</p>
+				<p>SPACE TO INTERACT</p>
+				<p>ESC TO MENU</p>
+			</wa-details>
+		`;
+	}
+
+	_renderThemeZones() {
+		if (!this.currentConfig.canToggleTheme) return "";
+		return html`
+			<div class="zone zone-light">
+				<small class="zone-label">Light Theme</small>
+			</div>
+			<div class="zone zone-dark">
+				<small class="zone-label">Dark Theme</small>
+			</div>
+		`;
+	}
+
+	_renderExitZone() {
+		if (!this.hasCollectedItem || !this.currentConfig.exitZone) return "";
+
+		const { x, y, width, height, label } = this.currentConfig.exitZone;
+		const justifyContent = x > 80 ? "flex-end" : x < 20 ? "flex-start" : "center";
+		const paddingRight = x > 80 ? "1rem" : "0";
+		const paddingLeft = x < 20 ? "1rem" : "0";
+
+		return html`
+			<div class="exit-zone" style="
+				left: ${x}%; 
+				top: ${y}%; 
+				width: ${width}%; 
+				height: ${height}%;
+				justify-content: ${justifyContent};
+				padding-right: ${paddingRight};
+				padding-left: ${paddingLeft};
+			">
+				<wa-tag variant="neutral" class="exit-text">${label || "EXIT"}</wa-tag>
+			</div>
+		`;
+	}
+
+	_renderContextZones() {
+		if (!this.currentConfig.hasHotSwitch) return "";
+
+		const isLegacyActive = this.hotSwitchState === "legacy";
+		const isNewActive = this.hotSwitchState === "new";
+
+		return html`
+			<div class="ctx-zone ctx-legacy ${isLegacyActive ? "active" : "inactive"}">
+				<h6 class="ctx-title" style="color: ${isLegacyActive ? "white" : "#991b1b"}">Legacy</h6>
+				<small class="ctx-sub" style="color: #fca5a5">LegacyUserService</small>
+			</div>
+			<div class="ctx-zone ctx-new ${isNewActive ? "active" : "inactive"}">
+				<h6 class="ctx-title" style="color: ${isNewActive ? "white" : "#1e40af"}">New API V2</h6>
+				<small class="ctx-sub" style="color: #93c5fd">NewUserService</small>
+			</div>
+		`;
+	}
+
+	_renderNPC() {
+		if (!this.currentConfig.npc) return "";
+
+		return html`
+			<npc-element
+				.name="${this.currentConfig.npc.name}"
+				.image="${this.currentConfig.npc.image}"
+				.icon="${this.currentConfig.npc.icon}"
+				.x="${this.currentConfig.npc.position.x}"
+				.y="${this.currentConfig.npc.position.y}"
+				.isClose="${this.isCloseToTarget}"
+				.action="${this.lockedMessage}"
+				.hasCollectedItem="${this.hasCollectedItem}"
+			></npc-element>
+		`;
+	}
+
+	_renderReward() {
+		if (!this.isAnimatingReward && (this.hasCollectedItem || !this.currentConfig.reward)) {
+			return "";
+		}
+
+		// Calculations for animation or static position
+		let x = this.currentConfig.reward.position.x;
+		let y = this.currentConfig.reward.position.y;
+
+		if (this.isAnimatingReward) {
+			if (this.rewardAnimState === "growing") {
+				x = 50;
+				y = 50;
+			} else if (this.rewardAnimState === "moving") {
+				x = this.heroPos.x;
+				y = this.heroPos.y;
 			}
+		}
 
-					<!-- Exit Zone -->
-					${this.hasCollectedItem && this.currentConfig.exitZone
-				? html`
-						<div class="exit-zone" style="
-							left: ${this.currentConfig.exitZone.x}%; 
-							top: ${this.currentConfig.exitZone.y}%; 
-							width: ${this.currentConfig.exitZone.width}%; 
-							height: ${this.currentConfig.exitZone.height}%;
-							justify-content: ${this.currentConfig.exitZone.x > 80 ? "flex-end" : this.currentConfig.exitZone.x < 20 ? "flex-start" : "center"};
-							padding-right: ${this.currentConfig.exitZone.x > 80 ? "1rem" : "0"};
-							padding-left: ${this.currentConfig.exitZone.x < 20 ? "1rem" : "0"};
-						">
-							<wa-tag variant="neutral" class="exit-text">${this.currentConfig.exitZone.label || "EXIT"}</wa-tag>
-						</div>
-					`
-				: ""
-			}
+		return html`
+			<reward-element
+				.image="${this.currentConfig.reward.image}"
+				.icon="${this.currentConfig.reward.icon}"
+				.x="${x}"
+				.y="${y}"
+				class=${classMap({ [this.rewardAnimState]: this.isAnimatingReward })}
+			></reward-element>
+		`;
+	}
 
-					<!-- Context Zones (Level 6 Equivalent) -->
-					${hasHotSwitch
-				? html`
-						<div class="ctx-zone ctx-legacy ${this.hotSwitchState === "legacy" ? "active" : "inactive"}">
-							<h6 class="ctx-title" style="color: ${this.hotSwitchState === "legacy" ? "white" : "#991b1b"}">Legacy</h6>
-							<small class="ctx-sub" style="color: #fca5a5">LegacyUserService</small>
-						</div>
-						<div class="ctx-zone ctx-new ${this.hotSwitchState === "new" ? "active" : "inactive"}">
-							<h6 class="ctx-title" style="color: ${this.hotSwitchState === "new" ? "white" : "#1e40af"}">New API V2</h6>
-							<small class="ctx-sub" style="color: #93c5fd">NewUserService</small>
-						</div>
-					`
-				: ""
-			}
+	_renderHero() {
+		const transition = this.isEvolving
+			? "opacity 0.5s ease-out"
+			: "left 0.075s linear, top 0.075s linear";
 
-					<!-- NPC -->
-					${this.currentConfig.npc
-				? html`
-						<npc-element
-							.name="${this.currentConfig.npc.name}"
-							.image="${this.currentConfig.npc.image}"
-							.icon="${this.currentConfig.npc.icon}"
-							.x="${this.currentConfig.npc.position.x}"
-							.y="${this.currentConfig.npc.position.y}"
-							.isClose="${this.isCloseToTarget}"
-							.action="${this.lockedMessage}"
-							.hasCollectedItem="${this.hasCollectedItem}"
-						></npc-element>
-					`
-				: ""
-			}
+		// Use reward image if collected, otherwise normal hero image
+		const imageSrc = (this.isRewardCollected && this.currentConfig.hero?.reward)
+			? this.currentConfig.hero.reward
+			: this.currentConfig.hero?.image;
 
-						<!-- Reward -->
-						${this.isAnimatingReward ||
-				(!this.hasCollectedItem && this.currentConfig.reward)
-				? html`
-							<reward-element
-								.image="${this.currentConfig.reward.image}"
-								.icon="${this.currentConfig.reward.icon}"
-								.x="${this.isAnimatingReward && this.rewardAnimState === "growing" ? 50 : this.isAnimatingReward && this.rewardAnimState === "moving" ? this.heroPos.x : this.currentConfig.reward.position.x}"
-								.y="${this.isAnimatingReward && this.rewardAnimState === "growing" ? 50 : this.isAnimatingReward && this.rewardAnimState === "moving" ? this.heroPos.y : this.currentConfig.reward.position.y}"
-								class=${classMap({ [this.rewardAnimState]: this.isAnimatingReward })}
-							></reward-element>
-						`
-				: ""
-			}
-
-					<!-- Alarion -->
-					<hero-profile 
-						style="
-							left: ${this.heroPos.x}%; 
-							top: ${this.heroPos.y}%;
-							opacity: ${this.isEvolving ? 0 : 1};
-							transition: ${this.isEvolving ? "opacity 0.5s ease-out" : "left 0.075s linear, top 0.075s linear"};
-						"
-						.imageSrc="${this.isRewardCollected && this.currentConfig.hero?.reward ? this.currentConfig.hero.reward : this.currentConfig.hero?.image}"
-						.hotSwitchState="${this.hotSwitchState}"
-					></hero-profile>
-
-				</div>
+		return html`
+			<hero-profile 
+				style="
+					left: ${this.heroPos.x}%; 
+					top: ${this.heroPos.y}%;
+					opacity: ${this.isEvolving ? 0 : 1};
+					transition: ${transition};
+				"
+				.imageSrc="${imageSrc}"
+				.hotSwitchState="${this.hotSwitchState}"
+			></hero-profile>
 		`;
 	}
 
