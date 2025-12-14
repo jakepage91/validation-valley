@@ -1,3 +1,5 @@
+import { playwright } from "@vitest/browser-playwright";
+
 import { defineConfig, loadEnv } from "vite";
 
 export default defineConfig(({ mode }) => {
@@ -11,6 +13,14 @@ export default defineConfig(({ mode }) => {
 		optimizeDeps: {
 			esbuildOptions: {
 				target: "esnext",
+			},
+		},
+		test: {
+			browser: {
+				enabled: true,
+				headless: true,
+				provider: playwright(),
+				instances: [{ browser: "chromium" }],
 			},
 		},
 	};
