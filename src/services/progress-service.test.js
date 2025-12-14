@@ -6,6 +6,7 @@ import { ProgressService } from "./progress-service.js";
 vi.mock("../quests/quest-registry.js", () => ({
 	getQuest: vi.fn(),
 	isQuestLocked: vi.fn(),
+	getAllQuests: vi.fn(),
 	QUESTS: {},
 }));
 
@@ -22,8 +23,9 @@ describe("ProgressService", () => {
 		};
 		vi.clearAllMocks();
 
-		// Default mock behavior for loadProgress
+		// Default mock behavior
 		mockStorage.getItem.mockReturnValue(null);
+		QuestRegistry.getAllQuests.mockReturnValue([]);
 
 		// Setup default QUESTS mock
 		QuestRegistry.QUESTS.testQuest1 = {
@@ -119,11 +121,13 @@ describe("ProgressService", () => {
 	});
 
 	it("should unlock new quests based on prerequisites", () => {
-		// Mock QUESTS with a locked quest
-		QuestRegistry.QUESTS.lockedQuest = {
-			id: "locked-quest",
-			type: "quest",
-		};
+		// Mock getAllQuests to return a locked quest
+		QuestRegistry.getAllQuests.mockReturnValue([
+			{
+				id: "locked-quest",
+				type: "quest",
+			},
+		]);
 
 		// Setup isQuestLocked to return false (unlocked) when called
 		QuestRegistry.isQuestLocked.mockReturnValue(false);

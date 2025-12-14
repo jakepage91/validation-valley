@@ -1,5 +1,6 @@
-import { getQuest, isQuestLocked, QUESTS } from "../quests/quest-registry.js";
-import { QuestType } from "../quests/quest-types.js";
+import * as DefaultRegistry from "../quests/quest-registry.js";
+import { LocalStorageAdapter } from "./storage-service.js";
+
 /** @typedef {import('./storage-service').StorageAdapter} StorageAdapter */
 
 /**
@@ -16,9 +17,11 @@ import { QuestType } from "../quests/quest-types.js";
 export class ProgressService {
 	/**
 	 * @param {StorageAdapter} storage - Storage adapter for persistence
+	 * @param {Object} registry - Quest registry for looking up quest data
 	 */
-	constructor(storage) {
+	constructor(storage = new LocalStorageAdapter(), registry = DefaultRegistry) {
 		this.storage = storage;
+		this.registry = registry;
 		this.storageKey = "legacys-end-progress";
 		this.progress = this.loadProgress();
 	}
@@ -87,7 +90,7 @@ export class ProgressService {
 	 * @param {string} questId
 	 */
 	resetQuestProgress(questId) {
-		const quest = getQuest(questId);
+		const quest = this.registry.getQuest(questId);
 		if (!quest) return;
 
 		// Remove from completed quests
@@ -136,7 +139,7 @@ export class ProgressService {
 	checkQuestCompletion() {
 		if (!this.progress.currentQuest) return;
 
-		const quest = getQuest(this.progress.currentQuest);
+		const quest = this.registry.getQuest(this.progress.currentQuest);
 		if (!quest || !quest.chapterIds) return;
 
 		// Check if all chapters are completed
@@ -159,7 +162,7 @@ export class ProgressService {
 			this.progress.stats.questsCompleted++;
 
 			// Ensure all chapters are marked as completed (consistency check)
-			const quest = getQuest(questId);
+			const quest = this.registry.getQuest(questId);
 			if (quest?.chapterIds) {
 				quest.chapterIds.forEach((chapterId) => {
 					if (!this.progress.completedChapters.includes(chapterId)) {
@@ -183,13 +186,11 @@ export class ProgressService {
 	 * Unlock quests that have their prerequisites met
 	 */
 	unlockNewQuests() {
-		Object.values(QUESTS).forEach((quest) => {
-			if (
-				quest.type === QuestType.QUEST &&
-				!this.progress.unlockedQuests.includes(quest.id)
-			) {
+		const allQuests = this.registry.getAllQuests();
+		allQuests.forEach((quest) => {
+			if (!this.progress.unlockedQuests.includes(quest.id)) {
 				// Check if all prerequisites are completed
-				if (!isQuestLocked(quest.id, this.progress.completedQuests)) {
+				if (!this.registry.isQuestLocked(quest.id, this.progress.completedQuests)) {
 					this.progress.unlockedQuests.push(quest.id);
 				}
 			}
@@ -245,7 +246,7 @@ export class ProgressService {
 			return 100;
 		}
 
-		const quest = getQuest(questId);
+		const quest = this.registry.getQuest(questId);
 		if (!quest || !quest.chapterIds || quest.chapterIds.length === 0) {
 			return 0;
 		}
@@ -261,9 +262,12 @@ export class ProgressService {
 	 * Get overall game completion percentage
 	 */
 	getOverallProgress() {
-		const allQuests = Object.values(QUESTS).filter(
-			(q) => q.type === "quest" && q.status !== "coming-soon",
+		// Use registry.getAllQuests() instead of Object.values(QUESTS)
+		// Assuming getAllQuests() returns the main quests.
+		const allQuests = this.registry.getAllQuests().filter(
+			(q) => q.status !== "coming-soon",
 		);
+
 		if (allQuests.length === 0) return 0;
 
 		const completedCount = allQuests.filter((q) =>
