@@ -701,20 +701,26 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 		`;
 	}
 
+	/**
+	 * Get enriched quest data for quest-hub component
+	 */
+	getEnrichedQuests() {
+		return this.questController.getAvailableQuests().map(quest => ({
+			...quest,
+			progress: this.questController.getQuestProgress(quest.id),
+			isCompleted: this.questController.isQuestCompleted(quest.id),
+			isLocked: !this.progressService.isQuestAvailable(quest.id),
+			inProgress: this.progressService.getProgress().currentQuest === quest.id,
+		}));
+	}
+
 	renderHub() {
 		return html`
 			<quest-hub
-				.availableQuests="${this.questController.getAvailableQuests()}"
+				.quests="${this.getEnrichedQuests()}"
 				.comingSoonQuests="${getComingSoonQuests()}"
-				.currentQuestId="${this.progressService.getProgress().currentQuest}"
-				.onQuestSelect="${(questId) => this.handleQuestSelect(questId)}"
-				.onContinueQuest="${(questId) => this.handleContinueQuest(questId)}"
-				.getQuestProgress="${(questId) =>
-				this.questController.getQuestProgress(questId)}"
-				.isQuestCompleted="${(questId) =>
-				this.questController.isQuestCompleted(questId)}"
-				.isQuestLocked="${(questId) =>
-				!this.progressService.isQuestAvailable(questId)}"
+				@quest-select="${(e) => this.handleQuestSelect(e.detail.questId)}"
+				@quest-continue="${(e) => this.handleContinueQuest(e.detail.questId)}"
 				@reset-progress="${() => this.debug.options.resetProgress()}"
 				@open-about="${() =>
 				this.shadowRoot.querySelector("about-slides").show()}"

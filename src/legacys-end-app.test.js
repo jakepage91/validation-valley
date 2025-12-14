@@ -39,16 +39,16 @@ describe("LegacysEndApp Component", () => {
 		const hub = el.shadowRoot.querySelector("quest-hub");
 		expect(hub).toBeTruthy();
 
-		// 2. Simulate Start Quest
-		// LegacysEndApp passes .onQuestSelect property to QuestHub.
-		// We simulate the callback invocation.
+		// 2. Simulate Start Quest by dispatching custom event
 		const questId = "the-aura-of-sovereignty";
-		if (hub.onQuestSelect) {
-			await hub.onQuestSelect(questId);
-		} else {
-			// Fallback if property not set yet (unlikely if rendered)
-			throw new Error("onQuestSelect prop missing on quest-hub");
-		}
+		hub.dispatchEvent(new CustomEvent('quest-select', {
+			detail: { questId },
+			bubbles: true,
+			composed: true
+		}));
+
+		// Wait for event to be handled and quest to start
+		await new Promise(resolve => setTimeout(resolve, 100));
 
 		await el.updateComplete;
 

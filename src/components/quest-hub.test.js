@@ -8,18 +8,26 @@ describe("QuestHub Component", () => {
 
 	it("renders available quests", async () => {
 		const el = document.createElement("quest-hub");
-		el.availableQuests = [
+		el.quests = [
 			{
 				id: "q1",
 				name: "Quest 1",
 				description: "Desc 1",
 				difficulty: "Beginner",
+				progress: 0,
+				isCompleted: false,
+				isLocked: false,
+				inProgress: false,
 			},
 			{
 				id: "q2",
 				name: "Quest 2",
 				description: "Desc 2",
 				difficulty: "Advanced",
+				progress: 50,
+				isCompleted: false,
+				isLocked: false,
+				inProgress: true,
 			},
 		];
 		document.body.appendChild(el);
