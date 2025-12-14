@@ -1,5 +1,0 @@
-{
-  "name": "Alarion's Evolution: 8-Bit Lit RPG",
-  "description": "An interactive 8-bit RPG simulation demonstrating the architectural evolution of a web component from legacy coupling to decoupled context injection.",
-  "requestFramePermissions": []
-}
