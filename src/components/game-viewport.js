@@ -8,6 +8,26 @@ import "@awesome.me/webawesome/dist/components/card/card.js";
 import "@awesome.me/webawesome/dist/components/details/details.js";
 import { sharedStyles } from "../styles/shared.js";
 
+/**
+ * @element game-viewport
+ * @property {Object} currentConfig
+ * @property {Object} heroPos
+ * @property {Boolean} isEvolving
+ * @property {String} hotSwitchState
+ * @property {Boolean} isRewardCollected
+ * @property {Object} currentQuest
+ * @property {Boolean} isInHub
+ * @property {Boolean} hasSeenIntro
+ * @property {Boolean} hasCollectedItem
+ * @property {String} lockedMessage
+ * @property {Boolean} isCloseToTarget
+ * @property {String} lockedMessage
+ * @property {Boolean} isCloseToTarget
+ * @property {Number} currentChapterNumber
+ * @property {Number} totalChapters
+ * @property {String} questTitle
+ * @property {Boolean} isRewardCollected
+ */
 export class GameViewport extends LitElement {
 	static properties = {
 		currentConfig: { type: Object },
@@ -22,7 +42,7 @@ export class GameViewport extends LitElement {
 		questTitle: { type: String },
 		isAnimatingReward: { state: true },
 		rewardAnimState: { state: true },
-		isRewardCollected: { state: true },
+		isRewardCollected: { type: Boolean },
 	};
 
 	willUpdate(changedProperties) {
@@ -199,7 +219,6 @@ export class GameViewport extends LitElement {
 			width: 100%;
 			flex: 1;
 			min-height: 0;
-			container-type: size;
 		}
 
 		.viewport-container {
@@ -315,7 +334,7 @@ export class GameViewport extends LitElement {
 		}
 
 		.ctx-title { font-weight: bold; text-transform: uppercase; margin-bottom: var(--wa-space-xs); margin-top: 0; }
-		.ctx-sub { }
+
 
 		/* Hero Container */
 		hero-profile {

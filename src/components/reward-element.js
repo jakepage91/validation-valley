@@ -1,6 +1,13 @@
 import { css, html, LitElement } from "lit";
 import "@awesome.me/webawesome/dist/components/icon/icon.js";
 
+/**
+ * @element reward-element
+ * @property {String} image
+ * @property {String} icon
+ * @property {Number} x
+ * @property {Number} y
+ */
 export class RewardElement extends LitElement {
 	static properties = {
 		image: { type: String },

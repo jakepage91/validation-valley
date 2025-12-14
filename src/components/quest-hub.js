@@ -311,37 +311,7 @@ export class QuestHub extends LitElement {
 			gap: var(--wa-space-s);
 		}
 
-		.action-button {
-			/* No extra styles needed */
-		}
 
-		.hub-sub-text {
-			font-size: var(--wa-font-size-s);
-			margin-top: var(--wa-space-xs);
-			opacity: 0.7;
-		}
-
-		.section-title {
-			font-size: var(--wa-font-size-xl);
-			margin: var(--wa-space-xl) 0 var(--wa-space-m) 0;
-			font-family: var(--wa-font-family-body);
-			color: var(--wa-color-warning-fill-loud);
-		}
-
-		wa-card h5 {
-			margin-block-end: 0;
-		}
-		
-		.quest-card::part(body) {
-			display: flex;
-			flex-direction: column;
-			height: 100%;
-			gap: var(--wa-space-xs);
-		}
-
-		.quest-card:not(.locked):not(.coming-soon):hover {
-			/* No hover effect */
-		}
 
 		.quest-card.locked {
 			cursor: not-allowed;

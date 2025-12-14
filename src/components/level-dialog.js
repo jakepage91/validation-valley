@@ -438,6 +438,7 @@ export class LevelDialog extends LitElement {
 	renderCode({ title = "Identified Problem", code }, type) {
 		return html`
 			<h6 class="slide-title ${type}">${title}</h6>
+			<!-- @ts-ignore -->
 			<syntax-highlight language="html" class="${type}">${code}</syntax-highlight>
 		`;
 	}
@@ -539,8 +540,7 @@ export class LevelDialog extends LitElement {
 		return html`
       <wa-dialog 
         label="${this.config.title}" 
-        open 
-        hoist
+        open
         style="--width: 80ch; --body-spacing: 0;"
         @wa-request-close="${(e) => e.preventDefault()}"
         @wa-after-hide="${this.dispatchClose}"
@@ -586,7 +586,7 @@ export class LevelDialog extends LitElement {
           `
 							: html`
             <wa-button 
-				autofocus
+				.autofocus="${true}"
                 variant="brand"
                 @click="${() => this.slideIndex++}"
             >

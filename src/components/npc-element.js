@@ -3,6 +3,17 @@ import "@awesome.me/webawesome/dist/components/icon/icon.js";
 import "@awesome.me/webawesome/dist/components/tag/tag.js";
 import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
 
+/**
+ * @element npc-element
+ * @property {String} name
+ * @property {String} image
+ * @property {String} icon
+ * @property {Number} x
+ * @property {Number} y
+ * @property {Boolean} isClose
+ * @property {String} action
+ * @property {Boolean} hasCollectedItem
+ */
 export class NpcElement extends LitElement {
 	static properties = {
 		name: { type: String },

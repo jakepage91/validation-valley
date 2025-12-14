@@ -10,6 +10,24 @@ import "@awesome.me/webawesome/dist/components/card/card.js";
 import "@awesome.me/webawesome/dist/components/button/button.js";
 import { sharedStyles } from "../styles/shared.js";
 
+/**
+ * @element game-view
+ * @property {Object} currentConfig
+ * @property {Boolean} isPaused
+ * @property {Number} currentChapterNumber
+ * @property {Number} totalChapters
+ * @property {String} questTitle
+ * @property {Object} heroPos
+ * @property {Boolean} isEvolving
+ * @property {String} hotSwitchState
+ * @property {Boolean} hasCollectedItem
+ * @property {String} lockedMessage
+ * @property {Boolean} isCloseToTarget
+ * @property {Boolean} showDialog
+ * @property {String} level
+ * @property {Boolean} isLastChapter
+ * @property {Boolean} isRewardCollected
+ */
 export class GameView extends LitElement {
 	static properties = {
 		currentConfig: { type: Object },

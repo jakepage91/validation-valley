@@ -40,6 +40,22 @@ import "@awesome.me/webawesome/dist/styles/webawesome.css";
 import "./pixel.css";
 import { sharedStyles } from "./styles/shared.js";
 
+/**
+ * @element legacys-end-app
+ * @property {String} chapterId
+ * @property {Boolean} showDialog
+ * @property {Boolean} hasCollectedItem
+ * @property {String} themeMode
+ * @property {Object} heroPos
+ * @property {String} hotSwitchState
+ * @property {Boolean} isEvolving
+ * @property {String} lockedMessage
+ * @property {Boolean} isPaused
+ * @property {Boolean} isRewardCollected
+ * @property {Object} currentQuest
+ * @property {Boolean} isInHub
+ * @property {Boolean} hasSeenIntro
+ */
 export class LegacysEndApp extends LitElement {
 	static properties = {
 		chapterId: { type: String },
@@ -625,15 +641,15 @@ export class LegacysEndApp extends LitElement {
 		return html`
 			<game-view
 				.currentConfig="${effectiveConfig}"
-				.isPaused="${this.isPaused}"
+				.isPaused="${this.isPaused || false}"
 				.currentChapterNumber="${this.questController.getCurrentChapterNumber()}"
 				.totalChapters="${this.questController.getTotalChapters()}"
 				.questTitle="${this.currentQuest?.name}"
-				.heroPos="${this.heroPos}"
-				.isEvolving="${this.isEvolving}"
+				.heroPos="${this.heroPos || { x: 0, y: 0 }}"
+				.isEvolving="${this.isEvolving || false}"
 				.hotSwitchState="${this.hotSwitchState}"
-				.hasCollectedItem="${this.hasCollectedItem}"
-				.isRewardCollected="${this.isRewardCollected}"
+				.hasCollectedItem="${this.hasCollectedItem || false}"
+				.isRewardCollected="${this.isRewardCollected || false}"
 				.lockedMessage="${this.lockedMessage}"
 				.isCloseToTarget="${isCloseToTarget}"
 				.showDialog="${this.showDialog}"

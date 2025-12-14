@@ -10,6 +10,11 @@ import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
 import "@awesome.me/webawesome/dist/components/tag/tag.js";
 import { sharedStyles } from "../styles/shared.js";
 
+/**
+ * @element hero-profile
+ * @property {String} imageSrc
+ * @property {String} hotSwitchState
+ */
 export class HeroProfile extends LitElement {
 	static properties = {
 		imageSrc: { type: String },
