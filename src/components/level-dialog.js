@@ -6,6 +6,11 @@ import "@awesome.me/webawesome/dist/components/icon/icon.js";
 import { map } from "lit/directives/map.js";
 import { sharedStyles } from "../styles/shared.js";
 
+function escapeHtml(html) {
+	const placeholderElement = document.createElement('div');
+	return placeholderElement.appendChild(document.createTextNode(html)).parentNode.innerHTML;
+}
+
 export class LevelDialog extends LitElement {
 	static properties = {
 		config: { type: Object },
@@ -195,6 +200,7 @@ export class LevelDialog extends LitElement {
     }
 
     syntax-highlight {
+      display: block;
       padding: var(--wa-space-m);
       border-width: var(--wa-border-width-l);
       border-style: solid;
@@ -437,11 +443,10 @@ export class LevelDialog extends LitElement {
   `,
 	];
 
-	renderCode({ title = "Identified Problem", code }, type) {
+	renderCode({ title = "Identified Problem", code, language = "js" }, type) {
 		return html`
 			<h6 class="slide-title ${type}">${title}</h6>
-			<!-- @ts-ignore -->
-			<syntax-highlight language="html" class="${type}">${code}</syntax-highlight>
+			<syntax-highlight language="${language}" class="${type}" .innerHTML=${escapeHtml(code)}></syntax-highlight>
 		`;
 	}
 
@@ -478,22 +483,21 @@ export class LevelDialog extends LitElement {
 					<h6 class= "slide-title-analysis" > Key Architectural Changes</h6>
 				<div class="analysis-list">
 					${this.config.architecturalChanges?.map(
-						(change) => html`
+					(change) => html`
                 <div class="analysis-item">
                   <wa-icon name="arrow-right" class="analysis-arrow"></wa-icon>
                   <span>${change}</span>
                 </div>
               `,
-					)}
+				)}
 				</div>
         `;
 			case "confirmation":
 				return html`
           <div class="slide-content-between">
             <div></div>
-            ${
-							this.config.isFinalBoss
-								? html`
+            ${this.config.isFinalBoss
+						? html`
                   <div class="console">
                     <h6 class="console-title">CONTROL CONSOLE</h6>
                     <div class="console-controls">
@@ -506,12 +510,11 @@ export class LevelDialog extends LitElement {
                     </div>
                   </div>
                 `
-								: html`
+						: html`
                     <div class="quest-complete-container">
                       <h2 class="quest-complete-title">Level Complete!</h2>
-                      ${
-												this.config.reward
-													? html`
+                      ${this.config.reward
+								? html`
                         <div class="reward-preview">
                           <img src="${this.config.reward.image}" alt="${this.config.reward.name}" class="reward-img" />
                           <div class="reward-info">
@@ -520,11 +523,11 @@ export class LevelDialog extends LitElement {
                           </div>
                         </div>
                       `
-													: ""
-											}
+								: ""
+							}
                     </div>
                   `
-						}
+					}
 
             <div class="spacer-top"></div>
           </div>
@@ -567,15 +570,14 @@ export class LevelDialog extends LitElement {
           <!-- Indicators -->
           <div class="indicators">
             ${slides.map(
-							(_, i) => html`
+			(_, i) => html`
               <div class="indicator ${i === this.slideIndex ? "active" : "inactive"}"></div>
             `,
-						)}
+		)}
           </div>
           
-          ${
-						this.slideIndex === slides.length - 1
-							? html`
+          ${this.slideIndex === slides.length - 1
+				? html`
             <wa-button 
                 .variant="${"brand"}"
                 @click="${this.dispatchComplete}"
@@ -585,7 +587,7 @@ export class LevelDialog extends LitElement {
                 <wa-icon slot="end" name="arrow-right"></wa-icon>
             </wa-button>
           `
-							: html`
+				: html`
             <wa-button 
 				.variant="${"brand"}"
                 @click="${() => this.slideIndex++}"
@@ -594,7 +596,7 @@ export class LevelDialog extends LitElement {
                 <wa-icon slot="end" name="arrow-right"></wa-icon>
             </wa-button>
           `
-					}
+			}
         </div>
       </wa-dialog>
     `;

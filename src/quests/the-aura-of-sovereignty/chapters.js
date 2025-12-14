@@ -43,6 +43,7 @@ export const THE_AURA_OF_SOVEREIGNTY_CHAPTERS = {
 			start: [
 				{
 					title: "The Acid Rain: Global styles that bleed everywhere",
+					language: "html",
 					code: `<style>
   h1 {
     color: red !important;
