@@ -1,5 +1,6 @@
 import { getQuest, isQuestLocked, QUESTS } from "../quests/quest-registry.js";
 import { QuestType } from "../quests/quest-types.js";
+/** @typedef {import('./storage-service').StorageAdapter} StorageAdapter */
 
 /**
  * ProgressService - Manages player progress and persistence
@@ -13,24 +14,23 @@ import { QuestType } from "../quests/quest-types.js";
  * Persists to localStorage
  */
 export class ProgressService {
-	constructor() {
+	/**
+	 * @param {StorageAdapter} storage - Storage adapter for persistence
+	 */
+	constructor(storage) {
+		this.storage = storage;
 		this.storageKey = "legacys-end-progress";
 		this.progress = this.loadProgress();
 	}
 
 	/**
-	 * Load progress from localStorage
+	 * Load progress from storage
 	 */
 	loadProgress() {
-		try {
-			const stored = localStorage.getItem(this.storageKey);
-			if (stored) {
-				const data = JSON.parse(stored);
-				console.log("💾 Loaded progress:", data);
-				return data;
-			}
-		} catch (e) {
-			console.error("Failed to load progress:", e);
+		const data = this.storage.getItem(this.storageKey);
+		if (data) {
+			console.log("💾 Loaded progress:", data);
+			return data;
 		}
 
 		// Default progress for new players
@@ -52,15 +52,11 @@ export class ProgressService {
 	}
 
 	/**
-	 * Save progress to localStorage
+	 * Save progress to storage
 	 */
 	saveProgress() {
-		try {
-			console.log("💾 Saving progress:", this.progress);
-			localStorage.setItem(this.storageKey, JSON.stringify(this.progress));
-		} catch (e) {
-			console.error("Failed to save progress:", e);
-		}
+		console.log("💾 Saving progress:", this.progress);
+		this.storage.setItem(this.storageKey, this.progress);
 	}
 
 	/**
@@ -68,7 +64,7 @@ export class ProgressService {
 	 */
 	resetProgress() {
 		this.progress = this.loadProgress();
-		localStorage.removeItem(this.storageKey);
+		this.storage.removeItem(this.storageKey);
 		this.progress = {
 			completedQuests: [],
 			completedChapters: [],

@@ -9,8 +9,10 @@ import { QuestController } from "./controllers/quest-controller.js";
 import { ServiceController } from "./controllers/service-controller.js";
 import { ContextMixin } from "./mixins/context-mixin.js";
 import { getComingSoonQuests } from "./quests/quest-registry.js";
+// Services
 import { GameStateService } from "./services/game-state-service.js";
 import { ProgressService } from "./services/progress-service.js";
+import { LocalStorageAdapter } from "./services/storage-service.js";
 import {
 	LegacyUserService,
 	MockUserService,
@@ -82,8 +84,9 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 		this.showQuestCompleteDialog = false;
 
 		// Initialize Services
+		this.storageAdapter = new LocalStorageAdapter();
 		this.gameState = new GameStateService();
-		this.progressService = new ProgressService();
+		this.progressService = new ProgressService(this.storageAdapter);
 
 		this.services = {
 			legacy: new LegacyUserService(),
@@ -556,9 +559,9 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 			<victory-screen
 				.quest="${quest}"
 				.onReturn="${() => {
-					this.showQuestCompleteDialog = false;
-					this.questController.returnToHub();
-				}}"
+				this.showQuestCompleteDialog = false;
+				this.questController.returnToHub();
+			}}"
 			></victory-screen>
 		`;
 	}
@@ -634,23 +637,23 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 				@restart="${this.handleRestartQuest}"
 				@quit="${this.handleQuitToHub}"
 				@complete="${() => {
-					this.showDialog = false;
-					this.gameState.setCollectedItem(true);
-				}}"
+				this.showDialog = false;
+				this.gameState.setCollectedItem(true);
+			}}"
 				@close-dialog="${() => {
-					this.showDialog = false;
-					this.hasSeenIntro = true;
-				}}"
+				this.showDialog = false;
+				this.hasSeenIntro = true;
+			}}"
 				@toggle-hot-switch="${() => {
-					const newState = this.hotSwitchState === "legacy" ? "new" : "legacy";
-					this.gameState.setHotSwitchState(newState);
-					console.log("🔄 Hot Switch toggled to:", newState);
-				}}"
+				const newState = this.hotSwitchState === "legacy" ? "new" : "legacy";
+				this.gameState.setHotSwitchState(newState);
+				console.log("🔄 Hot Switch toggled to:", newState);
+			}}"
 				@reward-collected="${() => {
-					console.log("🎉 LegacysEndApp received reward-collected event");
-					this.gameState.setRewardCollected(true);
-					this.requestUpdate(); // Force update just in case
-				}}"
+				console.log("🎉 LegacysEndApp received reward-collected event");
+				this.gameState.setRewardCollected(true);
+				this.requestUpdate(); // Force update just in case
+			}}"
 			></game-view>
 		`;
 	}

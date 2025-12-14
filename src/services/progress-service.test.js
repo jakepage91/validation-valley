@@ -10,63 +10,85 @@ vi.mock("../quests/quest-registry.js", () => ({
 }));
 
 describe("ProgressService", () => {
-	let service;
+	let progressService;
+	let mockStorage;
 
 	beforeEach(() => {
-		// Spy on localStorage methods
-		vi.spyOn(Storage.prototype, "getItem");
-		vi.spyOn(Storage.prototype, "setItem");
-		vi.spyOn(Storage.prototype, "removeItem");
-		vi.spyOn(Storage.prototype, "clear");
-
-		localStorage.clear();
+		mockStorage = {
+			getItem: vi.fn(),
+			setItem: vi.fn(),
+			removeItem: vi.fn(),
+			clear: vi.fn(),
+		};
 		vi.clearAllMocks();
+
+		// Default mock behavior for loadProgress
+		mockStorage.getItem.mockReturnValue(null);
 
 		// Setup default QUESTS mock
 		QuestRegistry.QUESTS.testQuest1 = {
 			id: "test-quest-1",
+			name: "Test Quest 1",
+			subtitle: "Subtitle",
 			type: "quest",
+			description: "Description",
+			legacyProblem: "Problem",
+			prerequisites: [],
+			shortcuts: [],
+			difficulty: "easy",
+			icon: "icon",
+			estimatedTime: "10m",
+			status: "available",
 			chapterIds: ["c1", "c2"],
 		};
 		QuestRegistry.QUESTS.testQuest2 = {
 			id: "test-quest-2",
+			name: "Test Quest 2",
+			subtitle: "Subtitle",
 			type: "quest",
+			description: "Description",
+			legacyProblem: "Problem",
+			prerequisites: [],
+			shortcuts: [],
+			difficulty: "easy",
+			icon: "icon",
+			estimatedTime: "10m",
+			status: "available",
 			chapterIds: ["c3"],
 		};
 
-		service = new ProgressService();
+		progressService = new ProgressService(mockStorage);
 	});
 
 	afterEach(() => {
 		vi.restoreAllMocks();
-		localStorage.clear();
 	});
 
 	it("should initialize with default progress if no saved data", () => {
-		const progress = service.getProgress();
+		const progress = progressService.getProgress();
 		expect(progress.completedQuests).toEqual([]);
 		expect(progress.unlockedQuests).toContain("the-aura-of-sovereignty");
 	});
 
-	it("should save progress to localStorage", () => {
-		service.saveProgress();
-		expect(localStorage.setItem).toHaveBeenCalledWith(
+	it("should save progress to mockStorage", () => {
+		progressService.saveProgress();
+		expect(mockStorage.setItem).toHaveBeenCalledWith(
 			"legacys-end-progress",
-			expect.any(String),
+			expect.any(Object)
 		);
 	});
 
 	it("should complete a chapter", () => {
-		service.completeChapter("c1");
-		expect(service.isChapterCompleted("c1")).toBe(true);
-		expect(service.progress.stats.chaptersCompleted).toBe(1);
-		expect(localStorage.setItem).toHaveBeenCalled();
+		progressService.completeChapter("c1");
+		expect(progressService.isChapterCompleted("c1")).toBe(true);
+		expect(progressService.progress.stats.chaptersCompleted).toBe(1);
+		expect(mockStorage.setItem).toHaveBeenCalled();
 	});
 
 	it("should not double-complete a chapter", () => {
-		service.completeChapter("c1");
-		service.completeChapter("c1");
-		expect(service.progress.stats.chaptersCompleted).toBe(1);
+		progressService.completeChapter("c1");
+		progressService.completeChapter("c1");
+		expect(progressService.progress.stats.chaptersCompleted).toBe(1);
 	});
 
 	it("should complete a quest and unlock achievement", () => {
@@ -78,22 +100,22 @@ describe("ProgressService", () => {
 		QuestRegistry.getQuest.mockReturnValue(questMock);
 		QuestRegistry.isQuestLocked.mockReturnValue(false);
 
-		service.completeQuest("quest-1");
+		progressService.completeQuest("quest-1");
 
-		expect(service.isQuestCompleted("quest-1")).toBe(true);
-		expect(service.progress.achievements).toContain("badge-1");
-		expect(service.progress.stats.questsCompleted).toBe(1);
+		expect(progressService.isQuestCompleted("quest-1")).toBe(true);
+		expect(progressService.progress.achievements).toContain("badge-1");
+		expect(progressService.progress.stats.questsCompleted).toBe(1);
 		// Should auto-complete chapters if not done
-		expect(service.isChapterCompleted("c1")).toBe(true);
+		expect(progressService.isChapterCompleted("c1")).toBe(true);
 	});
 
 	it("should reset progress", () => {
-		service.completeChapter("c1");
-		service.resetProgress();
+		progressService.completeChapter("c1");
+		progressService.resetProgress();
 
-		expect(service.isChapterCompleted("c1")).toBe(false);
-		expect(service.progress.stats.chaptersCompleted).toBe(0);
-		expect(localStorage.removeItem).toHaveBeenCalled();
+		expect(progressService.isChapterCompleted("c1")).toBe(false);
+		expect(progressService.progress.stats.chaptersCompleted).toBe(0);
+		expect(mockStorage.removeItem).toHaveBeenCalled();
 	});
 
 	it("should unlock new quests based on prerequisites", () => {
@@ -106,9 +128,9 @@ describe("ProgressService", () => {
 		// Setup isQuestLocked to return false (unlocked) when called
 		QuestRegistry.isQuestLocked.mockReturnValue(false);
 
-		service.unlockNewQuests();
+		progressService.unlockNewQuests();
 
-		expect(service.progress.unlockedQuests).toContain("locked-quest");
+		expect(progressService.progress.unlockedQuests).toContain("locked-quest");
 	});
 
 	it("should reset specific quest progress", () => {
@@ -117,15 +139,15 @@ describe("ProgressService", () => {
 			chapterIds: ["c1", "c2"],
 		});
 
-		service.setCurrentQuest("q1", "c1");
-		service.completeChapter("c1");
-		service.completeQuest("q1");
+		progressService.setCurrentQuest("q1", "c1");
+		progressService.completeChapter("c1");
+		progressService.completeQuest("q1");
 
-		service.resetQuestProgress("q1");
+		progressService.resetQuestProgress("q1");
 
-		expect(service.isQuestCompleted("q1")).toBe(false);
-		expect(service.isChapterCompleted("c1")).toBe(false);
-		expect(service.progress.currentQuest).toBeNull();
+		expect(progressService.isQuestCompleted("q1")).toBe(false);
+		expect(progressService.isChapterCompleted("c1")).toBe(false);
+		expect(progressService.progress.currentQuest).toBeNull();
 	});
 
 	it("should calculate quest progress percentage", () => {
@@ -134,8 +156,8 @@ describe("ProgressService", () => {
 			chapterIds: ["c1", "c2", "c3", "c4"],
 		});
 
-		service.completeChapter("c1");
+		progressService.completeChapter("c1");
 
-		expect(service.getQuestProgress("q1")).toBe(25);
+		expect(progressService.getQuestProgress("q1")).toBe(25);
 	});
 });
