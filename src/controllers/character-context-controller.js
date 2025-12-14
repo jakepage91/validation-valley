@@ -50,69 +50,45 @@ export class CharacterContextController {
 	update() {
 		const state = this.options.getState();
 
-		this.updateSuitContext(state);
-		this.updateGearContext(state);
-		this.updatePowerContext(state);
-		this.updateMasteryContext(state);
-	}
+		// Calculate derived values
+		const {
+			level,
+			isRewardCollected,
+			hasCollectedItem,
+			hotSwitchState,
+			themeMode,
+		} = state;
+		const baseUrl = level ? `/assets/${level}` : "";
 
-	/**
-	 * Update suit and skin images
-	 */
-	updateSuitContext(state) {
-		if (!this.options.suitProvider) return;
+		const suit = {
+			image: level
+				? isRewardCollected
+					? `${baseUrl}/hero-reward.png`
+					: `${baseUrl}/hero.png`
+				: null,
+		};
 
-		const { level, isRewardCollected } = state;
-		if (!level) return;
+		const gear = {
+			image: level && hasCollectedItem ? `${baseUrl}/reward.png` : null,
+		};
 
-		const baseUrl = `/assets/${level}`;
-		// If reward is collected (evolution), show evolved hero, else standard hero
-		const image = isRewardCollected
-			? `${baseUrl}/hero-reward.png`
-			: `${baseUrl}/hero.png`;
+		const power = {
+			effect: hotSwitchState === "new" ? "stable" : "glitch",
+			intensity: themeMode === "dark" ? "high" : "low",
+		};
 
-		this.options.suitProvider.setValue({ image });
-	}
+		const mastery = {
+			level: level,
+		};
 
-	/**
-	 * Update gear images
-	 */
-	updateGearContext(state) {
-		if (!this.options.gearProvider) return;
-
-		const { level, hasCollectedItem } = state;
-		if (!level) return;
-
-		// If item is collected, show the reward item
-		const image = hasCollectedItem ? `/assets/${level}/reward.png` : null;
-
-		this.options.gearProvider.setValue({ image });
-	}
-
-	/**
-	 * Update power images
-	 */
-	updatePowerContext(state) {
-		if (!this.options.powerProvider) return;
-
-		const { hotSwitchState, themeMode } = state;
-
-		// Visual effect based on hot switch state or theme
-		const effect = hotSwitchState === "new" ? "stable" : "glitch";
-		const intensity = themeMode === "dark" ? "high" : "low";
-
-		this.options.powerProvider.setValue({ effect, intensity });
-	}
-
-	/**
-	 * Update mastery state
-	 */
-	updateMasteryContext(state) {
-		if (!this.options.masteryProvider) return;
-
-		// Pass through relevant mastery data if any
-		this.options.masteryProvider.setValue({
-			level: state.level
-		});
+		// Update the single character provider
+		if (this.options.characterProvider) {
+			this.options.characterProvider.setValue({
+				suit,
+				gear,
+				power,
+				mastery,
+			});
+		}
 	}
 }

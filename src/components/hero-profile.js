@@ -1,10 +1,7 @@
 import { ContextConsumer } from "@lit/context";
 import { css, html, LitElement } from "lit";
-import { gearContext } from "../contexts/gear-context.js";
-import { masteryContext } from "../contexts/mastery-context.js";
-import { powerContext } from "../contexts/power-context.js";
+import { characterContext } from "../contexts/character-context.js";
 import { profileContext } from "../contexts/profile-context.js";
-import { suitContext } from "../contexts/suit-context.js";
 import { themeContext } from "../contexts/theme-context.js";
 import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
 import "@awesome.me/webawesome/dist/components/tag/tag.js";
@@ -49,30 +46,15 @@ export class HeroProfile extends LitElement {
 			subscribe: true,
 		});
 		new ContextConsumer(this, {
-			context: suitContext,
+			context: characterContext,
 			callback: (value) => {
-				this.suitData = value;
-			},
-			subscribe: true,
-		});
-		new ContextConsumer(this, {
-			context: gearContext,
-			callback: (value) => {
-				this.gearData = value;
-			},
-			subscribe: true,
-		});
-		new ContextConsumer(this, {
-			context: powerContext,
-			callback: (value) => {
-				this.powerData = value;
-			},
-			subscribe: true,
-		});
-		new ContextConsumer(this, {
-			context: masteryContext,
-			callback: (_state) => {
-				this.masteryData = _state;
+				// Destructure character data into component properties
+				// Fallback to empty objects to prevent undefined errors
+				const { suit = {}, gear = {}, power = {}, mastery = {} } = value || {};
+				this.suitData = suit;
+				this.gearData = gear;
+				this.powerData = power;
+				this.masteryData = mastery;
 			},
 			subscribe: true,
 		});

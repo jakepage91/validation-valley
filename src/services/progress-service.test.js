@@ -14,10 +14,10 @@ describe("ProgressService", () => {
 
 	beforeEach(() => {
 		// Spy on localStorage methods
-		vi.spyOn(Storage.prototype, 'getItem');
-		vi.spyOn(Storage.prototype, 'setItem');
-		vi.spyOn(Storage.prototype, 'removeItem');
-		vi.spyOn(Storage.prototype, 'clear');
+		vi.spyOn(Storage.prototype, "getItem");
+		vi.spyOn(Storage.prototype, "setItem");
+		vi.spyOn(Storage.prototype, "removeItem");
+		vi.spyOn(Storage.prototype, "clear");
 
 		localStorage.clear();
 		vi.clearAllMocks();

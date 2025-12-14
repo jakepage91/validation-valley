@@ -1,11 +1,4 @@
-import { ContextProvider } from "@lit/context";
 import { css, html, LitElement } from "lit";
-import { gearContext } from "./contexts/gear-context.js";
-import { masteryContext } from "./contexts/mastery-context.js";
-import { powerContext } from "./contexts/power-context.js";
-import { profileContext } from "./contexts/profile-context.js";
-import { suitContext } from "./contexts/suit-context.js";
-import { themeContext } from "./contexts/theme-context.js";
 import { CharacterContextController } from "./controllers/character-context-controller.js";
 import { CollisionController } from "./controllers/collision-controller.js";
 import { DebugController } from "./controllers/debug-controller.js";
@@ -14,6 +7,7 @@ import { InteractionController } from "./controllers/interaction-controller.js";
 import { KeyboardController } from "./controllers/keyboard-controller.js";
 import { QuestController } from "./controllers/quest-controller.js";
 import { ServiceController } from "./controllers/service-controller.js";
+import { ContextMixin } from "./mixins/context-mixin.js";
 import { getComingSoonQuests } from "./quests/quest-registry.js";
 import { GameStateService } from "./services/game-state-service.js";
 import { ProgressService } from "./services/progress-service.js";
@@ -38,7 +32,6 @@ import "@awesome.me/webawesome/dist/components/tag/tag.js";
 import "@awesome.me/webawesome/dist/components/button/button.js";
 import "@awesome.me/webawesome/dist/styles/webawesome.css";
 import "./pixel.css";
-import { sharedStyles } from "./styles/shared.js";
 
 /**
  * @element legacys-end-app
@@ -56,7 +49,12 @@ import { sharedStyles } from "./styles/shared.js";
  * @property {Boolean} isInHub
  * @property {Boolean} hasSeenIntro
  */
-export class LegacysEndApp extends LitElement {
+
+import { sharedStyles } from "./styles/shared.js";
+
+// ... utilities ...
+
+export class LegacysEndApp extends ContextMixin(LitElement) {
 	static properties = {
 		chapterId: { type: String },
 		showDialog: { type: Boolean },
@@ -125,7 +123,7 @@ export class LegacysEndApp extends LitElement {
 					const data = this.getChapterData(levelId);
 					if (data) {
 						this.gameState.setHeroPosition(data.startPos.x, data.startPos.y);
-						console.log(`🎮 Jumped to Chapter ${levelId}`);
+						console.log(`🎮 Jumped to Chapter ${levelId} `);
 					}
 				}
 			},
@@ -135,7 +133,7 @@ export class LegacysEndApp extends LitElement {
 			},
 			teleport: (x, y) => {
 				this.gameState.setHeroPosition(x, y);
-				console.log(`📍 Teleported to (${x}, ${y})`);
+				console.log(`📍 Teleported to(${x}, ${y})`);
 			},
 			getState: () => ({
 				level: this.chapterId,
@@ -149,7 +147,7 @@ export class LegacysEndApp extends LitElement {
 				if (mode === "light" || mode === "dark") {
 					this.gameState.setThemeMode(mode);
 					this.applyTheme();
-					console.log(`🎨 Theme set to: ${mode}`);
+					console.log(`🎨 Theme set to: ${mode} `);
 				} else {
 					console.error(`❌ Invalid theme: ${mode}. Use 'light' or 'dark'`);
 				}
@@ -275,7 +273,7 @@ export class LegacysEndApp extends LitElement {
 				this.currentQuest = quest;
 				this.isInHub = false;
 				this.showDialog = false;
-				console.log(`🎮 Started quest: ${quest.name}`);
+				console.log(`🎮 Started quest: ${quest.name} `);
 			},
 			onChapterChange: (chapter, index) => {
 				// Map chapter to level
@@ -339,31 +337,8 @@ export class LegacysEndApp extends LitElement {
 	connectedCallback() {
 		super.connectedCallback();
 
-		// Initialize Context Providers (must be done after element is connected)
-		this.profileProvider = new ContextProvider(this, {
-			context: profileContext,
-			initialValue: { loading: true },
-		});
-		this.themeProvider = new ContextProvider(this, {
-			context: themeContext,
-			initialValue: { themeMode: "light" },
-		});
-		this.suitProvider = new ContextProvider(this, {
-			context: suitContext,
-			initialValue: {},
-		});
-		this.gearProvider = new ContextProvider(this, {
-			context: gearContext,
-			initialValue: {},
-		});
-		this.powerProvider = new ContextProvider(this, {
-			context: powerContext,
-			initialValue: {},
-		});
-		this.masteryProvider = new ContextProvider(this, {
-			context: masteryContext,
-			initialValue: {},
-		});
+		// Update controller references to providers (Wait for next tick or ensure they are ready)
+		// Mixin initializes them in constructor, so they are available here.
 
 		// Update controller references to providers
 		this.serviceController.options.profileProvider = this.profileProvider;
