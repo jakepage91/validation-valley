@@ -123,6 +123,7 @@ export class GameViewport extends LitElement {
 				.isClose="${levelState?.isCloseToTarget}"
 				.action="${this.gameState.ui?.lockedMessage}"
 				.hasCollectedItem="${levelState?.hasCollectedItem}"
+				.isRewardCollected="${levelState.isRewardCollected}"
 			></npc-element>
 		`;
 	}
@@ -246,14 +247,6 @@ export class GameViewport extends LitElement {
 		.zone-dark { top: 0%; width: 100%; height: 25%;  background-color: rgba(0,0,0,0.3); }
 		.zone-label { color: rgba(255,255,255,0.5); font-weight: bold; text-transform: uppercase; }
 
-		.exit-zone {
-			position: absolute;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			z-index: 10;
-			transform: translate(-50%, -50%);
-		}
 
 		.exit-text {
 			position: relative;

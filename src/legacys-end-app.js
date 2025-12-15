@@ -417,7 +417,16 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 				@quit="${this.handleQuitToHub}"
 				@complete="${() => {
 				this.showDialog = false;
-				this.gameState.setCollectedItem(true);
+
+				// If we were showing the next chapter dialog (after reward collection),
+				// advance to the next chapter
+				if (this.isRewardCollected && this.questController?.hasNextChapter()) {
+					console.log("📖 Advancing to next chapter after preview");
+					this.triggerLevelTransition();
+				} else {
+					// Otherwise, just mark item as collected (initial dialog completion)
+					this.gameState.setCollectedItem(true);
+				}
 			}}"
 				@close-dialog="${() => {
 				this.showDialog = false;
