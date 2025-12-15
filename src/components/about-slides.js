@@ -26,8 +26,6 @@ export class AboutSlides extends LitElement {
 				justify-content: center;
 				text-align: center;
 				padding: 2rem;
-				background-color: var(--wa-color-neutral-fill-loud);
-				color: var(--wa-color-text-normal);
 			}
 
 			h2 {
