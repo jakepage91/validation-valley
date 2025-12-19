@@ -3,6 +3,7 @@ import { css, html, LitElement } from "lit";
 import { characterContext } from "../contexts/character-context.js";
 import { profileContext } from "../contexts/profile-context.js";
 import { themeContext } from "../contexts/theme-context.js";
+import { processImagePath } from "../utils/process-assets.js";
 import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
 import "@awesome.me/webawesome/dist/components/tag/tag.js";
 import { sharedStyles } from "../styles/shared.js";
@@ -245,7 +246,7 @@ export class HeroProfile extends LitElement {
         <!-- Character Image -->
         ${this.suitData?.image || this.imageSrc
 				? html`
-            <img src="${this.suitData?.image || this.imageSrc}" class="character-img" alt="Alarion" />
+            <img src="${processImagePath(this.suitData?.image || this.imageSrc)}" class="character-img" alt="Alarion" />
         `
 				: ""
 			}
@@ -253,7 +254,7 @@ export class HeroProfile extends LitElement {
 		<!-- Gear Image -->
 		${this.gearData?.image
 				? html`
-			<img src="${this.gearData.image}" class="gear-img" alt="Gear" />
+			<img src="${processImagePath(this.gearData.image)}" class="gear-img" alt="Gear" />
 		`
 				: ""
 			}
@@ -261,7 +262,7 @@ export class HeroProfile extends LitElement {
 		<!-- Weapon Image -->
 		${this.powerData?.image
 				? html`
-			<img src="${this.powerData.image}" class="weapon-img" alt="Weapon" />
+			<img src="${processImagePath(this.powerData.image)}" class="weapon-img" alt="Weapon" />
 		`
 				: ""
 			}
