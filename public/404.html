@@ -20,7 +20,7 @@ pathSegments.splice(0, baseIndex + 1);
 
 const path = '/' + pathSegments.join('/');
 // Construct redirect URL, ensuring no double slashes
-const redirect = '/legacys-end' + (window.location.search ? window.location.search + '&' : '?') + 'p=' + encodeURIComponent(path);
+const redirect = '/legacys-end/' + (window.location.search ? window.location.search + '&' : '?') + 'p=' + encodeURIComponent(path);
 
 window.location.replace(redirect);
 </script>
