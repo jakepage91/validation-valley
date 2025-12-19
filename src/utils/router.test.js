@@ -18,10 +18,10 @@ describe("SimpleRouter", () => {
 
 	it("should match static routes", () => {
 		const callback = vi.fn();
-		router.addRoute("/hub", callback);
+		router.addRoute("/", callback);
 		router.init();
 
-		router.navigate("/hub");
+		router.navigate("/");
 		expect(callback).toHaveBeenCalledWith({});
 	});
 
@@ -46,17 +46,17 @@ describe("SimpleRouter", () => {
 	it("should match multiple routes in order", () => {
 		const rootCallback = vi.fn();
 		const hubCallback = vi.fn();
-		router.addRoute("/hub", hubCallback);
+		router.addRoute("/", hubCallback);
 		router.addRoute("/", rootCallback); // Should use exact match logic in simple implementation
 		router.init();
 
-		router.navigate("/hub");
+		router.navigate("/");
 		expect(hubCallback).toHaveBeenCalled();
 		expect(rootCallback).not.toHaveBeenCalled();
 	});
 
 	// Note: Our simple router expects EXACT segment length match, so "/" and "" might behave differently dependent on implementation.
 	// _matchPattern splits by "/" so leading "/" makes empty string first element.
-	// "/hub" -> ["", "hub"]
+	// "/" -> ["", "hub"]
 	// "/" -> ["", ""]
 });

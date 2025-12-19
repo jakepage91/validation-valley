@@ -109,7 +109,7 @@ describe("LegacysEndApp Component", () => {
 			await el.updateComplete;
 
 			// Should redirect to hub
-			expect(navigateSpy).toHaveBeenCalledWith("/hub", true);
+			expect(navigateSpy).toHaveBeenCalledWith("/", true);
 
 			// Cleanup
 			el.progressService.isQuestAvailable = originalIsAvailable;

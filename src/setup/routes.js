@@ -6,7 +6,7 @@ import { logger } from "../services/logger-service.js";
  * @param {LegacysEndApp} app
  */
 export function setupRoutes(router, app) {
-	router.addRoute("/hub", () => {
+	router.addRoute("/", () => {
 		app.isInHub = true;
 		app.currentQuest = null;
 		app.showDialog = false;
@@ -30,7 +30,7 @@ export function setupRoutes(router, app) {
 		// Helper to redirect to hub
 		const redirectToHub = () => {
 			logger.warn(`🚫 Quest ${questId} not available. Redirecting to hub.`);
-			router.navigate("/hub", true);
+			router.navigate("/", true);
 		};
 
 		// Helper to continue quest from last available chapter

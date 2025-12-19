@@ -254,7 +254,7 @@ export function setupControllers(app) {
 		onReturnToHub: () => {
 			app.currentQuest = null;
 			logger.info(`🏛️ Returned to Hub`);
-			app.router.navigate("/hub");
+			app.router.navigate("/");
 		},
 	});
 

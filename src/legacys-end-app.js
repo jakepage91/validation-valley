@@ -126,7 +126,7 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 
 		// Default redirect if root
 		if (window.location.pathname === "/" || window.location.pathname === "") {
-			this.router.navigate("/hub", true);
+			this.router.navigate("/", true);
 		}
 	}
 
