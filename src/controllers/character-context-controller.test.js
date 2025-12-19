@@ -28,6 +28,12 @@ describe("CharacterContextController", () => {
 		it("should update suit context based on level and reward", () => {
 			getStateMock.mockReturnValue({
 				level: "level_1",
+				chapterData: {
+					hero: {
+						image: "/assets/level_1/hero.png",
+						reward: "/assets/level_1/hero-reward.png",
+					},
+				},
 				isRewardCollected: false,
 			});
 
@@ -43,6 +49,12 @@ describe("CharacterContextController", () => {
 		it("should update suit context with reward image when evolved", () => {
 			getStateMock.mockReturnValue({
 				level: "level_1",
+				chapterData: {
+					hero: {
+						image: "/assets/level_1/hero.png",
+						reward: "/assets/level_1/hero-reward.png",
+					},
+				},
 				isRewardCollected: true,
 			});
 
@@ -58,6 +70,9 @@ describe("CharacterContextController", () => {
 		it("should update gear context when item is collected", () => {
 			getStateMock.mockReturnValue({
 				level: "level_2",
+				chapterData: {
+					reward: { image: "/assets/level_2/reward.png" },
+				},
 				hasCollectedItem: true,
 			});
 
@@ -73,6 +88,9 @@ describe("CharacterContextController", () => {
 		it("should clear gear context when item is not collected", () => {
 			getStateMock.mockReturnValue({
 				level: "level_2",
+				chapterData: {
+					reward: { image: "/assets/level_2/reward.png" },
+				},
 				hasCollectedItem: false,
 			});
 

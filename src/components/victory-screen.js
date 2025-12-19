@@ -1,4 +1,5 @@
 import { css, html, LitElement } from "lit";
+import { processImagePath } from "../utils/process-assets.js";
 import "@awesome.me/webawesome/dist/components/button/button.js";
 import { sharedStyles } from "../styles/shared.js";
 
@@ -11,7 +12,7 @@ export class VictoryScreen extends LitElement {
 	constructor() {
 		super();
 		this.quest = null;
-		this.onReturn = () => {};
+		this.onReturn = () => { };
 	}
 
 	connectedCallback() {
@@ -57,13 +58,13 @@ export class VictoryScreen extends LitElement {
 
 				<div class="rewards-container">
 					${collectedRewards.map(
-						(reward) => html`
+			(reward) => html`
 						<div class="reward-item">
-							<img src="${reward.image}" alt="${reward.name}" class="reward-img" />
+							<img src="${processImagePath(reward.image)}" alt="${reward.name}" class="reward-img" />
 							<span class="reward-name">${reward.name}</span>
 						</div>
 					`,
-					)}
+		)}
 				</div>
 
 				<p class="victory-text"><small>

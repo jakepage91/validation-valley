@@ -29,7 +29,6 @@
  * ```
  */
 
-import { getAssetPath } from "../utils/asset-path.js";
 
 export class CharacterContextController {
 	constructor(host, options = {}) {
@@ -56,23 +55,25 @@ export class CharacterContextController {
 		// Calculate derived values
 		const {
 			level,
+			chapterData,
 			isRewardCollected,
 			hasCollectedItem,
 			hotSwitchState,
 			themeMode,
 		} = state;
-		const baseUrl = level ? `assets/${level}` : "";
 
 		const suit = {
-			image: level
+			image: chapterData?.hero
 				? isRewardCollected
-					? getAssetPath(`${baseUrl}/hero-reward.png`)
-					: getAssetPath(`${baseUrl}/hero.png`)
+					? chapterData.hero.reward
+					: chapterData.hero.image
 				: null,
 		};
 
 		const gear = {
-			image: level && hasCollectedItem ? getAssetPath(`${baseUrl}/reward.png`) : null,
+			image: hasCollectedItem && chapterData?.reward?.image
+				? chapterData.reward.image
+				: null,
 		};
 
 		const power = {
