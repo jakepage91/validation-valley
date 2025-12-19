@@ -11,9 +11,14 @@ export function processBackgroundStyle(backgroundStyle) {
 	if (!backgroundStyle) return backgroundStyle;
 
 	// Replace all /assets/ paths with the correct base URL
+	const baseUrl = import.meta.env.BASE_URL;
 	return backgroundStyle.replace(/url\(['"]?(\/assets\/[^'")\s]+)['"]?\)/g, (match, path) => {
+		// If path already starts with the base URL, return as-is
+		if (path.startsWith(baseUrl)) {
+			return `url('${path}')`;
+		}
 		const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-		return `url('${import.meta.env.BASE_URL}${cleanPath}')`;
+		return `url('${baseUrl}${cleanPath}')`;
 	});
 }
 
