@@ -1,4 +1,5 @@
 import { css, html, LitElement } from "lit";
+import { processBackgroundStyle } from "../utils/process-assets.js";
 import "./hero-profile.js";
 import "./npc-element.js";
 import "./reward-element.js";
@@ -85,7 +86,7 @@ export class GameViewport extends LitElement {
 				.questTitle="${quest?.title}"
 			></game-hud>
 
-			<div class="game-area" style="background: ${backgroundStyle}">
+			<div class="game-area" style="background: ${processBackgroundStyle(backgroundStyle)}">
 				<game-controls></game-controls>
 				
 				<game-theme-zones 

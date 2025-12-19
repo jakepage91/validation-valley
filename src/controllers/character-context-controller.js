@@ -28,6 +28,9 @@
  * this.characterContexts.update();
  * ```
  */
+
+import { getAssetPath } from "../utils/asset-path.js";
+
 export class CharacterContextController {
 	constructor(host, options = {}) {
 		this.host = host;
@@ -58,18 +61,18 @@ export class CharacterContextController {
 			hotSwitchState,
 			themeMode,
 		} = state;
-		const baseUrl = level ? `/assets/${level}` : "";
+		const baseUrl = level ? `assets/${level}` : "";
 
 		const suit = {
 			image: level
 				? isRewardCollected
-					? `${baseUrl}/hero-reward.png`
-					: `${baseUrl}/hero.png`
+					? getAssetPath(`${baseUrl}/hero-reward.png`)
+					: getAssetPath(`${baseUrl}/hero.png`)
 				: null,
 		};
 
 		const gear = {
-			image: level && hasCollectedItem ? `${baseUrl}/reward.png` : null,
+			image: level && hasCollectedItem ? getAssetPath(`${baseUrl}/reward.png`) : null,
 		};
 
 		const power = {

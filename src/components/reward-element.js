@@ -1,4 +1,5 @@
 import { css, html, LitElement } from "lit";
+import { processImagePath } from "../utils/process-assets.js";
 import "@awesome.me/webawesome/dist/components/icon/icon.js";
 
 /**
@@ -72,15 +73,14 @@ export class RewardElement extends LitElement {
 
 		return html`
       <div class="reward-box ${hasImage ? "has-image" : ""}">
-        ${
-					hasImage
-						? html`
-          <img src="${this.image}" class="reward-img" alt="Reward" />
+        ${hasImage
+				? html`
+          <img src="${processImagePath(this.image)}" class="reward-img" alt="Reward" />
         `
-						: html`
+				: html`
           <wa-icon name="${this.icon}" style="font-size: var(--wa-font-size-l); color: #facc15;"></wa-icon>
         `
-				}
+			}
       </div>
     `;
 	}
