@@ -1,16 +1,41 @@
 import { logger } from "../services/logger-service.js";
 
 /**
+ * @typedef {Object} VoiceControllerOptions
+ * @property {(dx: number, dy: number) => void} [onMove] - Movement callback
+ * @property {() => void} [onInteract] - Interaction callback
+ * @property {() => void} [onPause] - Pause callback
+ * @property {() => void} [onNextSlide] - Next slide callback
+ * @property {() => void} [onPrevSlide] - Previous slide callback
+ * @property {() => void} [onMoveToNpc] - Move to NPC callback
+ * @property {() => void} [onMoveToExit] - Move to exit callback
+ * @property {() => string} [onGetDialogText] - Get current dialog text
+ * @property {() => {isDialogOpen: boolean, isRewardCollected: boolean}} [onGetContext] - Get game context
+ * @property {(action: string, value: any) => void} [onDebugAction] - Debug action callback
+ * @property {() => boolean} [isEnabled] - Check if voice control is enabled
+ * @property {string} [language] - Language code (e.g., 'en-US', 'es-ES')
+ */
+
+/**
  * VoiceController - Lit Reactive Controller for voice commands
  *
  * Uses the Web Speech API to listen for commands.
  * Supports English and Spanish commands.
  * Optionally uses Chrome's Built-in AI (Prompt API) for smarter command recognition.
  * Integration with SpeechSynthesis for voice feedback using Alarion's persona.
+ *
+ * @implements {import('lit').ReactiveController}
  */
 export class VoiceController {
+	/**
+	 * @param {import('lit').ReactiveControllerHost} host
+	 * @param {Partial<VoiceControllerOptions>} [options]
+	 */
 	constructor(host, options = {}) {
+		/** @type {import('lit').ReactiveControllerHost} */
 		this.host = host;
+		/** @type {VoiceControllerOptions} */
+
 		this.options = {
 			onMove: (_dx, _dy) => { },
 			onInteract: () => { },
@@ -29,13 +54,21 @@ export class VoiceController {
 			...options,
 		};
 
+		/** @type {SpeechRecognition|null} */
 		this.recognition = null;
+		/** @type {boolean} */
 		this.isSpeaking = false;
+		/** @type {any} */
 		this.aiSession = null;
+		/** @type {any} */
 		this.narratorSession = null;
+		/** @type {SpeechSynthesis} */
 		this.synthesis = window.speechSynthesis;
+		/** @type {SpeechSynthesisVoice[]} */
 		this.voices = [];
+		/** @type {number} */
 		this.restartAttempts = 0;
+		/** @type {number} */
 		this.lastStartTime = 0;
 
 		if (this.synthesis) {
@@ -490,6 +523,7 @@ Your goal is to Speak the essence of the current dialogue line to Alarion.
 	stop() {
 		if (this.recognition && this.isListening) {
 			this.recognition.stop();
+			this.isListening = false;
 		}
 	}
 

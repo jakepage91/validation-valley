@@ -237,11 +237,22 @@ Controllers are specialized classes (often using Lit's Reactive Controller patte
 *   **Mastery**: Tracks character level progression.
 
 ### `VoiceController`
-**Purpose**: Handles Web Speech API integration for voice commands.
-**Features**:
-*   Listens for commands ("move left", "interact", "next").
-*   Uses `window.speechSynthesis` for feedback (Alarion's voice).
-*   Optional integration with Chrome Built-in AI (Prompt API) for natural language processing.
+**Purpose**: Handles Web Speech API integration for voice commands with AI-powered natural language processing.
+**Type**: Lit Reactive Controller.
+**Inputs**:
+*   `VoiceControllerOptions`: Callbacks for movement, interaction, navigation, and context retrieval.
+*   Voice commands in English or Spanish (e.g., "move left", "interact", "go to NPC").
+**Outputs**:
+*   Movement callbacks (`onMove`, `onMoveToNpc`, `onMoveToExit`).
+*   Interaction callbacks (`onInteract`, `onPause`, `onNextSlide`, `onPrevSlide`).
+*   Voice feedback via `window.speechSynthesis` (Alarion's persona).
+**Key Features**:
+*   **Web Speech API**: Continuous voice recognition with auto-restart and exponential backoff.
+*   **Chrome Built-in AI**: Optional integration with Prompt API for context-aware command interpretation.
+*   **Multilingual**: Supports English (`en-US`) and Spanish (`es-ES`) with automatic language detection.
+*   **Voice Synthesis**: Text-to-speech feedback with character-appropriate voices.
+*   **Context-Aware**: Uses game state (dialog open, reward collected) to interpret ambiguous commands like "next".
+**Browser Support**: Chrome/Edge (Web Speech API required).
 
 ### `DebugController`
 **Purpose**: Exposes the `window.game` global API for debugging when `?debug` is present in the URL.

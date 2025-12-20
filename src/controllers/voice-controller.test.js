@@ -138,5 +138,103 @@ describe("VoiceController", () => {
 		});
 	});
 
+	describe("Lifecycle", () => {
+		it("should start recognition when start() is called", () => {
+			controller.start();
+			expect(controller.recognition.start).toHaveBeenCalled();
+		});
 
+		it("should stop recognition when stop() is called", () => {
+			controller.isListening = true;
+			controller.stop();
+			expect(controller.recognition.stop).toHaveBeenCalled();
+			expect(controller.isListening).toBe(false);
+		});
+
+		it("should not start if already listening", () => {
+			controller.isListening = true;
+			controller.start();
+			expect(controller.recognition.start).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("Command Processing", () => {
+		it("should handle movement commands", () => {
+			controller.executeAction("move_up");
+			expect(options.onMove).toHaveBeenCalledWith(0, -5);
+		});
+
+		it("should handle move_down command", () => {
+			controller.executeAction("move_down");
+			expect(options.onMove).toHaveBeenCalledWith(0, 5);
+		});
+
+		it("should handle move_left command", () => {
+			controller.executeAction("move_left");
+			expect(options.onMove).toHaveBeenCalledWith(-5, 0);
+		});
+
+		it("should handle move_right command", () => {
+			controller.executeAction("move_right");
+			expect(options.onMove).toHaveBeenCalledWith(5, 0);
+		});
+
+		it("should handle pause command", () => {
+			controller.executeAction("pause");
+			expect(options.onPause).toHaveBeenCalled();
+		});
+
+		it("should handle next_slide command", () => {
+			controller.executeAction("next_slide");
+			expect(options.onNextSlide).toHaveBeenCalled();
+		});
+
+		it("should handle prev_slide command", () => {
+			controller.executeAction("prev_slide");
+			expect(options.onPrevSlide).toHaveBeenCalled();
+		});
+
+		it("should handle unknown commands gracefully", () => {
+			expect(() => controller.executeAction("unknown_action")).not.toThrow();
+		});
+	});
+
+	describe("Voice Selection", () => {
+		beforeEach(() => {
+			// Mock voices
+			const mockVoices = [
+				{ name: "Google US English", lang: "en-US" },
+				{ name: "Google español", lang: "es-ES" },
+				{ name: "Microsoft David", lang: "en-US" },
+			];
+			controller.voices = mockVoices;
+		});
+
+		it("should select appropriate voice for language", () => {
+			const voice = controller.getBestVoice("en-US");
+			expect(voice).toBeDefined();
+			expect(voice.lang).toBe("en-US");
+		});
+
+		it("should select Spanish voice when language is es-ES", () => {
+			const voice = controller.getBestVoice("es-ES");
+			expect(voice).toBeDefined();
+			expect(voice.lang).toBe("es-ES");
+		});
+	});
+
+	describe("Error Handling", () => {
+		it("should handle recognition errors gracefully", () => {
+			const errorEvent = { error: "network" };
+			expect(() => controller.recognition.onerror(errorEvent)).not.toThrow();
+		});
+
+		it("should stop listening on not-allowed error", () => {
+			controller.isListening = true;
+			const errorEvent = { error: "not-allowed" };
+			controller.recognition.onerror(errorEvent);
+			expect(controller.isListening).toBe(false);
+		});
+	});
 });
+
