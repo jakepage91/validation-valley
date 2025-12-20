@@ -11,7 +11,7 @@ export const THE_AURA_OF_SOVEREIGNTY_QUEST = {
 	subtitle: "Encapsulate Your Code",
 	type: QuestType.QUEST,
 	description:
-		"Before Alarion can connect with others, he must learn to exist without being corrupted by them. In the Toxic Swamp of Global Scope, he must find the Sovereign Umbrella to protect his styles and DOM from the chaotic environment.",
+		"Before Alarion can connect with others, he must learn to exist without being corrupted by them. In the Toxic Swamp of Global Scope, he must find an umbrella to protect his styles and DOM from the chaotic environment.",
 	legacyProblem: "Component is coupled to global DOM and external scripts.",
 	prerequisites: [],
 	shortcuts: [],

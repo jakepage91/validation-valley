@@ -31,6 +31,7 @@ export class GameSessionManager extends Observable {
 		};
 
 		// Services
+		/** @type {import('../services/game-state-service').GameStateService} */
 		this.gameState = this.options.gameState;
 		this.progressService = this.options.progressService;
 		this.questController = this.options.questController;
@@ -47,6 +48,7 @@ export class GameSessionManager extends Observable {
 		this.isInHub = true;
 		this.currentQuest = null;
 		this._isReturningToHub = false;
+		this._autoMoveRequestId = null;
 
 		// Subscribe to game state changes
 		if (this.gameState) {
@@ -158,7 +160,9 @@ export class GameSessionManager extends Observable {
 			// Try to jump to requested chapter
 			const success = this.questController.jumpToChapter(chapterId);
 			if (!success) {
-				logger.info(`📖 Continuing quest ${questId} from last available chapter...`);
+				logger.info(
+					`📖 Continuing quest ${questId} from last available chapter...`,
+				);
 				await this.questController.continueQuest(questId);
 			}
 
@@ -220,14 +224,62 @@ export class GameSessionManager extends Observable {
 	}
 
 	/**
-	 * Handle keyboard movement
+	 * Smoothly move hero towards a position
 	 */
-	handleMove(dx, dy) {
+	moveTo(targetX, targetY, step = 0.4) {
+		this.stopAutoMove();
+
+		const animate = () => {
+			const state = this.gameState.getState();
+			const currentPos = state.heroPos;
+
+			const dx = targetX - currentPos.x;
+			const dy = targetY - currentPos.y;
+			const distance = Math.sqrt(dx * dx + dy * dy);
+
+			if (distance < 0.5) {
+				this.stopAutoMove();
+				return;
+			}
+
+			const vx = (dx / distance) * step;
+			const vy = (dy / distance) * step;
+
+			this.handleMove(vx, vy, true);
+
+			if (!this._autoMoveRequestId) return;
+
+			this._autoMoveRequestId = requestAnimationFrame(animate);
+		};
+
+		this._autoMoveRequestId = requestAnimationFrame(animate);
+	}
+
+	stopAutoMove() {
+		if (this._autoMoveRequestId) {
+			cancelAnimationFrame(this._autoMoveRequestId);
+			this._autoMoveRequestId = null;
+		}
+	}
+
+	/**
+	 * Handle keyboard movement
+	 * @param {number} dx
+	 * @param {number} dy
+	 * @param {boolean} isAuto
+	 */
+	handleMove(dx, dy, isAuto = false) {
+		if (!isAuto) {
+			this.stopAutoMove();
+		}
+
 		const currentConfig = this.questController?.currentChapter;
+
 		if (!currentConfig) return;
 
 		const state = this.gameState.getState();
 		let { x, y } = state.heroPos;
+
 		x += dx;
 		y += dy;
 
@@ -269,7 +321,10 @@ export class GameSessionManager extends Observable {
 	 * Trigger level transition (evolution animation + chapter completion)
 	 */
 	triggerLevelTransition() {
+		this.stopAutoMove();
 		if (this.questController?.isInQuest()) {
+			this.notify({ type: "transition-start" });
+
 			this.gameState.setEvolving(true);
 			setTimeout(() => {
 				this.questController.completeChapter();
@@ -342,7 +397,10 @@ export class GameSessionManager extends Observable {
 
 					// If chapter has hot switch, check zones (might override to null if outside zones)
 					if (chapterData.hasHotSwitch && this.zones) {
-						this.zones.checkZones(chapterData.startPos.x, chapterData.startPos.y);
+						this.zones.checkZones(
+							chapterData.startPos.x,
+							chapterData.startPos.y,
+						);
 					}
 				}
 				this.gameState.resetChapterState();
@@ -352,7 +410,9 @@ export class GameSessionManager extends Observable {
 				if (state.collectedItem) {
 					this.gameState.setCollectedItem(true);
 					this.gameState.setRewardCollected(true);
-					logger.info(`🔄 Restored collected item state for chapter ${chapter.id}`);
+					logger.info(
+						`🔄 Restored collected item state for chapter ${chapter.id}`,
+					);
 				}
 
 				logger.info(

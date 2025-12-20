@@ -12,7 +12,7 @@ export const THE_AURA_OF_SOVEREIGNTY_CHAPTERS = {
 		id: "swamp-of-scope",
 		title: "The Swamp of Global Scope",
 		description:
-			"Alarion tries to build a simple house, but the 'Acid Rain' of Global CSS turns his blue walls red. The Rainwalker hands him 'The Sovereign Umbrella'. Alarion learns to raise the Shadow Boundary, creating a safe bubble where the outside chaos cannot touch his code.",
+			"Alarion tries to build a simple house, but the 'Acid Rain' of Global CSS turns his blue walls red. The Rainwalker hands him an umbrella. Alarion should learn to raise the Shadow Boundary, creating a safe bubble where the outside chaos cannot touch his code.",
 		problemTitle: "Before: Style Bleeding",
 		problemDesc: "Global styles destroy component appearance.",
 		solutionTitle: "After: Shadow Encapsulation",
@@ -23,7 +23,7 @@ export const THE_AURA_OF_SOVEREIGNTY_CHAPTERS = {
 			position: { x: 40, y: 55 },
 		},
 		reward: {
-			name: "The Sovereign Umbrella",
+			name: "Umbrella",
 			image: "/assets/swamp-of-scope/reward.png",
 			position: { x: 40, y: 40 },
 		},
@@ -59,7 +59,7 @@ export const THE_AURA_OF_SOVEREIGNTY_CHAPTERS = {
 			],
 			end: [
 				{
-					title: "THE SOVEREIGN UMBRELLA (Encapsulated Styles)",
+					title: "UMBRELLA (Encapsulated Styles)",
 					code: `import { LitElement, html, css } from 'lit';
 
 export class SafeHouse extends LitElement {

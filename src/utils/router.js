@@ -42,9 +42,9 @@ export class Router {
 	 */
 	navigate(path, replace = false) {
 		// Add base path to the path
-		const fullPath = this.basePath + path;
+		const fullPath = this.basePath + path + window.location.search;
 
-		if (fullPath === window.location.pathname) return;
+		if (fullPath === window.location.pathname + window.location.search) return;
 
 		if (replace) {
 			window.history.replaceState(null, "", fullPath);

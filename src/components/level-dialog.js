@@ -54,29 +54,64 @@ export class LevelDialog extends LitElement {
 	}
 
 	handleKeyDown = (e) => {
-		e.stopPropagation();
-		const slides = this.getSlides();
-
-		if (e.key === "ArrowRight") {
-			if (this.slideIndex < slides.length - 1) {
-				this.slideIndex++;
-			} else {
-				this.dispatchComplete();
-			}
-		}
-
-		if (e.code === "Space") {
-			if (this.slideIndex < slides.length - 1) {
-				this.slideIndex++;
-			} else {
-				this.dispatchComplete();
-			}
+		if (e.key === "ArrowRight" || e.code === "Space") {
+			e.stopPropagation();
+			this.nextSlide();
 		}
 
 		if (e.key === "ArrowLeft") {
-			this.slideIndex = Math.max(this.slideIndex - 1, 0);
+			e.stopPropagation();
+			this.prevSlide();
 		}
 	};
+
+	nextSlide() {
+		const slides = this.getSlides();
+		if (this.slideIndex < slides.length - 1) {
+			this.slideIndex++;
+		} else {
+			this.dispatchComplete();
+		}
+	}
+
+	prevSlide() {
+		this.slideIndex = Math.max(this.slideIndex - 1, 0);
+	}
+
+	getCurrentSlideText() {
+		const slides = this.getSlides();
+		const type = slides[this.slideIndex];
+
+		switch (type) {
+			case "narrative":
+				return this.config.description || "";
+			case "problem":
+				return (this.config.problemDesc?.toString() || "").replace(/<[^>]*>/g, ""); // Basic tag cleanup
+			case "code-start":
+				return (
+					this.config.codeSnippets?.start
+						?.map((s) => `${s.title}.`)
+						.join(" ") || ""
+				);
+			case "code-end":
+				return (
+					this.config.codeSnippets?.end?.map((s) => `${s.title}.`).join(" ") ||
+					""
+				);
+			case "analysis":
+				return (
+					"Key architectural changes: " +
+					(this.config.architecturalChanges?.join(". ") || "")
+				);
+			case "confirmation":
+				if (this.config.isFinalBoss) {
+					return "Level complete! We are ready for the next challenge.";
+				}
+				return `Level complete! You have obtained ${this.config.reward?.name || "a new object"}.`;
+			default:
+				return "";
+		}
+	}
 
 	getSlides() {
 		const sequence = [];
