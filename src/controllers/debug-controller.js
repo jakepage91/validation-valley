@@ -1,4 +1,25 @@
 /**
+ * @typedef {import("lit").ReactiveController} ReactiveController
+ * @typedef {import("lit").ReactiveControllerHost} ReactiveControllerHost
+ */
+
+/**
+ * @typedef {Object} DebugOptions
+ * @property {function(string): void} [setLevel] - Callback to jump to a chapter
+ * @property {function(): void} [giveItem] - Callback to give current level's item
+ * @property {function(number, number): void} [teleport] - Callback to teleport character
+ * @property {function(): Object} [getState] - Callback to get current game state
+ * @property {function(string): void} [setTheme] - Callback to switch theme
+ * @property {function(string): void} [startQuest] - Callback to start a quest
+ * @property {function(): void} [completeQuest] - Callback to complete current quest
+ * @property {function(): void} [completeChapter] - Callback to complete current chapter
+ * @property {function(): void} [returnToHub] - Callback to return to hub
+ * @property {function(): Object[]} [listQuests] - Callback to list quests
+ * @property {function(): Object} [getProgress] - Callback to get progress
+ * @property {function(): void} [resetProgress] - Callback to reset progress
+ */
+
+/**
  * DebugController - Lit Reactive Controller for debug mode
  *
  * Enables debug mode when ?debug is present in URL
@@ -10,16 +31,13 @@
  * - setTheme('light'|'dark')
  * - help()
  *
- * Usage:
- * ```js
- * this.debug = new DebugController(this, {
- *   getState: () => ({ level: this.level, ... }),
- *   setLevel: (level) => { this.level = level; },
- *   ...
- * });
- * ```
+ * @implements {ReactiveController}
  */
 export class DebugController {
+	/**
+	 * @param {ReactiveControllerHost} host
+	 * @param {DebugOptions} [options]
+	 */
 	constructor(host, options = {}) {
 		this.host = host;
 		this.options = options;

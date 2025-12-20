@@ -1,45 +1,55 @@
 /**
+ * @typedef {import("lit").ReactiveController} ReactiveController
+ * @typedef {import("lit").ReactiveControllerHost} ReactiveControllerHost
+ */
+
+/**
+ * @typedef {Object} Box
+ * @property {number} x - Center X coordinate
+ * @property {number} y - Center Y coordinate
+ * @property {number} width - Width of the box
+ * @property {number} height - Height of the box
+ */
+
+/**
+ * @typedef {Object} CollisionOptions
+ * @property {number} [heroSize=2.5] - Half-size of hero hitbox
+ * @property {function(): void} [onExitCollision] - Callback when hitting exit zone
+ */
+
+/**
  * CollisionController - Handles collision detection
  *
  * Handles:
  * - AABB (Axis-Aligned Bounding Box) collision detection
  * - Exit zone collision for level transitions
  *
- * Usage:
- * ```js
- * this.collision = new CollisionController(this, {
- *   onExitCollision: () => { this.triggerLevelTransition(); }
- * });
- *
- * // Check collision when position changes
- * const collided = this.collision.checkExitZone(x, y, exitZone, hasCollectedItem);
- * ```
+ * @implements {ReactiveController}
  */
 export class CollisionController {
+	/**
+	 * @param {ReactiveControllerHost} host
+	 * @param {CollisionOptions} [options]
+	 */
 	constructor(host, options = {}) {
 		this.host = host;
+		/** @type {Required<CollisionOptions>} */
 		this.options = {
 			heroSize: 2.5, // Half-size of hero hitbox
-			onExitCollision: () => {},
+			onExitCollision: () => { },
 			...options,
 		};
 
 		host.addController(this);
 	}
 
-	hostConnected() {
-		// No setup needed
-	}
 
-	hostDisconnected() {
-		// No cleanup needed
-	}
 
 	/**
 	 * Check if hero collides with exit zone
 	 * @param {number} x - Hero X position
 	 * @param {number} y - Hero Y position
-	 * @param {Object} exitZone - Exit zone definition {x, y, width, height}
+	 * @param {Box} exitZone - Exit zone definition
 	 * @param {boolean} hasCollectedItem - Whether hero has collected the item
 	 * @returns {boolean} True if collision occurred
 	 */
@@ -75,8 +85,8 @@ export class CollisionController {
 
 	/**
 	 * Generic AABB collision check
-	 * @param {Object} box1 - {x, y, width, height}
-	 * @param {Object} box2 - {x, y, width, height}
+	 * @param {Box} box1
+	 * @param {Box} box2
 	 * @returns {boolean} True if boxes collide
 	 */
 	checkAABB(box1, box2) {

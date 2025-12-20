@@ -5,30 +5,46 @@ import { LocalStorageAdapter } from "./storage-service.js";
 /** @typedef {import('./storage-service').StorageAdapter} StorageAdapter */
 
 /**
- * ProgressService - Manages player progress and persistence
- *
- * Tracks:
- * - Completed quests and chapters
- * - Current quest/chapter
- * - Unlocked quests
- * - Achievements
- *
- * Persists to localStorage
+ * @typedef {Object} ProgressStats
+ * @property {number} totalPlayTime - Total time played in seconds
+ * @property {number} questsCompleted - Number of quests finished
+ * @property {number} chaptersCompleted - Number of chapters finished
+ */
+
+/**
+ * @typedef {Object} ProgressState
+ * @property {string[]} completedQuests - List of IDs of completed quests
+ * @property {string[]} completedChapters - List of IDs of completed chapters
+ * @property {string|null} currentQuest - ID of the active quest
+ * @property {string|null} currentChapter - ID of the active chapter
+ * @property {string[]} unlockedQuests - List of IDs of available quests
+ * @property {string[]} achievements - List of earned achievement IDs
+ * @property {ProgressStats} stats - Aggregate statistics
+ * @property {Object.<string, Object>} chapterStates - Persisted state per chapter (e.g. collected items)
+ */
+
+/**
+ * ProgressService - Manages player progress and persistence.
+ * Tracks completed quests, chapters, achievements, and persistent chapter state.
+ * Uses a StorageAdapter to save data to localStorage or other providers.
  */
 export class ProgressService {
 	/**
-	 * @param {StorageAdapter} storage - Storage adapter for persistence
-	 * @param {Object} registry - Quest registry for looking up quest data
+	 * @param {StorageAdapter} [storage] - Storage adapter for persistence
+	 * @param {Object} [registry] - Quest registry for looking up quest data
 	 */
 	constructor(storage = new LocalStorageAdapter(), registry = DefaultRegistry) {
 		this.storage = storage;
 		this.registry = registry;
 		this.storageKey = "legacys-end-progress";
+		/** @type {ProgressState} */
 		this.progress = this.loadProgress();
 	}
 
 	/**
-	 * Load progress from storage
+	 * Load progress from storage.
+	 * Returns default state if no storage is found.
+	 * @returns {ProgressState} The loaded or default progress
 	 */
 	loadProgress() {
 		const data = this.storage.getItem(this.storageKey);
@@ -56,7 +72,7 @@ export class ProgressService {
 	}
 
 	/**
-	 * Save progress to storage
+	 * Save current progress state to storage.
 	 */
 	saveProgress() {
 		logger.info("💾 Saving progress:", this.progress);
@@ -64,7 +80,8 @@ export class ProgressService {
 	}
 
 	/**
-	 * Reset all progress (for testing or new game)
+	 * Reset all progress to defaults (for testing or new game).
+	 * Clears storage and memory.
 	 */
 	resetProgress() {
 		this.progress = this.loadProgress();
@@ -87,8 +104,9 @@ export class ProgressService {
 	}
 
 	/**
-	 * Reset progress for a specific quest
-	 * @param {string} questId
+	 * Reset progress for a specific quest.
+	 * Removes completion flags for the quest and its chapters.
+	 * @param {string} questId - The ID of the quest to reset
 	 */
 	resetQuestProgress(questId) {
 		const quest = this.registry.getQuest(questId);
@@ -117,7 +135,9 @@ export class ProgressService {
 	}
 
 	/**
-	 * Mark a chapter as completed
+	 * Mark a chapter as completed.
+	 * Updates stats and saves progress.
+	 * @param {string} chapterId - The ID of the completed chapter
 	 */
 	completeChapter(chapterId) {
 		if (!this.progress.completedChapters.includes(chapterId)) {
@@ -135,7 +155,8 @@ export class ProgressService {
 	}
 
 	/**
-	 * Check if current quest is completed and handle completion
+	 * Check if current quest's completion conditions are met.
+	 * Note: Currently unused in favor of explicit completion calls, but kept for reference.
 	 */
 	checkQuestCompletion() {
 		if (!this.progress.currentQuest) return;
@@ -155,7 +176,9 @@ export class ProgressService {
 	}
 
 	/**
-	 * Mark a quest as completed
+	 * Mark a quest as completed.
+	 * Awards achievements and unlocks subsequent quests.
+	 * @param {string} questId - The ID of the completed quest
 	 */
 	completeQuest(questId) {
 		if (!this.progress.completedQuests.includes(questId)) {
@@ -184,7 +207,7 @@ export class ProgressService {
 	}
 
 	/**
-	 * Unlock quests that have their prerequisites met
+	 * Scan generic registry and unlock quests whose prerequisites are met.
 	 */
 	unlockNewQuests() {
 		const allQuests = this.registry.getAllQuests();
@@ -202,7 +225,8 @@ export class ProgressService {
 	}
 
 	/**
-	 * Unlock an achievement
+	 * Unlock an achievement badge.
+	 * @param {string} achievementId - The ID of the achievement
 	 */
 	unlockAchievement(achievementId) {
 		if (!this.progress.achievements.includes(achievementId)) {
@@ -212,7 +236,9 @@ export class ProgressService {
 	}
 
 	/**
-	 * Set current quest and chapter
+	 * Set the currently active quest and chapter.
+	 * @param {string} questId - Active quest ID
+	 * @param {string|null} [chapterId=null] - Active chapter ID
 	 */
 	setCurrentQuest(questId, chapterId = null) {
 		this.progress.currentQuest = questId;
@@ -221,28 +247,36 @@ export class ProgressService {
 	}
 
 	/**
-	 * Check if a quest is available to play
+	 * Check if a quest is unlocked and available to play.
+	 * @param {string} questId
+	 * @returns {boolean}
 	 */
 	isQuestAvailable(questId) {
 		return this.progress.unlockedQuests.includes(questId);
 	}
 
 	/**
-	 * Check if a quest is completed
+	 * Check if a quest is completed.
+	 * @param {string} questId
+	 * @returns {boolean}
 	 */
 	isQuestCompleted(questId) {
 		return this.progress.completedQuests.includes(questId);
 	}
 
 	/**
-	 * Check if a chapter is completed
+	 * Check if a chapter is completed.
+	 * @param {string} chapterId
+	 * @returns {boolean}
 	 */
 	isChapterCompleted(chapterId) {
 		return this.progress.completedChapters.includes(chapterId);
 	}
 
 	/**
-	 * Get quest completion percentage
+	 * Get the completion percentage for a specific quest.
+	 * @param {string} questId
+	 * @returns {number} Percentage (0-100)
 	 */
 	getQuestProgress(questId) {
 		if (this.isQuestCompleted(questId)) {
@@ -262,7 +296,8 @@ export class ProgressService {
 	}
 
 	/**
-	 * Get overall game completion percentage
+	 * Get overall game completion percentage based on all main quests.
+	 * @returns {number} Percentage (0-100)
 	 */
 	getOverallProgress() {
 		// Use registry.getAllQuests() instead of Object.values(QUESTS)
@@ -281,16 +316,17 @@ export class ProgressService {
 	}
 
 	/**
-	 * Get current progress object (for debugging/display)
+	 * Get current progress object (read-only copy).
+	 * @returns {ProgressState}
 	 */
 	getProgress() {
 		return { ...this.progress };
 	}
 
 	/**
-	 * Update state for a specific chapter
+	 * Update persistent state for a specific chapter (e.g. "hasCollectedItem").
 	 * @param {string} chapterId
-	 * @param {Object} state
+	 * @param {Object} state - Partial state object to merge
 	 */
 	updateChapterState(chapterId, state) {
 		if (!this.progress.chapterStates) {
@@ -305,8 +341,9 @@ export class ProgressService {
 	}
 
 	/**
-	 * Get state for a specific chapter
+	 * Get persisted state for a specific chapter.
 	 * @param {string} chapterId
+	 * @returns {Object} The chapter state object
 	 */
 	getChapterState(chapterId) {
 		if (!this.progress.chapterStates) return {};
