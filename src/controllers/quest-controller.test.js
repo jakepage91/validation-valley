@@ -261,4 +261,84 @@ describe("QuestController", () => {
 			expect(result).toBe(true);
 		});
 	});
+
+	describe("returnToHub", () => {
+		beforeEach(async () => {
+			await controller.startQuest("test-quest");
+			vi.clearAllMocks();
+		});
+
+		it("should clear quest state and return to hub", () => {
+			const onReturnToHub = vi.fn();
+			controller.options.onReturnToHub = onReturnToHub;
+
+			controller.returnToHub();
+
+			expect(controller.currentQuest).toBeNull();
+			expect(controller.currentChapter).toBeNull();
+			expect(controller.currentChapterIndex).toBe(0);
+			expect(controller.progressService.setCurrentQuest).toHaveBeenCalledWith(
+				null,
+				null,
+			);
+			expect(onReturnToHub).toHaveBeenCalled();
+			expect(host.requestUpdate).toHaveBeenCalled();
+		});
+	});
+
+	describe("getCurrentChapterData", () => {
+		beforeEach(async () => {
+			await controller.startQuest("test-quest");
+		});
+
+		it("should return enriched chapter data", () => {
+			const chapterData = controller.getCurrentChapterData();
+
+			expect(chapterData).toBeDefined();
+			expect(chapterData.id).toBe("chapter-1");
+			expect(chapterData.questId).toBe("test-quest");
+			expect(chapterData.index).toBe(0);
+			expect(chapterData.total).toBe(3);
+			expect(chapterData.isQuestComplete).toBe(false);
+		});
+
+		it("should return null if no current quest", () => {
+			controller.currentQuest = null;
+			const chapterData = controller.getCurrentChapterData();
+			expect(chapterData).toBeNull();
+		});
+
+		it("should indicate when on last chapter", () => {
+			controller.currentChapterIndex = 2; // Last chapter
+			const chapterData = controller.getCurrentChapterData();
+			expect(chapterData.isQuestComplete).toBe(true);
+		});
+	});
+
+	describe("loadQuest", () => {
+		it("should load quest without resetting progress", async () => {
+			const onQuestStart = vi.fn();
+			controller.options.onQuestStart = onQuestStart;
+
+			const result = await controller.loadQuest("test-quest");
+
+			expect(result).toBe(true);
+			expect(controller.currentQuest).toEqual(mockQuest);
+			expect(controller.progressService.resetQuestProgress).not.toHaveBeenCalled();
+			expect(onQuestStart).toHaveBeenCalledWith(mockQuest);
+		});
+
+		it("should return false if quest does not exist", async () => {
+			getQuest.mockReturnValue(null);
+			const result = await controller.loadQuest("non-existent");
+			expect(result).toBe(false);
+		});
+
+		it("should return false if quest is not available", async () => {
+			controller.progressService.isQuestAvailable.mockReturnValue(false);
+			const result = await controller.loadQuest("test-quest");
+			expect(result).toBe(false);
+		});
+	});
 });
+

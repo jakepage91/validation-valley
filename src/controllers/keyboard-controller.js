@@ -1,28 +1,37 @@
 /**
+ * @typedef {Object} KeyboardOptions
+ * @property {number} [speed] - Movement speed multiplier (default: 2.5)
+ * @property {(dx: number, dy: number) => void} [onMove] - Callback for movement input
+ * @property {() => void} [onInteract] - Callback for interaction (Space key)
+ * @property {() => void} [onPause] - Callback for pause (Escape key)
+ * @property {() => boolean} [isEnabled] - Function to check if input is enabled
+ */
+
+/**
  * KeyboardController - Lit Reactive Controller for keyboard input
  *
  * Handles:
  * - Movement keys (WASD, Arrow keys)
  * - Interaction key (Space)
+ * - Pause key (Escape)
  * - Prevents default browser behavior
  *
- * Usage:
- * ```js
- * this.keyboard = new KeyboardController(this, {
- *   onMove: (dx, dy) => { ... },
- *   onInteract: () => { ... },
- *   isEnabled: () => !this.showDialog && !this.isEvolving
- * });
- * ```
+ * @implements {import('lit').ReactiveController}
  */
 export class KeyboardController {
+	/**
+	 * @param {import('lit').ReactiveControllerHost} host
+	 * @param {Partial<KeyboardOptions>} [options]
+	 */
 	constructor(host, options = {}) {
+		/** @type {import('lit').ReactiveControllerHost} */
 		this.host = host;
+		/** @type {KeyboardOptions} */
 		this.options = {
 			speed: 2.5,
-			onMove: () => {},
-			onInteract: () => {},
-			onPause: () => {},
+			onMove: () => { },
+			onInteract: () => { },
+			onPause: () => { },
 			isEnabled: () => true,
 			...options,
 		};
@@ -39,6 +48,10 @@ export class KeyboardController {
 		window.removeEventListener("keydown", this.handleKeyDown);
 	}
 
+	/**
+	 * Handle keyboard events
+	 * @param {KeyboardEvent} e
+	 */
 	handleKeyDown(e) {
 		// Handle Pause (Escape) - Always allowed unless specifically blocked by logic outside
 		if (e.code === "Escape") {
@@ -60,7 +73,7 @@ export class KeyboardController {
 		}
 
 		// Handle movement
-		const speed = this.options.speed;
+		const speed = this.options.speed || 2.5;
 		let moveX = 0;
 		let moveY = 0;
 

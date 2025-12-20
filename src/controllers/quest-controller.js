@@ -3,6 +3,16 @@ import { logger } from "../services/logger-service.js";
 import { ProgressService } from "../services/progress-service.js";
 
 /**
+ * @typedef {Object} QuestControllerOptions
+ * @property {import('../services/progress-service.js').ProgressService} [progressService] - Progress tracking service
+ * @property {Object} [registry] - Quest registry module
+ * @property {(quest: Object) => void} [onQuestStart] - Callback when quest starts
+ * @property {(chapter: Object, index: number) => void} [onChapterChange] - Callback when chapter changes
+ * @property {(quest: Object) => void} [onQuestComplete] - Callback when quest completes
+ * @property {() => void} [onReturnToHub] - Callback when returning to hub
+ */
+
+/**
  * QuestController - Orchestrates quest progression
  *
  * Handles:
@@ -11,21 +21,17 @@ import { ProgressService } from "../services/progress-service.js";
  * - Quest completion
  * - Navigation between hub and quests
  *
- * Usage:
- * ```js
- * this.questController = new QuestController(this, {
- *   progressService: new ProgressService(),
- *   registry: QuestRegistry,
- *   onQuestStart: (quest) => { ... },
- *   onChapterChange: (chapter) => { ... },
- *   onQuestComplete: (quest) => { ... },
- *   onReturnToHub: () => { ... }
- * });
- * ```
+ * @implements {import('lit').ReactiveController}
  */
 export class QuestController {
+	/**
+	 * @param {import('lit').ReactiveControllerHost} host
+	 * @param {Partial<QuestControllerOptions>} [options]
+	 */
 	constructor(host, options = {}) {
+		/** @type {import('lit').ReactiveControllerHost} */
 		this.host = host;
+		/** @type {QuestControllerOptions} */
 		this.options = {
 			progressService: null,
 			registry: DefaultRegistry,
@@ -36,11 +42,16 @@ export class QuestController {
 			...options,
 		};
 
+		/** @type {import('../services/progress-service.js').ProgressService} */
 		this.progressService =
 			this.options.progressService || new ProgressService();
+		/** @type {Object} */
 		this.registry = this.options.registry;
+		/** @type {Object|null} */
 		this.currentQuest = null;
+		/** @type {Object|null} */
 		this.currentChapter = null;
+		/** @type {number} */
 		this.currentChapterIndex = 0;
 
 		host.addController(this);

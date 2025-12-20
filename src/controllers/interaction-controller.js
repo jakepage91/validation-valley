@@ -1,6 +1,29 @@
 const DEFAULT_INTERACTION_DISTANCE = 15;
 
 /**
+ * @typedef {import('../services/game-state-service.js').HotSwitchState} HotSwitchState
+ */
+
+/**
+ * @typedef {Object} InteractionState
+ * @property {string} level - Current level ID
+ * @property {Object} [chapterData] - Configuration for key game objects
+ * @property {Object} heroPos - Current hero position {x,y}
+ * @property {HotSwitchState} hotSwitchState - API context state
+ * @property {boolean} hasCollectedItem - Whether reward is collected
+ */
+
+/**
+ * @typedef {Object} InteractionOptions
+ * @property {number} [interactionDistance] - Max distance to interact (default: 15)
+ * @property {() => void} [onShowDialog] - Callback to open dialog
+ * @property {() => void} [onVictory] - Verification callback
+ * @property {(msg: string|null) => void} [onLocked] - Callback for locked features
+ * @property {() => InteractionState} [getState] - Accessor for game state
+ * @property {() => ({x: number, y: number}|null|undefined)} [getNpcPosition] - Accessor for NPC coordinates
+ */
+
+/**
  * InteractionController - Handles NPC interaction logic
  *
  * Handles:
@@ -9,35 +32,28 @@ const DEFAULT_INTERACTION_DISTANCE = 15;
  * - Interaction validation (Level 6 victory conditions)
  * - Dialog triggering
  *
- * Usage:
- * ```js
- * this.interaction = new InteractionController(this, {
- *   onShowDialog: () => { this.showDialog = true; },
- *   onVictory: () => { this.hasCollectedItem = true; },
- *   onLocked: (message) => { this.lockedMessage = message; },
- *   getState: () => ({
- *     level: this.level,
- *     chapterData: this.getChapterData(this.level),
- *     heroPos: this.heroPos,
- *     hotSwitchState: this.hotSwitchState,
- *     hasCollectedItem: this.hasCollectedItem
- *   }),
- *   getNpcPosition: () => currentConfig.npc?.position
- * });
- *
- * // Handle interaction
- * this.interaction.handleInteract();
- * ```
+ * @implements {import('lit').ReactiveController}
  */
 export class InteractionController {
+	/**
+	 * @param {import('lit').ReactiveControllerHost} host
+	 * @param {Partial<InteractionOptions>} [options]
+	 */
 	constructor(host, options = {}) {
+		/** @type {import('lit').ReactiveControllerHost} */
 		this.host = host;
+		/** @type {InteractionOptions} */
 		this.options = {
 			interactionDistance: DEFAULT_INTERACTION_DISTANCE,
-			onShowDialog: () => {},
-			onVictory: () => {},
-			onLocked: () => {},
-			getState: () => ({}),
+			onShowDialog: () => { },
+			onVictory: () => { },
+			onLocked: () => { },
+			getState: () => ({
+				level: "",
+				heroPos: { x: 0, y: 0 },
+				hotSwitchState: null,
+				hasCollectedItem: false,
+			}),
 			getNpcPosition: () => null,
 			...options,
 		};
@@ -46,17 +62,17 @@ export class InteractionController {
 	}
 
 	hostConnected() {
-		// No setup needed
+		// keeping for interface consistency, though empty
 	}
 
 	hostDisconnected() {
-		// No cleanup needed
+		// keeping for interface consistency, though empty
 	}
 
 	/**
 	 * Calculate distance between hero and target
-	 * @param {Object} heroPos - {x, y}
-	 * @param {Object} targetPos - {x, y}
+	 * @param {{x: number, y: number}} heroPos
+	 * @param {{x: number, y: number}} [targetPos]
 	 * @returns {number} Distance
 	 */
 	calculateDistance(heroPos, targetPos) {
@@ -73,8 +89,12 @@ export class InteractionController {
 	isCloseToNpc() {
 		const state = this.options.getState();
 		const npcPos = this.options.getNpcPosition();
+		// @ts-expect-error - heroPos is guaranteed by default state if missing
 		const distance = this.calculateDistance(state.heroPos, npcPos);
-		return distance < this.options.interactionDistance;
+		return (
+			distance <
+			(this.options.interactionDistance || DEFAULT_INTERACTION_DISTANCE)
+		);
 	}
 
 	/**
