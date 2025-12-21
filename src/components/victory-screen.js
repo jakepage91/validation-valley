@@ -1,6 +1,7 @@
 import { css, html, LitElement } from "lit";
 import { processImagePath } from "../utils/process-assets.js";
 import "@awesome.me/webawesome/dist/components/button/button.js";
+import { KeyboardController } from "../controllers/keyboard-controller.js";
 import { sharedStyles } from "../styles/shared.js";
 
 export class VictoryScreen extends LitElement {
@@ -13,24 +14,13 @@ export class VictoryScreen extends LitElement {
 		super();
 		this.quest = null;
 		this.onReturn = () => { };
-	}
 
-	connectedCallback() {
-		super.connectedCallback();
-		window.addEventListener("keydown", this.handleKeyDown);
+		// Use KeyboardController for consistent keyboard handling
+		this.keyboard = new KeyboardController(this, {
+			onInteract: () => this.onReturn(),
+			isEnabled: () => true,
+		});
 	}
-
-	disconnectedCallback() {
-		super.disconnectedCallback();
-		window.removeEventListener("keydown", this.handleKeyDown);
-	}
-
-	handleKeyDown = (e) => {
-		if (e.code === "Space" || e.key === "Enter") {
-			e.preventDefault();
-			this.onReturn();
-		}
-	};
 
 	render() {
 		if (!this.quest) {
