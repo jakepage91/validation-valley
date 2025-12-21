@@ -1,4 +1,4 @@
-import { QUESTS, QuestType } from "../content/quests/quests-data.js";
+import { QUESTS } from "../content/quests/quests-data.js";
 
 /**
  * Quest Registry Service
@@ -17,20 +17,11 @@ export function getQuest(questId) {
 }
 
 /**
- * Get all quests of a specific type
- * @param {string} type - Quest type (from QuestType enum)
- * @returns {Array} Array of quests matching the type
- */
-export function getQuestsByType(type) {
-	return Object.values(QUESTS).filter((q) => q.type === type);
-}
-
-/**
- * Get all available quests (excluding hub)
- * @returns {Array} Array of all quest-type quests
+ * Get all quests
+ * @returns {Array} Array of all quests
  */
 export function getAllQuests() {
-	return getQuestsByType(QuestType.QUEST);
+	return Object.values(QUESTS);
 }
 
 /**
@@ -41,7 +32,7 @@ export function getAllQuests() {
  */
 export function isQuestLocked(questId, completedQuests = []) {
 	const quest = getQuest(questId);
-	if (!quest || quest.type === QuestType.HUB) return false;
+	if (!quest) return false;
 
 	return quest.prerequisites.some(
 		(prereq) => !completedQuests.includes(prereq),

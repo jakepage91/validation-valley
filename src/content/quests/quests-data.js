@@ -1,4 +1,4 @@
-import { Difficulty, QuestType } from "./quest-types.js";
+import { Difficulty } from "./quest-types.js";
 import { THE_AURA_OF_SOVEREIGNTY_QUEST } from "./the-aura-of-sovereignty/index.js";
 import { TOKEN_OF_AGNOSTICISM_QUEST } from "./the-chromatic-loom/index.js";
 import { THE_SCRYING_POOL_OF_CHAOS_QUEST } from "./the-crimson-altar/index.js";
@@ -9,7 +9,7 @@ import { THE_SCROLL_OF_TONGUES_QUEST } from "./the-scroll-of-tongues/index.js";
 import { GATE_OF_IDENTITY_QUEST } from "./the-watchers-bastion/index.js";
 
 // Re-export types for convenience
-export { QuestType, Difficulty };
+export { Difficulty };
 
 /**
  * Quest Data Registry

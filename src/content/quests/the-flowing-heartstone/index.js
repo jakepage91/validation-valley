@@ -1,10 +1,9 @@
-import { Difficulty, QuestType } from "../quest-types.js";
+import { Difficulty } from "../quest-types.js";
 
 export const STATE_MANAGEMENT_RAID_QUEST = {
 	id: "the-flowing-heartstone",
 	name: "The Flowing Heartstone",
 	subtitle: "Establish a Single Reactive Source of Truth",
-	type: QuestType.QUEST,
 	description:
 		"Conquer Global State Chaos and achieve data predictability. Eliminate prop drilling and unpredictable state mutation with reactive patterns (Signals, Observable Stores).",
 	legacyProblem:

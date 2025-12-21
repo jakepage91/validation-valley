@@ -1,10 +1,9 @@
-import { Difficulty, QuestType } from "../quest-types.js";
+import { Difficulty } from "../quest-types.js";
 
 export const GATE_OF_IDENTITY_QUEST = {
 	id: "the-watchers-bastion",
 	name: "The Watcher's Bastion",
 	subtitle: "Centralize Security: The Route Guardian",
-	type: QuestType.QUEST,
 	description:
 		"Alarion's mission to centralize fragmented security logic, establish robust Auth Guards, and achieve a reactive, perimeter-wide user identity. Eliminate scattered `isLoggedIn()` checks and prevent redirect vulnerabilities through a unified security protocol.",
 	legacyProblem:

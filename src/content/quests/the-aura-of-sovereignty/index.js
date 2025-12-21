@@ -1,4 +1,4 @@
-import { Difficulty, QuestType } from "../quest-types.js";
+import { Difficulty } from "../quest-types.js";
 
 /**
  * The Tunic of Isolation Quest Metadata
@@ -9,7 +9,6 @@ export const THE_AURA_OF_SOVEREIGNTY_QUEST = {
 	id: "the-aura-of-sovereignty",
 	name: "The Aura of Sovereignty",
 	subtitle: "Encapsulate Your Code",
-	type: QuestType.QUEST,
 	description:
 		"Before Alarion can connect with others, he must learn to exist without being corrupted by them. In the Toxic Swamp of Global Scope, he must find an umbrella to protect his styles and DOM from the chaotic environment.",
 	legacyProblem: "Component is coupled to global DOM and external scripts.",

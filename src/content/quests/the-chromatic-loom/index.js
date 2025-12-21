@@ -1,4 +1,4 @@
-import { Difficulty, QuestType } from "../quest-types.js";
+import { Difficulty } from "../quest-types.js";
 
 /**
  * The Token of Agnosticism Quest Metadata
@@ -9,7 +9,6 @@ export const TOKEN_OF_AGNOSTICISM_QUEST = {
 	id: "the-chromatic-loom",
 	name: "The Chromatic Loom",
 	subtitle: "Dress Your App in Any Brand and Theme",
-	type: QuestType.QUEST,
 	description:
 		"Achieve Visual Adaptation to any theme or brand. Grant your component aesthetic flexibility without breaking encapsulation.",
 	legacyProblem: "Hardcoded styles or components that cannot change themes.",

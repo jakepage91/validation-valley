@@ -1,10 +1,9 @@
-import { Difficulty, QuestType } from "../quest-types.js";
+import { Difficulty } from "../quest-types.js";
 
 export const THE_SCRYING_POOL_OF_CHAOS_QUEST = {
 	id: "the-crimson-altar",
 	name: "The Crimson Altar",
 	subtitle: "Transform Error Chaos into Intelligence",
-	type: QuestType.QUEST,
 	description:
 		"Achieve Total Monitoring. Channel application chaos to a control point, capturing and reacting to failures without stopping the application.",
 	legacyProblem:

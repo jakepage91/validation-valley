@@ -1,10 +1,9 @@
-import { Difficulty, QuestType } from "../quest-types.js";
+import { Difficulty } from "../quest-types.js";
 
 export const THE_SCROLL_OF_TONGUES_QUEST = {
 	id: "the-scroll-of-tongues",
 	name: "The Scroll of Tongues",
 	subtitle: "Unlock Your App for Every Language and Market",
-	type: QuestType.QUEST,
 	description:
 		"Unlock Global Territories. Translate and adapt components to any language and culture, achieving Total Globalization.",
 	legacyProblem:

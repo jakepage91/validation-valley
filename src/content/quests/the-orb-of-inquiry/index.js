@@ -1,10 +1,9 @@
-import { Difficulty, QuestType } from "../quest-types.js";
+import { Difficulty } from "../quest-types.js";
 
 export const THE_ORB_OF_INQUIRY_QUEST = {
 	id: "the-orb-of-inquiry",
 	name: "The Orb of Inquiry",
 	subtitle: "Decouple Services for Testable Code",
-	type: QuestType.QUEST,
 	description:
 		"Break service coupling and achieve logical independence. Master Dependency Inversion Principle (DIP), Inversion of Control (IoC), and Context API. Culminates with a Hot Switch (live service swap).",
 	legacyProblem:

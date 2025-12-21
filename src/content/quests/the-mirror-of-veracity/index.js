@@ -1,10 +1,9 @@
-import { Difficulty, QuestType } from "../quest-types.js";
+import { Difficulty } from "../quest-types.js";
 
 export const THE_MIRROR_OF_VERACITY_QUEST = {
 	id: "the-mirror-of-veracity",
 	name: "The Mirror of Veracity",
 	subtitle: "Build the Ultimate Anti-Regression Shield",
-	type: QuestType.QUEST,
 	description:
 		"Dominate the art of Verification. Create a defense system against regressions and future bugs using the Mirror of Veracity.",
 	legacyProblem:
