@@ -58,18 +58,18 @@ export class AIService {
 			if (status === "no") {
 				logger.warn(
 					"⚠️ Chrome Built-in AI not available. To enable:\n" +
-					"1. Use Chrome Dev/Canary (v127+)\n" +
-					"2. Enable flags:\n" +
-					"   - chrome://flags/#prompt-api-for-gemini-nano → Enabled\n" +
-					"   - chrome://flags/#optimization-guide-on-device-model → Enabled BypassPerfRequirement\n" +
-					"3. Restart Chrome\n" +
-					"4. Download model at chrome://components/ (search 'Optimization Guide')\n" +
-					"5. Verify with: await ai.languageModel.availability()",
+						"1. Use Chrome Dev/Canary (v127+)\n" +
+						"2. Enable flags:\n" +
+						"   - chrome://flags/#prompt-api-for-gemini-nano → Enabled\n" +
+						"   - chrome://flags/#optimization-guide-on-device-model → Enabled BypassPerfRequirement\n" +
+						"3. Restart Chrome\n" +
+						"4. Download model at chrome://components/ (search 'Optimization Guide')\n" +
+						"5. Verify with: await ai.languageModel.availability()",
 				);
 			} else if (status === "after-download") {
 				logger.warn(
 					"⚠️ Chrome Built-in AI requires model download.\n" +
-					"Go to chrome://components/ and update 'Optimization Guide On Device Model'",
+						"Go to chrome://components/ and update 'Optimization Guide On Device Model'",
 				);
 			}
 
@@ -138,7 +138,7 @@ export class AIService {
 	async downloadModel(options) {
 		logger.info(
 			"📥 Chrome Built-in AI model is downloadable.\n" +
-			"Attempting to download model automatically...",
+				"Attempting to download model automatically...",
 		);
 
 		try {
@@ -166,7 +166,7 @@ export class AIService {
 			logger.error("❌ Failed to download AI model:", error);
 			logger.warn(
 				"Manual download required:\n" +
-				"Go to chrome://components/ and update 'Optimization Guide On Device Model'",
+					"Go to chrome://components/ and update 'Optimization Guide On Device Model'",
 			);
 			throw error;
 		}

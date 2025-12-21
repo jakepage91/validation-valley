@@ -9,7 +9,7 @@ describe("InteractionController", () => {
 
 	// Mock options
 	let onShowDialog;
-	let onVictory;
+	let _onVictory;
 	let onLocked;
 	let getState;
 	let getNpcPosition;
@@ -23,7 +23,7 @@ describe("InteractionController", () => {
 		};
 
 		onShowDialog = vi.fn();
-		onVictory = vi.fn();
+		_onVictory = vi.fn();
 		onLocked = vi.fn();
 		getState = vi.fn();
 		getNpcPosition = vi.fn();

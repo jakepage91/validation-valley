@@ -324,7 +324,9 @@ describe("QuestController", () => {
 
 			expect(result).toBe(true);
 			expect(controller.currentQuest).toEqual(mockQuest);
-			expect(controller.progressService.resetQuestProgress).not.toHaveBeenCalled();
+			expect(
+				controller.progressService.resetQuestProgress,
+			).not.toHaveBeenCalled();
 			expect(onQuestStart).toHaveBeenCalledWith(mockQuest);
 		});
 
@@ -425,7 +427,10 @@ describe("QuestController", () => {
 		});
 
 		it("hasExitZone should return true if chapter has exitZone", () => {
-			controller.currentChapter = { id: "chapter-1", exitZone: { x: 10, y: 10 } };
+			controller.currentChapter = {
+				id: "chapter-1",
+				exitZone: { x: 10, y: 10 },
+			};
 			expect(controller.hasExitZone()).toBe(true);
 		});
 
@@ -475,5 +480,3 @@ describe("QuestController", () => {
 		});
 	});
 });
-
-

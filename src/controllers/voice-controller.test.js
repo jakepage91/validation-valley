@@ -53,7 +53,9 @@ describe("VoiceController", () => {
 		onMoveToNpc = vi.fn();
 		onMoveToExit = vi.fn();
 		onGetDialogText = vi.fn().mockReturnValue("Test dialog text");
-		onGetContext = vi.fn().mockReturnValue({ isDialogOpen: false, isRewardCollected: false });
+		onGetContext = vi
+			.fn()
+			.mockReturnValue({ isDialogOpen: false, isRewardCollected: false });
 		onDebugAction = vi.fn();
 		isEnabled = vi.fn().mockReturnValue(true);
 
@@ -125,14 +127,14 @@ describe("VoiceController", () => {
 		expect(host.addController).toHaveBeenCalledWith(controller);
 	});
 
-
-
 	describe("processCommand", () => {
 		it("should inject context into AI prompt", async () => {
 			controller.aiSession = { prompt: vi.fn().mockResolvedValue("{}") };
 			await controller.processCommand("next");
 			expect(controller.aiSession.prompt).toHaveBeenCalledWith(
-				expect.stringContaining("[Context: Dialog=Closed, Reward=Not Collected]"),
+				expect.stringContaining(
+					"[Context: Dialog=Closed, Reward=Not Collected]",
+				),
 			);
 		});
 	});
@@ -293,4 +295,3 @@ describe("VoiceController", () => {
 		});
 	});
 });
-

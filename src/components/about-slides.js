@@ -58,12 +58,14 @@ export class AboutSlides extends LitElement {
 		return html`
 			<wa-dialog label="About Legacy's End" class="about-dialog" style="--width: 800px;">
 				<wa-carousel navigation pagination mouseDragging>
-					${ABOUT_SLIDES_CONTENT.map((slide) => html`
+					${ABOUT_SLIDES_CONTENT.map(
+						(slide) => html`
 						<wa-carousel-item>
 							<h2>${slide.title}</h2>
 							${slide.lines.map((line) => html`<p>${line}</p>`)}
 						</wa-carousel-item>
-					`)}
+					`,
+					)}
 				</wa-carousel>
 			</wa-dialog>
 		`;

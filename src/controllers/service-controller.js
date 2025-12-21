@@ -34,8 +34,8 @@ export class ServiceController {
 			services: {},
 			profileProvider: null,
 			getActiveService: () => null,
-			onDataLoaded: () => { },
-			onError: () => { },
+			onDataLoaded: () => {},
+			onError: () => {},
 			...options,
 		};
 
@@ -49,9 +49,9 @@ export class ServiceController {
 		host.addController(this);
 	}
 
-	hostConnected() { }
+	hostConnected() {}
 
-	hostDisconnected() { }
+	hostDisconnected() {}
 
 	/**
 	 * Load user data from active service

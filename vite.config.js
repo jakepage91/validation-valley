@@ -5,7 +5,7 @@ import { defineConfig, loadEnv } from "vite";
 export default defineConfig(({ mode }) => {
 	loadEnv(mode, ".", "");
 	return {
-		base: process.env.NODE_ENV === 'production' ? '/legacys-end/' : '/',
+		base: process.env.NODE_ENV === "production" ? "/legacys-end/" : "/",
 		server: {
 			port: 3000,
 			host: "0.0.0.0",
@@ -25,25 +25,25 @@ export default defineConfig(({ mode }) => {
 				instances: [{ browser: "chromium" }],
 			},
 			coverage: {
-				provider: 'v8',
-				reporter: ['text', 'json', 'html', 'json-summary'],
-				include: ['src/**/*.js'],
+				provider: "v8",
+				reporter: ["text", "json", "html", "json-summary"],
+				include: ["src/**/*.js"],
 				exclude: [
 					// Test files
-					'**/*.test.js',
-					'**/__tests__/**',
-					
+					"**/*.test.js",
+					"**/__tests__/**",
+
 					// Generated files
-					'src/generated/**',
-					
+					"src/generated/**",
+
 					// Data-only files (no logic to test)
-					'src/content/**',
-					'src/constants/**',
-					'src/contexts/**',
-					'src/styles/**',
-					
+					"src/content/**",
+					"src/constants/**",
+					"src/contexts/**",
+					"src/styles/**",
+
 					// Setup/initialization code (hard to test in isolation)
-					'src/setup/**',
+					"src/setup/**",
 				],
 			},
 		},

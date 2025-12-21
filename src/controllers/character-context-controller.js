@@ -46,8 +46,6 @@ export class CharacterContextController {
 		host.addController(this);
 	}
 
-
-
 	/**
 	 * Update all character contexts based on current game state
 	 */
@@ -73,9 +71,10 @@ export class CharacterContextController {
 		};
 
 		const gear = {
-			image: hasCollectedItem && chapterData?.reward?.image
-				? chapterData.reward.image
-				: null,
+			image:
+				hasCollectedItem && chapterData?.reward?.image
+					? chapterData.reward.image
+					: null,
 		};
 
 		const power = {

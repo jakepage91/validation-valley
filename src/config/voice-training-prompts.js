@@ -134,8 +134,7 @@ export const ALARION_TRAINING_EXAMPLES = [
 	},
 	{
 		role: "user",
-		content:
-			'[Context: Dialog=Closed, Reward=Collected] User command: "next"',
+		content: '[Context: Dialog=Closed, Reward=Collected] User command: "next"',
 	},
 	{
 		role: "assistant",

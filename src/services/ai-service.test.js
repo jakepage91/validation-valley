@@ -168,7 +168,7 @@ describe("AIService", () => {
 			mockLanguageModel.create.mockImplementation(({ monitor }) => {
 				if (monitor) {
 					const mockMonitor = {
-						addEventListener: (event, listener) => {
+						addEventListener: (_event, listener) => {
 							downloadListener = listener;
 						},
 					};

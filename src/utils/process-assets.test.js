@@ -51,8 +51,7 @@ describe("Process Assets", () => {
 		});
 
 		it("should process multiple urls in same string", () => {
-			const input =
-				"url(/assets/bg1.png) center, url('/assets/bg2.png') top";
+			const input = "url(/assets/bg1.png) center, url('/assets/bg2.png') top";
 			const result = processBackgroundStyle(input);
 			expect(result).toBe(
 				"url('/assets/bg1.png') center, url('/assets/bg2.png') top",
@@ -68,9 +67,7 @@ describe("Process Assets", () => {
 		it("should handle paths with subdirectories", () => {
 			const input = "url(/assets/images/backgrounds/hero.png) center";
 			const result = processBackgroundStyle(input);
-			expect(result).toBe(
-				"url('/assets/images/backgrounds/hero.png') center",
-			);
+			expect(result).toBe("url('/assets/images/backgrounds/hero.png') center");
 		});
 
 		it("should not modify non-asset urls", () => {
@@ -133,9 +130,7 @@ describe("Process Assets", () => {
 		it("should handle different file extensions", () => {
 			expect(processImagePath("/assets/image.jpg")).toBe("/assets/image.jpg");
 			expect(processImagePath("/assets/image.svg")).toBe("/assets/image.svg");
-			expect(processImagePath("/assets/image.webp")).toBe(
-				"/assets/image.webp",
-			);
+			expect(processImagePath("/assets/image.webp")).toBe("/assets/image.webp");
 		});
 
 		it("should handle BASE_URL with subdirectory", () => {

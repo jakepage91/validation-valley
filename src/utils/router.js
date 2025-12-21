@@ -7,7 +7,7 @@ export class Router {
 		this.currentPath = "";
 		this._onPopState = this._onPopState.bind(this);
 		// Get base path from Vite's import.meta.env.BASE_URL
-		this.basePath = import.meta.env.BASE_URL.replace(/\/$/, ''); // Remove trailing slash
+		this.basePath = import.meta.env.BASE_URL.replace(/\/$/, ""); // Remove trailing slash
 	}
 
 	/**
@@ -58,7 +58,7 @@ export class Router {
 		// Remove base path from current pathname for routing
 		let path = window.location.pathname;
 		if (this.basePath && path.startsWith(this.basePath)) {
-			path = path.slice(this.basePath.length) || '/';
+			path = path.slice(this.basePath.length) || "/";
 		}
 		this.currentPath = path;
 		this._matchRoute(path);

@@ -2,7 +2,7 @@ import { QUESTS } from "../content/quests/quests-data.js";
 
 /**
  * Quest Registry Service
- * 
+ *
  * Business logic for quest management.
  * Provides functions to query, filter, and validate quests.
  */

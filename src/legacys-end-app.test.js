@@ -201,8 +201,8 @@ describe("LegacysEndApp Component", () => {
 
 			// 3. Move to Neutral Zone (y < 40)
 			el.zones.checkZones(20, 10);
-			// Should stay as is? Controller returns null for neutral, 
-			// app implementation is: 
+			// Should stay as is? Controller returns null for neutral,
+			// app implementation is:
 			// if (this.hotSwitchState !== context) { this.gameState.setHotSwitchState(context); }
 			// If context is null, it should set it to null.
 			expect(el.gameState.getState().hotSwitchState).toBeNull();

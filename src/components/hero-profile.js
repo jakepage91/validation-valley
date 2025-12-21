@@ -236,47 +236,52 @@ export class HeroProfile extends LitElement {
 
 		return html`
         <!-- Optional Tooltip -->
-        ${this.tooltipText
-				? html`
+        ${
+					this.tooltipText
+						? html`
           <div class="hero-tooltip">${this.tooltipText}</div>
         `
-				: ""
-			}
+						: ""
+				}
 
         <!-- Character Image -->
-        ${this.suitData?.image || this.imageSrc
-				? html`
+        ${
+					this.suitData?.image || this.imageSrc
+						? html`
             <img src="${processImagePath(this.suitData?.image || this.imageSrc)}" class="character-img" alt="Alarion" />
         `
-				: ""
-			}
+						: ""
+				}
 
 		<!-- Gear Image -->
-		${this.gearData?.image
+		${
+			this.gearData?.image
 				? html`
 			<img src="${processImagePath(this.gearData.image)}" class="gear-img" alt="Gear" />
 		`
 				: ""
-			}
+		}
 
 		<!-- Weapon Image -->
-		${this.powerData?.image
+		${
+			this.powerData?.image
 				? html`
 			<img src="${processImagePath(this.powerData.image)}" class="weapon-img" alt="Weapon" />
 		`
 				: ""
-			}
+		}
 
         <!-- Nameplate (Bottom) -->
         <div class="nameplate">
-          ${loading
-				? html`<span class="loading">...</span>`
-				: error
-					? html`<span class="error">${error}</span>`
-					: html`
+          ${
+						loading
+							? html`<span class="loading">...</span>`
+							: error
+								? html`<span class="error">${error}</span>`
+								: html`
                   <wa-tag variant="neutral" size="small" pill class="name-tag">${name || "Alarion"}</wa-tag>
                 `
-			}
+					}
         </div>
     `;
 	}

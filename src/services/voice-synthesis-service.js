@@ -46,27 +46,27 @@ export class VoiceSynthesisService {
 					role === "hero"
 						? ["Google US English", "Daniel", "Alex", "Fred", "Rishi"] // Male Hero
 						: [
-							// NPCs - mix of male and female voices
-							"Google UK English Female",
-							"Samantha",
-							"Victoria",
-							"Karen",
-							"Google US English",
-							"Daniel",
-							"Alex",
-						],
+								// NPCs - mix of male and female voices
+								"Google UK English Female",
+								"Samantha",
+								"Victoria",
+								"Karen",
+								"Google US English",
+								"Daniel",
+								"Alex",
+							],
 				es:
 					role === "hero"
 						? ["Google español", "Jorge", "Diego", "Carlos", "Pablo"] // Male Hero
 						: [
-							// NPCs - mix of male and female voices
-							"Mónica",
-							"Paulina",
-							"Soledad",
-							"Angelica",
-							"Jorge",
-							"Diego",
-						],
+								// NPCs - mix of male and female voices
+								"Mónica",
+								"Paulina",
+								"Soledad",
+								"Angelica",
+								"Jorge",
+								"Diego",
+							],
 			}[searchLang] || [];
 
 		// Filter by language and look for premium versions
@@ -116,7 +116,9 @@ export class VoiceSynthesisService {
 		}
 
 		if (!this.synthesis) {
-			logger.warn("VoiceSynthesisService.speak: Speech synthesis not available");
+			logger.warn(
+				"VoiceSynthesisService.speak: Speech synthesis not available",
+			);
 			return;
 		}
 

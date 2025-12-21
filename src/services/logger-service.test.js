@@ -3,10 +3,10 @@ import { LoggerService } from "./logger-service.js";
 
 describe("LoggerService", () => {
 	let logger;
-	const consoleDebug = vi.spyOn(console, "debug").mockImplementation(() => { });
-	const consoleInfo = vi.spyOn(console, "info").mockImplementation(() => { });
-	const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => { });
-	const consoleError = vi.spyOn(console, "error").mockImplementation(() => { });
+	const consoleDebug = vi.spyOn(console, "debug").mockImplementation(() => {});
+	const consoleInfo = vi.spyOn(console, "info").mockImplementation(() => {});
+	const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+	const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
 	beforeEach(() => {
 		vi.resetAllMocks();

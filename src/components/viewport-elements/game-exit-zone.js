@@ -19,10 +19,10 @@ export class GameExitZone extends LitElement {
 		if (!this.active || !this.zoneConfig) return "";
 
 		const { x, y, width, height, label } = this.zoneConfig;
-		this.style.left = x + "%";
-		this.style.top = y + "%";
-		this.style.width = width + "%";
-		this.style.height = height + "%";
+		this.style.left = `${x}%`;
+		this.style.top = `${y}%`;
+		this.style.width = `${width}%`;
+		this.style.height = `${height}%`;
 		// Determine layout based on position relative to legacy/new zones
 		const isRight = x > GAME_CONFIG.VIEWPORT.ZONES.LEGACY.minX;
 		const isLeft = x < GAME_CONFIG.VIEWPORT.ZONES.NEW.maxX;
@@ -40,7 +40,9 @@ export class GameExitZone extends LitElement {
 		`;
 	}
 
-	static styles = [sharedStyles, css`
+	static styles = [
+		sharedStyles,
+		css`
 		:host {
 			position: absolute;
 			display: flex;
@@ -49,7 +51,8 @@ export class GameExitZone extends LitElement {
 			z-index: 10;
 			transform: translate(-50%, -50%);
 		}
-	`];
+	`,
+	];
 }
 
 customElements.define("game-exit-zone", GameExitZone);

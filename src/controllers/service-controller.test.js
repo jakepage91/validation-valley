@@ -137,9 +137,7 @@ describe("ServiceController", () => {
 		});
 
 		it("should handle errors during loading", async () => {
-			legacyService.fetchUserData.mockRejectedValue(
-				new Error("Network error"),
-			);
+			legacyService.fetchUserData.mockRejectedValue(new Error("Network error"));
 
 			await controller.loadUserData();
 

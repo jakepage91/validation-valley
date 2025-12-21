@@ -35,10 +35,10 @@ export class QuestController {
 		this.options = {
 			progressService: null,
 			registry: DefaultRegistry,
-			onQuestStart: (_quest) => { },
-			onChapterChange: (_chapter, _index) => { },
-			onQuestComplete: (_quest) => { },
-			onReturnToHub: () => { },
+			onQuestStart: (_quest) => {},
+			onChapterChange: (_chapter, _index) => {},
+			onQuestComplete: (_quest) => {},
+			onReturnToHub: () => {},
 			...options,
 		};
 
@@ -73,7 +73,6 @@ export class QuestController {
 		}
 	}
 
-
 	hostDisconnected() {
 		// Save current state
 		if (this.currentQuest) {
@@ -100,7 +99,6 @@ export class QuestController {
 			console.warn(`Quest not available: ${questId}`);
 			return;
 		}
-
 
 		// Reset progress for this quest (handles restarts)
 		this.progressService.resetQuestProgress(questId);
@@ -139,7 +137,6 @@ export class QuestController {
 		}
 
 		// Ensure content is loaded
-
 
 		this.currentQuest = quest;
 		// Do not force chapter index to 0 here; let jumpToChapter handle it or default to 0
@@ -186,7 +183,6 @@ export class QuestController {
 
 		// Ensure content is loaded (if currentQuest was set but content missing)
 
-
 		// Notify host
 		this.options.onQuestStart(this.currentQuest);
 		if (this.currentChapter) {
@@ -209,8 +205,6 @@ export class QuestController {
 			logger.error(`Quest not found: ${questId}`);
 			return;
 		}
-
-
 
 		// Find the first uncompleted chapter
 		let nextChapterIndex = 0;

@@ -13,7 +13,7 @@ export class VictoryScreen extends LitElement {
 	constructor() {
 		super();
 		this.quest = null;
-		this.onReturn = () => { };
+		this.onReturn = () => {};
 
 		// Use KeyboardController for consistent keyboard handling
 		this.keyboard = new KeyboardController(this, {
@@ -48,13 +48,13 @@ export class VictoryScreen extends LitElement {
 
 				<div class="rewards-container">
 					${collectedRewards.map(
-			(reward) => html`
+						(reward) => html`
 						<div class="reward-item">
 							<img src="${processImagePath(reward.image)}" alt="${reward.name}" class="reward-img" />
 							<span class="reward-name">${reward.name}</span>
 						</div>
 					`,
-		)}
+					)}
 				</div>
 
 				<p class="victory-text"><small>

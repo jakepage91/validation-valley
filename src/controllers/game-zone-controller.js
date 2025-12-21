@@ -34,8 +34,8 @@ export class GameZoneController {
 		this.host = host;
 		/** @type {Required<GameZoneOptions>} */
 		this.options = {
-			onThemeChange: () => { },
-			onContextChange: () => { },
+			onThemeChange: () => {},
+			onContextChange: () => {},
 			getChapterData: () => null,
 			hasCollectedItem: () => false,
 			...options,
@@ -43,8 +43,6 @@ export class GameZoneController {
 
 		host.addController(this);
 	}
-
-
 
 	/**
 	 * Check if character is in a specific zone and trigger callbacks
@@ -74,7 +72,7 @@ export class GameZoneController {
 	 * @param {number} y - Y position
 	 * @returns {ThemeMode} 'dark' or 'light'
 	 */
-	getThemeForPosition(x, y) {
+	getThemeForPosition(_x, y) {
 		if (y <= GAME_CONFIG.VIEWPORT.ZONES.THEME.DARK_HEIGHT) {
 			return "dark";
 		}

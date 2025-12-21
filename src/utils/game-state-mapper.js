@@ -42,5 +42,5 @@ export const GameStateMapper = {
 				isCloseToTarget: isCloseToTarget,
 			},
 		};
-	}
+	},
 };

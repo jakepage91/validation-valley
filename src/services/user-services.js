@@ -115,4 +115,3 @@ export class NewUserService {
 		return ServiceType.NEW;
 	}
 }
-

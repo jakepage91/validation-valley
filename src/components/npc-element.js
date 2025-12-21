@@ -77,18 +77,23 @@ export class NpcElement extends LitElement {
         >
 		${this.action || "TALK"}
         </wa-tooltip>
-		${this.image
+		${
+			this.image
 				? html`
             <img src="${processImagePath(this.image)}" id="npc-tooltip" class="npc-img" alt="${this.name}" />
             `
 				: html`
             <wa-icon name="${this.icon}" id="npc-tooltip"  style="font-size: var(--wa-font-size-2xl); color: ${this.isClose ? "var(--wa-color-primary-500)" : "var(--wa-color-neutral-200)"}; transition: color 0.3s;"></wa-icon>
             `
-			}
+		}
 
-      ${!this.isRewardCollected ? html`
+      ${
+				!this.isRewardCollected
+					? html`
         <wa-tag variant="neutral" size="small" pill class="npc-name-tag">${this.name}</wa-tag>
-      ` : ''}
+      `
+					: ""
+			}
     `;
 	}
 }

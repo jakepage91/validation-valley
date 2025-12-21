@@ -73,14 +73,15 @@ export class RewardElement extends LitElement {
 
 		return html`
       <div class="reward-box ${hasImage ? "has-image" : ""}">
-        ${hasImage
-				? html`
+        ${
+					hasImage
+						? html`
           <img src="${processImagePath(this.image)}" class="reward-img" alt="Reward" />
         `
-				: html`
+						: html`
           <wa-icon name="${this.icon}" style="font-size: var(--wa-font-size-l); color: #facc15;"></wa-icon>
         `
-			}
+				}
       </div>
     `;
 	}

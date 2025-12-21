@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LocalStorageAdapter } from "./storage-service.js";
 
 // Mock Logger
@@ -16,7 +16,7 @@ vi.mock("./logger-service.js", () => ({
 
 describe("LocalStorageAdapter", () => {
 	let adapter;
-	let originalLocalStorage;
+	let _originalLocalStorage;
 
 	beforeEach(() => {
 		vi.resetAllMocks();
@@ -54,7 +54,7 @@ describe("LocalStorageAdapter", () => {
 
 	describe("Error Handling", () => {
 		it("should handle setItem errors (e.g. QuotaExceeded)", () => {
-			const spy = vi
+			const _spy = vi
 				.spyOn(Storage.prototype, "setItem")
 				.mockImplementation(() => {
 					throw new Error("QuotaExceeded");
@@ -77,7 +77,7 @@ describe("LocalStorageAdapter", () => {
 		});
 
 		it("should handle getItem access errors", () => {
-			const spy = vi
+			const _spy = vi
 				.spyOn(Storage.prototype, "getItem")
 				.mockImplementation(() => {
 					throw new Error("AccessDenied");
@@ -89,7 +89,7 @@ describe("LocalStorageAdapter", () => {
 		});
 
 		it("should handle removeItem errors", () => {
-			const spy = vi
+			const _spy = vi
 				.spyOn(Storage.prototype, "removeItem")
 				.mockImplementation(() => {
 					throw new Error("AccessDenied");
@@ -100,7 +100,7 @@ describe("LocalStorageAdapter", () => {
 		});
 
 		it("should handle clear errors", () => {
-			const spy = vi
+			const _spy = vi
 				.spyOn(Storage.prototype, "clear")
 				.mockImplementation(() => {
 					throw new Error("AccessDenied");

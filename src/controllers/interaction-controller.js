@@ -45,9 +45,9 @@ export class InteractionController {
 		/** @type {InteractionOptions} */
 		this.options = {
 			interactionDistance: DEFAULT_INTERACTION_DISTANCE,
-			onShowDialog: () => { },
-			onVictory: () => { },
-			onLocked: () => { },
+			onShowDialog: () => {},
+			onVictory: () => {},
+			onLocked: () => {},
 			getState: () => ({
 				level: "",
 				heroPos: { x: 0, y: 0 },

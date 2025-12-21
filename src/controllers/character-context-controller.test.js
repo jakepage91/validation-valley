@@ -17,7 +17,7 @@ describe("CharacterContextController", () => {
 		characterProvider = { setValue: vi.fn() };
 		getStateMock = vi.fn();
 
-		controller = new CharacterContextController(/** @type {any} */(host), {
+		controller = new CharacterContextController(/** @type {any} */ (host), {
 			characterProvider,
 			getState: getStateMock,
 		});
@@ -124,7 +124,7 @@ describe("CharacterContextController", () => {
 			);
 		});
 		it("should not crash if characterProvider is missing", () => {
-			controller = new CharacterContextController(/** @type {any} */(host), {
+			controller = new CharacterContextController(/** @type {any} */ (host), {
 				getState: getStateMock,
 			});
 

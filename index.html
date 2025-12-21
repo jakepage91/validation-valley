@@ -23,7 +23,7 @@
 			if (query.startsWith('?p=')) {
 				const path = decodeURIComponent(query.slice(3).split('&')[0]);
 				// Restore with base path
-				const fullPath = '/legacys-end' + path;
+				const fullPath = `/legacys-end${path}`;
 				window.history.replaceState(null, '', fullPath);
 			}
 		})();

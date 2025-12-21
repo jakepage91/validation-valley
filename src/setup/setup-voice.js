@@ -11,11 +11,15 @@ export function setupVoice(app) {
 		onInteract: () => app.handleInteract(),
 		onPause: () => app.togglePause(),
 		onNextSlide: () => {
-			const dialog = app.shadowRoot.querySelector("game-view")?.shadowRoot.querySelector("level-dialog");
+			const dialog = app.shadowRoot
+				.querySelector("game-view")
+				?.shadowRoot.querySelector("level-dialog");
 			if (dialog) dialog.nextSlide();
 		},
 		onPrevSlide: () => {
-			const dialog = app.shadowRoot.querySelector("game-view")?.shadowRoot.querySelector("level-dialog");
+			const dialog = app.shadowRoot
+				.querySelector("game-view")
+				?.shadowRoot.querySelector("level-dialog");
 			if (dialog) dialog.prevSlide();
 		},
 		onGetDialogText: () => {

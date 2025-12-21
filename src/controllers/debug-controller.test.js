@@ -80,7 +80,12 @@ describe("DebugController", () => {
 	});
 
 	describe("Debug Commands", () => {
-		let teleport, getState, setTheme, startQuest, completeQuest, completeChapter;
+		let teleport,
+			getState,
+			setTheme,
+			startQuest,
+			completeQuest,
+			completeChapter;
 		let returnToHub, listQuests, getProgress, resetProgress;
 
 		beforeEach(() => {
@@ -118,7 +123,9 @@ describe("DebugController", () => {
 		});
 
 		it("should expose getState command", () => {
-			const consoleSpy = vi.spyOn(console, "table").mockImplementation(() => { });
+			const consoleSpy = vi
+				.spyOn(console, "table")
+				.mockImplementation(() => {});
 			const state = window.game.getState();
 			expect(getState).toHaveBeenCalled();
 			expect(state).toEqual({ level: "chapter-1" });
@@ -172,7 +179,7 @@ describe("DebugController", () => {
 		});
 
 		it("should expose help command", () => {
-			const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => { });
+			const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 			window.game.help();
 			expect(consoleSpy).toHaveBeenCalled();
 			consoleSpy.mockRestore();

@@ -27,7 +27,7 @@ export class GameControls extends LitElement {
 				right: 1rem;
 				z-index: 50;
 			}
-		`
+		`,
 	];
 }
 

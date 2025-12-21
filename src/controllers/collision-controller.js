@@ -36,14 +36,12 @@ export class CollisionController {
 		/** @type {Required<CollisionOptions>} */
 		this.options = {
 			heroSize: 2.5, // Half-size of hero hitbox
-			onExitCollision: () => { },
+			onExitCollision: () => {},
 			...options,
 		};
 
 		host.addController(this);
 	}
-
-
 
 	/**
 	 * Check if hero collides with exit zone

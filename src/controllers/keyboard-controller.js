@@ -29,9 +29,9 @@ export class KeyboardController {
 		/** @type {KeyboardOptions} */
 		this.options = {
 			speed: 2.5,
-			onMove: () => { },
-			onInteract: () => { },
-			onPause: () => { },
+			onMove: () => {},
+			onInteract: () => {},
+			onPause: () => {},
 			isEnabled: () => true,
 			...options,
 		};

@@ -315,9 +315,9 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 			<victory-screen
 				.quest="${quest}"
 				.onReturn="${() => {
-				this.showQuestCompleteDialog = false;
-				this.questController.returnToHub();
-			}}"
+					this.showQuestCompleteDialog = false;
+					this.questController.returnToHub();
+				}}"
 			></victory-screen>
 		`;
 	}
@@ -344,7 +344,7 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 				@quest-continue="${(e) => this.handleContinueQuest(e.detail.questId)}"
 				@reset-progress="${() => this.debug.options.resetProgress()}"
 				@open-about="${() =>
-				this.shadowRoot.querySelector("about-slides").show()}"
+					this.shadowRoot.querySelector("about-slides").show()}"
 			></quest-hub>
 		`;
 	}
@@ -382,35 +382,35 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 				@restart="${this.handleRestartQuest}"
 				@quit="${this.handleQuitToHub}"
 				@complete="${() => {
-				this.showDialog = false;
+					this.showDialog = false;
 
-				// If we were showing the next chapter dialog (after reward collection),
-				// advance to the next chapter
-				if (
-					this.isRewardCollected &&
-					this.questController?.hasNextChapter()
-				) {
-					console.log("📖 Advancing to next chapter after preview");
-					this.triggerLevelTransition();
-				} else {
-					// Otherwise, just mark item as collected (initial dialog completion)
-					this.gameState.setCollectedItem(true);
-				}
-			}}"
+					// If we were showing the next chapter dialog (after reward collection),
+					// advance to the next chapter
+					if (
+						this.isRewardCollected &&
+						this.questController?.hasNextChapter()
+					) {
+						console.log("📖 Advancing to next chapter after preview");
+						this.triggerLevelTransition();
+					} else {
+						// Otherwise, just mark item as collected (initial dialog completion)
+						this.gameState.setCollectedItem(true);
+					}
+				}}"
 				@close-dialog="${() => {
-				this.showDialog = false;
-				this.hasSeenIntro = true;
-			}}"
+					this.showDialog = false;
+					this.hasSeenIntro = true;
+				}}"
 				@toggle-hot-switch="${() => {
-				const newState = this.hotSwitchState === "legacy" ? "new" : "legacy";
-				this.gameState.setHotSwitchState(newState);
-				logger.info("🔄 Hot Switch toggled to:", newState);
-			}}"
+					const newState = this.hotSwitchState === "legacy" ? "new" : "legacy";
+					this.gameState.setHotSwitchState(newState);
+					logger.info("🔄 Hot Switch toggled to:", newState);
+				}}"
 				@reward-collected="${() => {
-				logger.info("🎉 LegacysEndApp received reward-collected event");
-				this.gameState.setRewardCollected(true);
-				this.requestUpdate(); // Force update just in case
-			}}"
+					logger.info("🎉 LegacysEndApp received reward-collected event");
+					this.gameState.setRewardCollected(true);
+					this.requestUpdate(); // Force update just in case
+				}}"
 			></game-view>
 		`;
 	}
