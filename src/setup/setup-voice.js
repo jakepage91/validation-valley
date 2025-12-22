@@ -47,9 +47,9 @@ export function setupVoice(app) {
 			const npcPos = state.chapterData?.npc?.position;
 			if (!npcPos) return;
 
-			// Centralized move logic in sessionManager
+			// Centralized move logic in LegacysEndApp
 			const dist = app.interaction.options.interactionDistance - 2;
-			app.sessionManager.moveTo(npcPos.x - dist, npcPos.y);
+			app.moveTo(npcPos.x - dist, npcPos.y);
 		},
 		onMoveToExit: () => {
 			const chapterData = app.getChapterData(app.chapterId);
@@ -57,7 +57,7 @@ export function setupVoice(app) {
 			if (!exitZone) return;
 
 			logger.info(`🚪 Moving to exit at (${exitZone.x}, ${exitZone.y})`);
-			app.sessionManager.moveTo(exitZone.x, exitZone.y);
+			app.moveTo(exitZone.x, exitZone.y);
 		},
 		onDebugAction: (action, value) => {
 			if (
