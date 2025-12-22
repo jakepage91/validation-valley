@@ -179,11 +179,6 @@ describe("Controllers Setup", () => {
 	});
 
 	describe("SessionManager Integration", () => {
-		it("should subscribe to session manager events", () => {
-			setupControllers(mockApp);
-			expect(mockApp.sessionManager.subscribe).toHaveBeenCalled();
-		});
-
 		it("should update session manager with controller references", () => {
 			setupControllers(mockApp);
 

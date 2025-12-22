@@ -66,11 +66,4 @@ export function setupVoice(app) {
 		},
 		isEnabled: () => app.debug?.isEnabled,
 	});
-
-	// De-coupled voice celebration
-	app.sessionManager.subscribe((event) => {
-		if (event.type === "transition-start") {
-			app.voice.celebrateChapter();
-		}
-	});
 }
