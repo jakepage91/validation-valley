@@ -1,11 +1,19 @@
 import { css, html, LitElement } from "lit";
 import { ROUTES } from "./constants/routes.js";
+import { GameSessionManager } from "./managers/game-session-manager.js";
 import { ContextMixin } from "./mixins/context-mixin.js";
+import { GameStateService } from "./services/game-state-service.js";
 import { logger } from "./services/logger-service.js";
+import { ProgressService } from "./services/progress-service.js";
 import { getComingSoonQuests } from "./services/quest-registry-service.js";
+import { LocalStorageAdapter } from "./services/storage-service.js";
+import {
+	LegacyUserService,
+	MockUserService,
+	NewUserService,
+} from "./services/user-services.js";
 import { setupControllers } from "./setup/controllers.js";
 import { setupRoutes } from "./setup/routes.js";
-import { setupServices } from "./setup/services.js";
 import { GameStateMapper } from "./utils/game-state-mapper.js";
 import { Router } from "./utils/router.js";
 import "./components/quest-hub/quest-hub.js";
@@ -158,7 +166,7 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 		this.showQuestCompleteDialog = false;
 
 		// Initialize Services
-		setupServices(this);
+		this.#setupServices();
 
 		// Sync local properties with GameStateService (Observable pattern)
 		this.syncState();
@@ -231,6 +239,30 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 
 	disconnectedCallback() {
 		super.disconnectedCallback();
+	}
+
+	#setupServices() {
+		// Initialize Services
+		this.storageAdapter = new LocalStorageAdapter();
+		this.gameState = new GameStateService();
+		this.progressService = new ProgressService(this.storageAdapter);
+		// logger is imported globally where needed
+
+		this.services = {
+			legacy: new LegacyUserService(),
+			mock: new MockUserService(),
+			new: new NewUserService(),
+		};
+
+		// Initialize Session Manager (after other services are ready)
+		this.sessionManager = new GameSessionManager({
+			gameState: this.gameState,
+			progressService: this.progressService,
+			// Router and questController will be set later in setupControllers/app
+			router: null,
+			questController: null,
+			controllers: {},
+		});
 	}
 
 	applyTheme() {
