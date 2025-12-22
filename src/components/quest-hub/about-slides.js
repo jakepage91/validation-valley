@@ -1,5 +1,5 @@
 import { html, LitElement } from "lit";
-import { ABOUT_SLIDES_CONTENT } from "../content/about-content.js";
+import { ABOUT_SLIDES_CONTENT } from "../../content/about-content.js";
 import "@awesome.me/webawesome/dist/components/dialog/dialog.js";
 import "@awesome.me/webawesome/dist/components/carousel/carousel.js";
 import "@awesome.me/webawesome/dist/components/carousel-item/carousel-item.js";

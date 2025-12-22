@@ -6,10 +6,13 @@ import "@awesome.me/webawesome/dist/components/icon/icon.js";
 import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
 import "@awesome.me/webawesome/dist/components/badge/badge.js";
 import "@awesome.me/webawesome/dist/components/progress-bar/progress-bar.js";
-import { sharedStyles } from "../styles/shared.js";
+import "./about-slides.js";
+import { sharedStyles } from "../../styles/shared.js";
 
 /**
  * QuestHub - Quest selection UI
+ *
+ * @typedef {import("./about-slides.js").AboutSlides} AboutSlides
  *
  * Displays available quests with:
  * - Progress indicators
@@ -246,6 +249,8 @@ export class QuestHub extends LitElement {
 						<wa-icon slot="start" name="trash"></wa-icon> Reset Progress
 					</wa-button>
 				</footer>
+				
+				<about-slides></about-slides>
 			</div>
 		`;
 	}
@@ -263,9 +268,10 @@ export class QuestHub extends LitElement {
 	}
 
 	dispatchOpenAbout() {
-		this.dispatchEvent(
-			new CustomEvent("open-about", { bubbles: true, composed: true }),
+		const aboutSlides = /** @type {AboutSlides} */ (
+			this.shadowRoot.querySelector("about-slides")
 		);
+		aboutSlides.show();
 	}
 
 	toggleFullscreen() {

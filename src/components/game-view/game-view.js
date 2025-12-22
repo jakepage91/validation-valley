@@ -1,14 +1,14 @@
 import { css, html, LitElement } from "lit";
-import "./game-hud.js";
-import "./hero-profile.js";
-import "./npc-element.js";
-import "./reward-element.js";
-import "./game-viewport.js";
-import "./level-dialog.js";
-import "./pause-menu.js";
+import "./victory-screen.js";
+import "../hero-profile.js";
+import "../npc-element.js";
+import "../reward-element.js";
+import "../game-viewport.js";
+import "../level-dialog.js";
+import "../pause-menu.js";
 import "@awesome.me/webawesome/dist/components/card/card.js";
 import "@awesome.me/webawesome/dist/components/button/button.js";
-import { sharedStyles } from "../styles/shared.js";
+import { sharedStyles } from "../../styles/shared.js";
 
 /**
  * @element game-view
@@ -48,14 +48,25 @@ export class GameView extends LitElement {
 				@quit="${() => this.dispatchEvent(new CustomEvent("quit"))}"
 			></pause-menu>
 
-			<main>
-				<game-viewport
-					.gameState="${this.gameState}"
-				></game-viewport>
-			</main>
+			${
+				ui?.isQuestCompleted
+					? html`
+					<victory-screen
+						.quest="${quest?.data /* Need to ensure quest data is available */}" 
+						.onReturn="${() => this.dispatchEvent(new CustomEvent("return-to-hub"))}"
+					></victory-screen>
+				`
+					: html`
+				<main>
+					<game-viewport
+						.gameState="${this.gameState}"
+					></game-viewport>
+				</main>
+				`
+			}
 
 			${
-				ui?.showDialog
+				ui?.showDialog && !ui?.isQuestCompleted
 					? html`
 				<level-dialog
 					.config="${dialogConfig}"

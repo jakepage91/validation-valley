@@ -8,19 +8,8 @@ import { setupRoutes } from "./setup/routes.js";
 import { setupServices } from "./setup/services.js";
 import { GameStateMapper } from "./utils/game-state-mapper.js";
 import { Router } from "./utils/router.js";
-import "./components/quest-hub.js";
-import "./components/about-slides.js";
-import "./components/game-hud.js";
-import "./components/game-view.js";
-import "./components/hero-profile.js";
-import "./components/npc-element.js";
-import "./components/reward-element.js";
-import "./components/level-dialog.js";
-import "./components/victory-screen.js";
-import "./components/pause-menu.js";
-import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
-import "@awesome.me/webawesome/dist/components/tag/tag.js";
-import "@awesome.me/webawesome/dist/components/button/button.js";
+import "./components/quest-hub/quest-hub.js";
+import "./components/game-view/game-view.js";
 import "@awesome.me/webawesome/dist/components/spinner/spinner.js";
 import "@awesome.me/webawesome/dist/styles/webawesome.css";
 import "./pixel.css";
@@ -28,7 +17,6 @@ import { sharedStyles } from "./styles/shared.js";
 
 /**
  * @typedef {import("@awesome.me/webawesome/dist/components/dialog/dialog.js").default} DialogElement
- * @typedef {import("./components/about-slides.js").AboutSlides} AboutSlides
  */
 
 /**
@@ -372,11 +360,6 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 	];
 
 	render() {
-		// Show quest complete screen if quest is completed
-		if (this.showQuestCompleteDialog) {
-			return this.renderQuestComplete();
-		}
-
 		// Show hub if not in a quest
 		if (this.isInHub) {
 			if (this.isLoading) {
@@ -390,29 +373,11 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 			}
 			return html`
 				${this.renderHub()}
-				<about-slides></about-slides>
 			`;
 		}
 
 		// Show game if in a quest
 		return this.renderGame();
-	}
-
-	renderQuestComplete() {
-		const quest = this.currentQuest;
-		if (!quest) {
-			return html`<div>Error: No quest data for completion screen.</div>`;
-		}
-
-		return html`
-			<victory-screen
-				.quest="${quest}"
-				.onReturn="${() => {
-					this.showQuestCompleteDialog = false;
-					this.questController.returnToHub();
-				}}"
-			></victory-screen>
-		`;
 	}
 
 	/**
@@ -436,10 +401,6 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 				@quest-select="${(e) => this.handleQuestSelect(e.detail.questId)}"
 				@quest-continue="${(e) => this.handleContinueQuest(e.detail.questId)}"
 				@reset-progress="${() => this.gameService.resetProgress()}"
-				@open-about="${() =>
-					/** @type {AboutSlides} */ (
-						this.shadowRoot.querySelector("about-slides")
-					).show()}"
 			></quest-hub>
 		`;
 	}
@@ -505,6 +466,10 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 					logger.info("🎉 LegacysEndApp received reward-collected event");
 					this.gameState.setRewardCollected(true);
 					this.requestUpdate(); // Force update just in case
+				}}"
+				@return-to-hub="${() => {
+					this.showQuestCompleteDialog = false;
+					this.questController.returnToHub();
 				}}"
 			></game-view>
 		`;

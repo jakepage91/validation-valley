@@ -1,7 +1,7 @@
 import { html, LitElement } from "lit";
-import { processImagePath } from "../utils/process-assets.js";
+import { processImagePath } from "../../utils/process-assets.js";
 import "@awesome.me/webawesome/dist/components/button/button.js";
-import { KeyboardController } from "../controllers/keyboard-controller.js";
+import { KeyboardController } from "../../controllers/keyboard-controller.js";
 import { styles } from "./victory-screen.css.js";
 
 export class VictoryScreen extends LitElement {

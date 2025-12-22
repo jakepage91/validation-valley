@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GameView } from "./game-view.js";
+import { GameView } from "./game-view/game-view.js";
 import { LevelDialog } from "./level-dialog.js";
 
 // Mock WebAwesome components to avoid rendering issues in JSDOM

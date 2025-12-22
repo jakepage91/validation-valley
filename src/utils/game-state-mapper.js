@@ -22,10 +22,12 @@ export const GameStateMapper = {
 			ui: {
 				isPaused: app.isPaused || false,
 				showDialog: app.showDialog,
+				isQuestCompleted: app.showQuestCompleteDialog,
 				lockedMessage: app.interaction?.lockedMessage,
 			},
 			quest: {
 				title: app.currentQuest?.name,
+				data: app.currentQuest,
 				chapterNumber: app.questController?.getCurrentChapterNumber() || 0,
 				totalChapters: app.questController?.getTotalChapters() || 0,
 				isLastChapter: isLastChapter,
