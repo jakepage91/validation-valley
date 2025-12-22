@@ -254,15 +254,24 @@ Controllers are specialized classes (often using Lit's Reactive Controller patte
 *   **Context-Aware**: Uses game state (dialog open, reward collected) to interpret ambiguous commands like "next".
 **Browser Support**: Chrome/Edge (Web Speech API required).
 
-### `DebugController`
-**Purpose**: Exposes the `window.game` global API for debugging when `?debug` is present in the URL.
+### `GameController` (formerly `DebugController`)
+**Purpose**: The primary interface for game operations. It receives commands from the `VoiceController` or console and delegates them to the `GameService`.
 **Type**: Lit Reactive Controller.
 **Inputs**:
-*   `?debug` query parameter in URL.
-*   `DebugOptions` callbacks (`setLevel`, `giveItem`, etc.).
+*   `?debug` query parameter in URL (enables debug mode).
+*   `GameControllerOptions`: Injected `GameService` instance.
 **Outputs**:
-*   `window.game` object with console commands.
 *   Console logs for state inspection.
+*   **Note**: `window.game` has been removed. Use `app.gameService` in the console for debugging if needed.
+
+### `GameService`
+**Purpose**: Centralized service for all game operations (teleporting, quest management, state retrieval).
+**Type**: Pure Logic Class.
+**Usage**: Injected into `GameController`, `VoiceController`, and available via `app.gameService`.
+**Key Methods**:
+*   `teleport(x, y)`
+*   `setLevel(chapterId)`
+*   `excludeToConsole` (Internal flag)
 
 ---
 

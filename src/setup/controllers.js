@@ -1,6 +1,6 @@
 import { setupCharacterContexts } from "./setup-character-contexts.js";
 import { setupCollision } from "./setup-collision.js";
-import { setupDebug } from "./setup-debug.js";
+import { setupGame } from "./setup-game.js";
 import { setupInteraction } from "./setup-interaction.js";
 import { setupKeyboard } from "./setup-keyboard.js";
 import { setupQuest } from "./setup-quest.js";
@@ -26,7 +26,7 @@ import { setupZones } from "./setup-zones.js";
 export function setupControllers(app) {
 	// Initialize basic input controllers
 	setupKeyboard(app);
-	setupDebug(app);
+	setupGame(app);
 	setupVoice(app);
 
 	// Initialize game mechanics controllers

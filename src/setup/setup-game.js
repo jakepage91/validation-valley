@@ -1,12 +1,14 @@
-import { DebugController } from "../controllers/debug-controller.js";
+import { GameController } from "../controllers/game-controller.js";
+import { GameService } from "../services/game-service.js";
 import { logger } from "../services/logger-service.js";
 
 /**
- * Setup DebugController
+ * Setup GameController with GameService
  * @param {import('../legacys-end-app.js').LegacysEndApp} app
  */
-export function setupDebug(app) {
-	app.debug = new DebugController(app, {
+export function setupGame(app) {
+	// Create GameService with all game operation callbacks
+	app.gameService = new GameService({
 		setLevel: (chapterId) => {
 			const data = app.getChapterData(chapterId);
 			if (data) {
@@ -69,5 +71,10 @@ export function setupDebug(app) {
 			app.progressService.resetProgress();
 			logger.info("🔄 Progress reset");
 		},
+	});
+
+	// Create GameController with GameService
+	app.gameController = new GameController(app, {
+		gameService: app.gameService,
 	});
 }

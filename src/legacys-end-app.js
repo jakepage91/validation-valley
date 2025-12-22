@@ -51,6 +51,7 @@ import { sharedStyles } from "./styles/shared.js";
  * @property {import("./services/progress-service.js").ProgressService} progressService
  * @property {import("./services/game-state-service.js").GameStateService} gameState
  * @property {import("./services/storage-service.js").LocalStorageAdapter} storageAdapter
+ * @property {import("./services/game-service.js").GameService} gameService
  * @property {Object} services
  * @property {import("./managers/game-session-manager.js").GameSessionManager} sessionManager
  *
@@ -63,7 +64,7 @@ import { sharedStyles } from "./styles/shared.js";
  * @property {import("./controllers/character-context-controller.js").CharacterContextController} characterContexts
  * @property {import("./controllers/interaction-controller.js").InteractionController} interaction
  * @property {import("./controllers/keyboard-controller.js").KeyboardController} keyboard
- * @property {import("./controllers/debug-controller.js").DebugController} debug
+ * @property {import("./controllers/game-controller.js").GameController} gameController
  * @property {import("./controllers/voice-controller.js").VoiceController} voice
  * @property {import("./controllers/game-zone-controller.js").GameZoneController} zones
  * @property {import("./controllers/collision-controller.js").CollisionController} collision
@@ -90,6 +91,8 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 	gameState;
 	/** @type {import("./services/storage-service.js").LocalStorageAdapter} */
 	storageAdapter;
+	/** @type {import("./services/game-service.js").GameService} */
+	gameService;
 	/** @type {Object} */
 	services;
 	/** @type {import("./managers/game-session-manager.js").GameSessionManager} */
@@ -110,8 +113,8 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 	interaction;
 	/** @type {import("./controllers/keyboard-controller.js").KeyboardController} */
 	keyboard;
-	/** @type {import("./controllers/debug-controller.js").DebugController} */
-	debug;
+	/** @type {import("./controllers/game-controller.js").GameController} */
+	gameController;
 	/** @type {import("./controllers/voice-controller.js").VoiceController} */
 	voice;
 	/** @type {import("./controllers/game-zone-controller.js").GameZoneController} */
@@ -432,7 +435,7 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 				.comingSoonQuests="${getComingSoonQuests()}"
 				@quest-select="${(e) => this.handleQuestSelect(e.detail.questId)}"
 				@quest-continue="${(e) => this.handleContinueQuest(e.detail.questId)}"
-				@reset-progress="${() => this.debug.options.resetProgress()}"
+				@reset-progress="${() => this.gameService.resetProgress()}"
 				@open-about="${() =>
 					/** @type {AboutSlides} */ (
 						this.shadowRoot.querySelector("about-slides")

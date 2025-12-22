@@ -60,10 +60,14 @@ export function setupVoice(app) {
 			app.sessionManager.moveTo(exitZone.x, exitZone.y);
 		},
 		onDebugAction: (action, value) => {
-			if (app.debug.isEnabled && window.game && window.game[action]) {
-				window.game[action](value);
+			if (
+				app.gameController.isEnabled &&
+				app.gameService &&
+				app.gameService[action]
+			) {
+				app.gameService[action](value);
 			}
 		},
-		isEnabled: () => app.debug?.isEnabled,
+		isEnabled: () => app.gameController?.isEnabled,
 	});
 }

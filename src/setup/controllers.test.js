@@ -25,7 +25,7 @@ describe("Controllers Setup", () => {
 
 			// Controllers (will be set by setupControllers)
 			keyboard: null,
-			debug: null,
+			gameController: null,
 			voice: null,
 			zones: null,
 			collision: null,
@@ -108,9 +108,9 @@ describe("Controllers Setup", () => {
 			expect(mockApp.addController).toHaveBeenCalled();
 		});
 
-		it("should initialize DebugController", () => {
+		it("should initialize GameController", () => {
 			setupControllers(mockApp);
-			expect(mockApp.debug).toBeDefined();
+			expect(mockApp.gameController).toBeDefined();
 		});
 
 		it("should initialize VoiceController", () => {
