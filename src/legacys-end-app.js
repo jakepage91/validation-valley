@@ -12,8 +12,17 @@ import {
 	MockUserService,
 	NewUserService,
 } from "./services/user-services.js";
-import { setupControllers } from "./setup/controllers.js";
 import { setupRoutes } from "./setup/routes.js";
+import { setupCharacterContexts } from "./setup/setup-character-contexts.js";
+import { setupCollision } from "./setup/setup-collision.js";
+import { setupGame } from "./setup/setup-game.js";
+import { setupInteraction } from "./setup/setup-interaction.js";
+import { setupKeyboard } from "./setup/setup-keyboard.js";
+import { setupQuest } from "./setup/setup-quest.js";
+import { setupService } from "./setup/setup-service.js";
+import { setupSessionManager } from "./setup/setup-session-manager.js";
+import { setupVoice } from "./setup/setup-voice.js";
+import { setupZones } from "./setup/setup-zones.js";
 import { GameStateMapper } from "./utils/game-state-mapper.js";
 import { Router } from "./utils/router.js";
 import "./components/quest-hub/quest-hub.js";
@@ -186,7 +195,7 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 		setupRoutes(this.router, this);
 
 		// Initialize Controllers and Managers
-		setupControllers(this);
+		this.#setupControllers();
 	}
 
 	connectedCallback() {
@@ -263,6 +272,28 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 			questController: null,
 			controllers: {},
 		});
+	}
+
+	#setupControllers() {
+		// Initialize basic input controllers
+		setupKeyboard(this);
+		setupGame(this);
+		setupVoice(this);
+
+		// Initialize game mechanics controllers
+		setupZones(this);
+		setupCollision(this);
+		setupService(this);
+
+		// Initialize context and interaction
+		setupCharacterContexts(this);
+		setupInteraction(this);
+
+		// Initialize quest controller
+		setupQuest(this);
+
+		// Integrate with session manager
+		setupSessionManager(this);
 	}
 
 	applyTheme() {

@@ -224,4 +224,54 @@ describe("LegacysEndApp Component", () => {
 			expect(el.gameState.getState().hotSwitchState).toBeNull();
 		});
 	});
+
+	describe("Controller Initialization", () => {
+		let el;
+
+		beforeEach(async () => {
+			el = /** @type {LegacysEndApp} */ (
+				document.createElement("legacys-end-app")
+			);
+			document.body.appendChild(el);
+			await el.updateComplete;
+		});
+
+		it("should initialize all controllers on creation", () => {
+			expect(el.keyboard).toBeDefined();
+			expect(el.gameController).toBeDefined();
+			expect(el.voice).toBeDefined();
+			expect(el.zones).toBeDefined();
+			expect(el.collision).toBeDefined();
+			expect(el.serviceController).toBeDefined();
+			expect(el.characterContexts).toBeDefined();
+			expect(el.interaction).toBeDefined();
+			expect(el.questController).toBeDefined();
+		});
+
+		it("should configure KeyboardController correctly", () => {
+			expect(el.keyboard.options.speed).toBe(2.5);
+
+			// Should be disabled in hub
+			el.isInHub = true;
+			expect(el.keyboard.options.isEnabled()).toBe(false);
+
+			// Should be enabled when playing and no UI is shown
+			el.isInHub = false;
+			el.showDialog = false;
+			el.isPaused = false;
+			el.isEvolving = false;
+			expect(el.keyboard.options.isEnabled()).toBe(true);
+
+			// Should be disabled if any UI is shown or paused
+			el.isPaused = true;
+			expect(el.keyboard.options.isEnabled()).toBe(false);
+		});
+
+		it("should integrate with SessionManager", () => {
+			expect(el.sessionManager.options.questController).toBe(
+				el.questController,
+			);
+			expect(el.sessionManager.options.controllers.keyboard).toBe(el.keyboard);
+		});
+	});
 });
