@@ -1,10 +1,10 @@
-import { css, html, LitElement } from "lit";
+import { html, LitElement } from "lit";
 import { ABOUT_SLIDES_CONTENT } from "../content/about-content.js";
 import "@awesome.me/webawesome/dist/components/dialog/dialog.js";
 import "@awesome.me/webawesome/dist/components/carousel/carousel.js";
 import "@awesome.me/webawesome/dist/components/carousel-item/carousel-item.js";
 import "@awesome.me/webawesome/dist/components/button/button.js";
-import { sharedStyles } from "../styles/shared.js";
+import { styles } from "./about-slides.css.js";
 
 /**
  * AboutSlides - Displays information about the game in a carousel dialog
@@ -12,52 +12,7 @@ import { sharedStyles } from "../styles/shared.js";
  * @element about-slides
  */
 export class AboutSlides extends LitElement {
-	static styles = [
-		...sharedStyles,
-		css`
-			:host {
-				display: block;
-			}
-
-			wa-carousel {
-				--aspect-ratio: 16/9;
-				width: 100%;
-			}
-
-			wa-carousel-item {
-				display: flex;
-				flex-direction: column;
-				align-items: center;
-				justify-content: center;
-				text-align: center;
-				padding: 2rem;
-			}
-
-			h2 {
-				font-family: 'Press Start 2P', monospace;
-				font-size: 1.5rem;
-				margin-bottom: 1rem;
-				color: var(--wa-color-primary-text);
-			}
-
-			p {
-				font-family: var(--wa-font-sans);
-				font-size: 1.2rem;
-				line-height: 1.6;
-				margin-bottom: 1rem;
-			}
-
-			ul {
-				list-style-type: none;
-				padding: 0;
-			}
-
-			li {
-				margin: 0.5rem 0;
-				font-size: 1.1rem;
-			}
-		`,
-	];
+	static styles = styles;
 
 	render() {
 		return html`

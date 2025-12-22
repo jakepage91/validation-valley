@@ -1,7 +1,7 @@
-import { css, html, LitElement } from "lit";
+import { html, LitElement } from "lit";
 import "@awesome.me/webawesome/dist/components/tag/tag.js";
 import { GAME_CONFIG } from "../../constants/game-config.js";
-import { sharedStyles } from "../../styles/shared.js";
+import { styles } from "./game-exit-zone.css.js";
 
 /**
  * @element game-exit-zone
@@ -47,19 +47,7 @@ export class GameExitZone extends LitElement {
 		`;
 	}
 
-	static styles = [
-		sharedStyles,
-		css`
-		:host {
-			position: absolute;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			z-index: 10;
-			transform: translate(-50%, -50%);
-		}
-	`,
-	];
+	static styles = styles;
 }
 
 customElements.define("game-exit-zone", GameExitZone);

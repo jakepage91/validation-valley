@@ -1,0 +1,102 @@
+import { css } from "lit";
+import { sharedStyles } from "../styles/shared.js";
+
+export const styles = [
+	...sharedStyles,
+	css`
+		.controls-details {
+			position: absolute;
+			bottom: var(--wa-space-m);
+			right: var(--wa-space-m);
+			z-index: 10;
+			background-color: var(--wa-color-surface-default);
+			border-radius: var(--wa-border-radius-m);
+			box-shadow: var(--wa-shadow-medium);
+			max-width: 200px;
+		}
+
+		.controls-details::part(content) {
+			padding: var(--wa-space-s) var(--wa-space-m);
+		}
+
+		.controls-details::part(summary) {
+			font-weight: bold;
+			font-size: var(--wa-font-size-xs);
+			padding: var(--wa-space-s) var(--wa-space-m);
+			text-transform: uppercase;
+		}
+
+		/* Force content to expand upwards */
+		.controls-details[open] {
+			display: flex;
+			flex-direction: column-reverse;
+		}
+
+		.game-area {
+			position: relative;
+			/* Force square by using the smaller dimension */
+			width: min(100%, calc(100vh - 96px)); /* 96px approximate HUD height */
+			height: min(100%, calc(100vh - 96px));
+			aspect-ratio: 1/1;
+			/* Center the square */
+			margin: 0 auto;
+			transition: background 1s ease-in-out;
+			background-size: cover;
+			background-position: center;
+			background-repeat: no-repeat;
+		}
+
+		/* Zone Overlays */
+		.zone {
+			position: absolute;
+			top: 0; bottom: 0;
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-end;
+			align-items: center;
+			padding-bottom: 1rem;
+		}
+		.zone-light { top: 25%; width: 100%; height: 75%; background-color: rgba(255,255,255,0.1); border-right: 2px dashed rgba(255,255,255,0.2); }
+		.zone-dark { top: 0%; width: 100%; height: 25%;  background-color: rgba(0,0,0,0.3); }
+		.zone-label { color: rgba(255,255,255,0.5); font-weight: bold; text-transform: uppercase; }
+
+
+		.exit-text {
+			position: relative;
+			white-space: nowrap;
+			animation: bounce 1s infinite;
+		}
+
+		/* Hero Container */
+		hero-profile {
+			position: absolute; z-index: 30;
+			transform: translate(-50%, -50%);
+			will-change: transform, left, top;
+			width: 15%;
+			aspect-ratio: 1/1;
+			pointer-events: none;
+		}
+
+		reward-element {
+			width: 5%;
+			aspect-ratio: 1/1;
+			z-index: 20;
+			transition: all 0.8s ease-in-out;
+		}
+
+		reward-element.growing {
+			transform: translate(-50%, -50%) scale(10);
+			z-index: 100;
+		}
+
+		reward-element.moving {
+			transform: translate(-50%, -50%) scale(0.1);
+			opacity: 0;
+		}
+
+		@keyframes bounce {
+			0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
+			50% { transform: none; animation-timing-function: cubic-bezier(0,0,0.2,1); }
+		}
+	`,
+];
