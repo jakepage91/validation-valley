@@ -190,6 +190,9 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 		this.currentQuest = null;
 		this.isInHub = false;
 
+		// Initialize movement state
+		this._autoMoveRequestId = null;
+
 		// Initialize Router
 		this.router = new Router();
 		setupRoutes(this.router, this);
@@ -334,25 +337,6 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 		this.chapterId = sessionState.chapterId;
 	}
 
-	togglePause() {
-		this.sessionManager.togglePause();
-	}
-
-	handleResume() {
-		this.sessionManager.handleResume();
-	}
-
-	handleRestartQuest() {
-		this.sessionManager.handleRestartQuest();
-	}
-
-	handleQuitToHub() {
-		this.sessionManager.handleQuitToHub();
-	}
-
-	/**
-	 * Get chapter data for current level from active quest
-	 */
 	getChapterData(levelId) {
 		if (!this.currentQuest || !this.currentQuest.chapters) return null;
 		return this.currentQuest.chapters[levelId] || null;
@@ -363,19 +347,123 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 	 * Called by KeyboardController
 	 */
 	handleInteract() {
-		this.sessionManager.handleInteract();
+		this.interaction.handleInteract();
 	}
 
 	/**
 	 * Handle keyboard movement
 	 * Called by KeyboardController
 	 */
-	handleMove(dx, dy) {
-		this.sessionManager.handleMove(dx, dy);
+	handleMove(dx, dy, isAuto = false) {
+		if (!isAuto) {
+			this.stopAutoMove();
+		}
+
+		const currentConfig = this.questController?.currentChapter;
+		if (!currentConfig) return;
+
+		const state = this.gameState.getState();
+		let { x, y } = state.heroPos;
+
+		x += dx;
+		y += dy;
+
+		// Clamp to boundaries
+		x = Math.max(2, Math.min(98, x));
+		y = Math.max(2, Math.min(98, y));
+
+		// Check Exit Collision
+		if (this.questController?.hasExitZone()) {
+			this.collision.checkExitZone(
+				x,
+				y,
+				currentConfig.exitZone,
+				state.hasCollectedItem,
+			);
+		}
+
+		this.gameState.setHeroPosition(x, y);
+		this.zones.checkZones(x, y);
 	}
 
+	/**
+	 * Auto-move hero to target position
+	 */
+	moveTo(targetX, targetY, step = 0.4) {
+		this.stopAutoMove();
+
+		const move = () => {
+			const state = this.gameState.getState();
+			const { x, y } = state.heroPos;
+
+			const dx = targetX - x;
+			const dy = targetY - y;
+			const distance = Math.sqrt(dx * dx + dy * dy);
+
+			if (distance < step) {
+				this.gameState.setHeroPosition(targetX, targetY);
+				this.stopAutoMove();
+				return;
+			}
+
+			const moveX = (dx / distance) * step;
+			const moveY = (dy / distance) * step;
+
+			this.handleMove(moveX, moveY, true);
+			this._autoMoveRequestId = requestAnimationFrame(move);
+		};
+
+		this._autoMoveRequestId = requestAnimationFrame(move);
+	}
+
+	/**
+	 * Stop auto-movement
+	 */
+	stopAutoMove() {
+		if (this._autoMoveRequestId) {
+			cancelAnimationFrame(this._autoMoveRequestId);
+			this._autoMoveRequestId = null;
+		}
+	}
+
+	/**
+	 * Trigger level transition (evolution animation + chapter completion)
+	 */
 	triggerLevelTransition() {
-		this.sessionManager.triggerLevelTransition();
+		this.stopAutoMove();
+		if (this.questController?.isInQuest()) {
+			this.gameState.setEvolving(true);
+			setTimeout(() => {
+				this.questController.completeChapter();
+				this.gameState.setEvolving(false);
+			}, 500);
+		}
+	}
+
+	/**
+	 * Toggle pause state
+	 */
+	togglePause() {
+		if (this.isInHub) return;
+		const state = this.gameState.getState();
+		this.gameState.setPaused(!state.isPaused);
+	}
+
+	/**
+	 * Handle pause menu actions
+	 */
+	handleResume() {
+		this.gameState.setPaused(false);
+	}
+
+	handleRestartQuest() {
+		if (this.currentQuest) {
+			this.sessionManager.startQuest(this.currentQuest.id);
+		}
+	}
+
+	handleQuitToHub() {
+		this.sessionManager.returnToHub();
 	}
 
 	getActiveService() {
