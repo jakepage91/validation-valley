@@ -9,8 +9,9 @@ import { sharedStyles } from "../styles/shared.js";
 
 function escapeHtml(html) {
 	const placeholderElement = document.createElement("div");
-	return placeholderElement.appendChild(document.createTextNode(html))
-		.parentNode.innerHTML;
+	const textNode = document.createTextNode(html);
+	placeholderElement.appendChild(textNode);
+	return placeholderElement.innerHTML;
 }
 
 export class LevelDialog extends LitElement {
@@ -45,7 +46,9 @@ export class LevelDialog extends LitElement {
 			if (slides[this.slideIndex] === "confirmation") {
 				this.updateComplete.then(() => {
 					requestAnimationFrame(() => {
-						const btn = this.shadowRoot.querySelector(".complete-btn");
+						const btn = /** @type {HTMLElement} */ (
+							this.shadowRoot.querySelector(".complete-btn")
+						);
 						if (btn) btn.focus();
 					});
 				});

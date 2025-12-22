@@ -91,6 +91,8 @@ export const Difficulty = {
  * @property {NpcConfig} [npc]
  * @property {RewardConfig} [reward]
  * @property {HeroConfig} [hero]
+ * @property {boolean} [canToggleTheme]
+ * @property {boolean} [hasThemeZones]
  * @property {boolean} [hasHotSwitch]
  * @property {boolean} [isFinalBoss]
  */

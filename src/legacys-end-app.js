@@ -27,6 +27,11 @@ import "./pixel.css";
 import { sharedStyles } from "./styles/shared.js";
 
 /**
+ * @typedef {import("@awesome.me/webawesome/dist/components/dialog/dialog.js").default} DialogElement
+ * @typedef {import("./components/about-slides.js").AboutSlides} AboutSlides
+ */
+
+/**
  * @element legacys-end-app
  * @property {String} chapterId
  * @property {Boolean} showDialog
@@ -41,8 +46,98 @@ import { sharedStyles } from "./styles/shared.js";
  * @property {Object} currentQuest
  * @property {Boolean} isInHub
  * @property {Boolean} hasSeenIntro
+ *
+ * Services (added by setupServices)
+ * @property {import("./services/progress-service.js").ProgressService} progressService
+ * @property {import("./services/game-state-service.js").GameStateService} gameState
+ * @property {import("./services/storage-service.js").LocalStorageAdapter} storageAdapter
+ * @property {Object} services
+ * @property {import("./managers/game-session-manager.js").GameSessionManager} sessionManager
+ *
+ * Router
+ * @property {import("./utils/router.js").Router} router
+ *
+ * Controllers (added by setupControllers)
+ * @property {import("./controllers/quest-controller.js").QuestController} questController
+ * @property {import("./controllers/service-controller.js").ServiceController} serviceController
+ * @property {import("./controllers/character-context-controller.js").CharacterContextController} characterContexts
+ * @property {import("./controllers/interaction-controller.js").InteractionController} interaction
+ * @property {import("./controllers/keyboard-controller.js").KeyboardController} keyboard
+ * @property {import("./controllers/debug-controller.js").DebugController} debug
+ * @property {import("./controllers/voice-controller.js").VoiceController} voice
+ * @property {import("./controllers/game-zone-controller.js").GameZoneController} zones
+ * @property {import("./controllers/collision-controller.js").CollisionController} collision
+ *
+ * Context Providers (added by ContextMixin)
+ * @property {import("@lit/context").ContextProvider} profileProvider
+ * @property {import("@lit/context").ContextProvider} themeProvider
+ * @property {import("@lit/context").ContextProvider} characterProvider
+ * @property {import("@lit/context").ContextProvider} suitProvider
+ * @property {import("@lit/context").ContextProvider} gearProvider
+ * @property {import("@lit/context").ContextProvider} powerProvider
+ * @property {import("@lit/context").ContextProvider} masteryProvider
+ *
+ * User Data
+ * @property {Object} userData
+ * @property {Boolean} userLoading
+ * @property {string|null} userError
  */
 export class LegacysEndApp extends ContextMixin(LitElement) {
+	// Services (added by setupServices)
+	/** @type {import("./services/progress-service.js").ProgressService} */
+	progressService;
+	/** @type {import("./services/game-state-service.js").GameStateService} */
+	gameState;
+	/** @type {import("./services/storage-service.js").LocalStorageAdapter} */
+	storageAdapter;
+	/** @type {Object} */
+	services;
+	/** @type {import("./managers/game-session-manager.js").GameSessionManager} */
+	sessionManager;
+
+	// Router
+	/** @type {import("./utils/router.js").Router} */
+	router;
+
+	// Controllers (added by setupControllers)
+	/** @type {import("./controllers/quest-controller.js").QuestController} */
+	questController;
+	/** @type {import("./controllers/service-controller.js").ServiceController} */
+	serviceController;
+	/** @type {import("./controllers/character-context-controller.js").CharacterContextController} */
+	characterContexts;
+	/** @type {import("./controllers/interaction-controller.js").InteractionController} */
+	interaction;
+	/** @type {import("./controllers/keyboard-controller.js").KeyboardController} */
+	keyboard;
+	/** @type {import("./controllers/debug-controller.js").DebugController} */
+	debug;
+	/** @type {import("./controllers/voice-controller.js").VoiceController} */
+	voice;
+	/** @type {import("./controllers/game-zone-controller.js").GameZoneController} */
+	zones;
+	/** @type {import("./controllers/collision-controller.js").CollisionController} */
+	collision;
+
+	// User Data
+	/** @type {Object} */
+	userData;
+	/** @type {Boolean} */
+	userLoading;
+	/** @type {string|null} */
+	userError;
+
+	// Additional providers (referenced in connectedCallback)
+	// Note: These may not be properly initialized - potential bug
+	/** @type {import("@lit/context").ContextProvider} */
+	suitProvider;
+	/** @type {import("@lit/context").ContextProvider} */
+	gearProvider;
+	/** @type {import("@lit/context").ContextProvider} */
+	powerProvider;
+	/** @type {import("@lit/context").ContextProvider} */
+	masteryProvider;
+
 	static properties = {
 		chapterId: { type: String },
 		showDialog: { type: Boolean },
@@ -126,9 +221,11 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 	firstUpdated() {
 		// Start intro sequence
 		setTimeout(() => {
-			const introDialog = this.shadowRoot.getElementById("intro-dialog");
+			const introDialog = /** @type {DialogElement} */ (
+				this.shadowRoot.getElementById("intro-dialog")
+			);
 			if (introDialog) {
-				introDialog.show();
+				introDialog.open = true;
 			}
 		}, 1000);
 
@@ -156,14 +253,7 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 			// Reload user data when chapter changes (service might change)
 			this.serviceController.loadUserData();
 		}
-		if (
-			changedProperties.has("chapterId") ||
-			changedProperties.has("hasCollectedItem") ||
-			changedProperties.has("themeMode") ||
-			changedProperties.has("hotSwitchState")
-		) {
-			this.characterContexts.update();
-		}
+		// Character context updates are handled automatically by the controller's hostUpdate() lifecycle
 		// Reload user data when switching between services in Level 6
 		if (changedProperties.has("hotSwitchState")) {
 			this.serviceController.loadUserData();
@@ -344,7 +434,9 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 				@quest-continue="${(e) => this.handleContinueQuest(e.detail.questId)}"
 				@reset-progress="${() => this.debug.options.resetProgress()}"
 				@open-about="${() =>
-					this.shadowRoot.querySelector("about-slides").show()}"
+					/** @type {AboutSlides} */ (
+						this.shadowRoot.querySelector("about-slides")
+					).show()}"
 			></quest-hub>
 		`;
 	}

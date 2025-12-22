@@ -19,6 +19,11 @@ export class GameView extends LitElement {
 		gameState: { type: Object },
 	};
 
+	constructor() {
+		super();
+		this.gameState = {};
+	}
+
 	render() {
 		const { config, ui, quest, hero } = this.gameState || {};
 

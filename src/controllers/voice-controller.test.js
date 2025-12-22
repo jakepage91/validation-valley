@@ -44,6 +44,9 @@ describe("VoiceController", () => {
 	beforeEach(() => {
 		host = {
 			addController: vi.fn(),
+			removeController: vi.fn(),
+			requestUpdate: vi.fn(),
+			updateComplete: Promise.resolve(true),
 		};
 		onMove = vi.fn();
 		onInteract = vi.fn();
@@ -170,7 +173,9 @@ describe("VoiceController", () => {
 				"../services/voice-synthesis-service.js"
 			);
 			vi.clearAllMocks();
-			voiceSynthesisService.speak.mockClear();
+			/** @type {import("vitest").Mock} */ (
+				voiceSynthesisService.speak
+			).mockClear();
 		});
 
 		it("should stop recognition before speaking", () => {
@@ -188,7 +193,9 @@ describe("VoiceController", () => {
 			controller.speak("Hello");
 			expect(voiceSynthesisService.speak).toHaveBeenCalled();
 			// Verify queue parameter is false (default)
-			const callArgs = voiceSynthesisService.speak.mock.calls[0];
+			const callArgs = /** @type {import("vitest").Mock} */ (
+				voiceSynthesisService.speak
+			).mock.calls[0];
 			expect(callArgs[1].queue).toBe(false);
 		});
 
@@ -200,7 +207,9 @@ describe("VoiceController", () => {
 			controller.speak("Hello", null, "hero", true);
 			expect(voiceSynthesisService.speak).toHaveBeenCalled();
 			// Verify queue parameter is true
-			const callArgs = voiceSynthesisService.speak.mock.calls[0];
+			const callArgs = /** @type {import("vitest").Mock} */ (
+				voiceSynthesisService.speak
+			).mock.calls[0];
 			expect(callArgs[1].queue).toBe(true);
 		});
 	});
@@ -283,13 +292,13 @@ describe("VoiceController", () => {
 
 	describe("Error Handling", () => {
 		it("should handle recognition errors gracefully", () => {
-			const errorEvent = { error: "network" };
+			const errorEvent = /** @type {any} */ ({ error: "network" });
 			expect(() => controller.recognition.onerror(errorEvent)).not.toThrow();
 		});
 
 		it("should stop listening on not-allowed error", () => {
 			controller.isListening = true;
-			const errorEvent = { error: "not-allowed" };
+			const errorEvent = /** @type {any} */ ({ error: "not-allowed" });
 			controller.recognition.onerror(errorEvent);
 			expect(controller.isListening).toBe(false);
 		});

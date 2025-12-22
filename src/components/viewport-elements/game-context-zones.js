@@ -13,6 +13,12 @@ export class GameContextZones extends LitElement {
 		state: { type: String },
 	};
 
+	constructor() {
+		super();
+		this.active = false;
+		this.state = "legacy";
+	}
+
 	render() {
 		if (!this.active) return "";
 

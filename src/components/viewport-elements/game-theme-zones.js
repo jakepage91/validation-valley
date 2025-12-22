@@ -11,6 +11,11 @@ export class GameThemeZones extends LitElement {
 		active: { type: Boolean },
 	};
 
+	constructor() {
+		super();
+		this.active = false;
+	}
+
 	render() {
 		if (!this.active) return "";
 		return html`

@@ -26,6 +26,13 @@ import * as DefaultRegistry from "../services/quest-registry-service.js";
  * - Navigation between hub and quests
  *
  * @implements {ReactiveController}
+ * @property {import('lit').ReactiveControllerHost} host
+ * @property {QuestControllerOptions} options
+ * @property {import('../services/progress-service.js').ProgressService} progressService
+ * @property {Object} registry
+ * @property {Object|null} currentQuest
+ * @property {Object|null} currentChapter
+ * @property {number} currentChapterIndex
  */
 export class QuestController {
 	/**
@@ -69,9 +76,14 @@ export class QuestController {
 			if (quest) {
 				this.currentQuest = quest;
 				if (progress.currentChapter !== null) {
-					this.currentChapterIndex = progress.currentChapter;
-					this.currentChapter = this.getCurrentChapterData();
-					this.host.requestUpdate();
+					// Convert chapter ID to index
+					const chapterIndex =
+						quest.chapterIds?.indexOf(progress.currentChapter) ?? -1;
+					if (chapterIndex !== -1) {
+						this.currentChapterIndex = chapterIndex;
+						this.currentChapter = this.getCurrentChapterData();
+						this.host.requestUpdate();
+					}
 				}
 			}
 		}
@@ -80,10 +92,9 @@ export class QuestController {
 	hostDisconnected() {
 		// Save current state
 		if (this.currentQuest) {
-			this.progressService.setCurrentQuest(
-				this.currentQuest.id,
-				this.currentChapterIndex,
-			);
+			const chapterId =
+				this.currentQuest.chapterIds?.[this.currentChapterIndex] ?? null;
+			this.progressService.setCurrentQuest(this.currentQuest.id, chapterId);
 		}
 	}
 
@@ -112,7 +123,8 @@ export class QuestController {
 		this.currentChapter = this.getCurrentChapterData();
 
 		// Save progress
-		this.progressService.setCurrentQuest(questId, 0);
+		const chapterId = quest.chapterIds?.[0] ?? null;
+		this.progressService.setCurrentQuest(questId, chapterId);
 
 		// Notify host
 		this.options.onQuestStart(quest);
@@ -234,7 +246,8 @@ export class QuestController {
 		this.currentChapter = this.getCurrentChapterData();
 
 		// Save progress
-		this.progressService.setCurrentQuest(questId, nextChapterIndex);
+		const chapterId = quest.chapterIds?.[nextChapterIndex] ?? null;
+		this.progressService.setCurrentQuest(questId, chapterId);
 
 		// Notify host
 		this.options.onQuestStart(quest);
@@ -280,7 +293,8 @@ export class QuestController {
 		this.currentChapter = this.getCurrentChapterData();
 
 		// Update progress tracking
-		this.progressService.setCurrentQuest(this.currentQuest.id, index);
+		const targetChapterId = this.currentQuest.chapterIds?.[index] ?? null;
+		this.progressService.setCurrentQuest(this.currentQuest.id, targetChapterId);
 
 		// Notify host
 		this.options.onQuestStart(this.currentQuest); // Notify that quest has "started" (loaded)
@@ -387,10 +401,9 @@ export class QuestController {
 		this.currentChapter = this.getCurrentChapterData();
 
 		// Save progress
-		this.progressService.setCurrentQuest(
-			this.currentQuest.id,
-			this.currentChapterIndex,
-		);
+		const chapterId =
+			this.currentQuest.chapterIds?.[this.currentChapterIndex] ?? null;
+		this.progressService.setCurrentQuest(this.currentQuest.id, chapterId);
 
 		// Notify host
 		this.options.onChapterChange(this.currentChapter, this.currentChapterIndex);

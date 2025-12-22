@@ -163,7 +163,9 @@ describe("AIService", () => {
 		it("should track download progress", async () => {
 			const mockSession = { prompt: vi.fn(), destroy: vi.fn() };
 			const progressCallback = vi.fn();
-			let downloadListener;
+			let downloadListener = (..._args) => {
+				throw new Error("Download listener not set");
+			};
 
 			mockLanguageModel.create.mockImplementation(({ monitor }) => {
 				if (monitor) {

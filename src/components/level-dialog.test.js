@@ -1,13 +1,17 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import "./level-dialog.js";
 
+/** @typedef {import("./level-dialog.js").LevelDialog} LevelDialog */
+
 describe("LevelDialog Component", () => {
 	beforeEach(() => {
 		document.body.innerHTML = "";
 	});
 
 	it("renders narrative slide first if description is present", async () => {
-		const el = document.createElement("level-dialog");
+		const el = /** @type {LevelDialog} */ (
+			document.createElement("level-dialog")
+		);
 		el.config = {
 			description: "Intro Narrative",
 		};
@@ -18,7 +22,9 @@ describe("LevelDialog Component", () => {
 	});
 
 	it("renders problem slide if description is missing", async () => {
-		const el = document.createElement("level-dialog");
+		const el = /** @type {LevelDialog} */ (
+			document.createElement("level-dialog")
+		);
 		el.config = {
 			problemDesc: "Problem Description",
 		};

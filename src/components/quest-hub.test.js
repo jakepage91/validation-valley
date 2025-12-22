@@ -1,13 +1,15 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import "./quest-hub.js";
 
+/** @typedef {import("./quest-hub.js").QuestHub} QuestHub */
+
 describe("QuestHub Component", () => {
 	beforeEach(() => {
 		document.body.innerHTML = "";
 	});
 
 	it("renders available quests", async () => {
-		const el = document.createElement("quest-hub");
+		const el = /** @type {QuestHub} */ (document.createElement("quest-hub"));
 		el.quests = [
 			{
 				id: "q1",
@@ -40,7 +42,7 @@ describe("QuestHub Component", () => {
 	});
 
 	it("renders coming soon quests", async () => {
-		const el = document.createElement("quest-hub");
+		const el = /** @type {QuestHub} */ (document.createElement("quest-hub"));
 		el.comingSoonQuests = [
 			{
 				id: "q3",

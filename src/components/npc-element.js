@@ -6,14 +6,15 @@ import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
 
 /**
  * @element npc-element
- * @property {String} name
- * @property {String} image
- * @property {String} icon
- * @property {Number} x
- * @property {Number} y
- * @property {Boolean} isClose
- * @property {String} action
- * @property {Boolean} hasCollectedItem
+ * @property {string} name
+ * @property {string} image
+ * @property {string} icon
+ * @property {number} x
+ * @property {number} y
+ * @property {boolean} isClose
+ * @property {string} action
+ * @property {boolean} hasCollectedItem
+ * @property {boolean} isRewardCollected
  */
 export class NpcElement extends LitElement {
 	static properties = {
@@ -58,9 +59,20 @@ export class NpcElement extends LitElement {
       white-space: nowrap;
       z-index: 25;
     }
-
-
   `;
+
+	constructor() {
+		super();
+		this.name = "";
+		this.image = "";
+		this.icon = "";
+		this.x = 0;
+		this.y = 0;
+		this.isClose = false;
+		this.action = "";
+		this.hasCollectedItem = false;
+		this.isRewardCollected = false;
+	}
 
 	render() {
 		// Apply position to host

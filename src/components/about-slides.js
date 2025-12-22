@@ -6,6 +6,11 @@ import "@awesome.me/webawesome/dist/components/carousel-item/carousel-item.js";
 import "@awesome.me/webawesome/dist/components/button/button.js";
 import { sharedStyles } from "../styles/shared.js";
 
+/**
+ * AboutSlides - Displays information about the game in a carousel dialog
+ *
+ * @element about-slides
+ */
 export class AboutSlides extends LitElement {
 	static styles = [
 		...sharedStyles,
@@ -71,17 +76,29 @@ export class AboutSlides extends LitElement {
 		`;
 	}
 
+	/**
+	 * Show the about dialog
+	 */
 	show() {
-		const dialog = this.shadowRoot.querySelector("wa-dialog");
+		const dialog =
+			/** @type {import("@awesome.me/webawesome/dist/components/dialog/dialog.js").default} */ (
+				this.shadowRoot.querySelector("wa-dialog")
+			);
 		if (dialog) {
-			dialog.show();
+			dialog.open = true;
 		}
 	}
 
+	/**
+	 * Hide the about dialog
+	 */
 	hide() {
-		const dialog = this.shadowRoot.querySelector("wa-dialog");
+		const dialog =
+			/** @type {import("@awesome.me/webawesome/dist/components/dialog/dialog.js").default} */ (
+				this.shadowRoot.querySelector("wa-dialog")
+			);
 		if (dialog) {
-			dialog.hide();
+			dialog.open = false;
 		}
 	}
 }

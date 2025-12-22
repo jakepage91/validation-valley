@@ -17,6 +17,9 @@ import { sharedStyles } from "../styles/shared.js";
 /**
  * @element game-viewport
  * @property {Object} gameState
+ * @property {boolean} isAnimatingReward
+ * @property {string} rewardAnimState
+ * @property {boolean} isRewardCollected
  */
 export class GameViewport extends LitElement {
 	static properties = {
@@ -25,6 +28,14 @@ export class GameViewport extends LitElement {
 		rewardAnimState: { state: true },
 		isRewardCollected: { type: Boolean },
 	};
+
+	constructor() {
+		super();
+		this.gameState = {};
+		this.isAnimatingReward = false;
+		this.rewardAnimState = "";
+		this.isRewardCollected = false;
+	}
 
 	willUpdate(changedProperties) {
 		if (changedProperties.has("gameState")) {
@@ -89,7 +100,7 @@ export class GameViewport extends LitElement {
 			<div class="game-area" style="background: ${processBackgroundStyle(backgroundStyle)}">
 				<game-controls></game-controls>
 				
-				<game-theme-zones 
+				<game-theme-zones
 					?active="${config.hasThemeZones}"
 				></game-theme-zones>
 

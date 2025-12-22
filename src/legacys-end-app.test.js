@@ -1,13 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import "./legacys-end-app.js";
 
+/** @typedef {import("./legacys-end-app.js").LegacysEndApp} LegacysEndApp */
+
 describe("LegacysEndApp Component", () => {
 	beforeEach(() => {
 		document.body.innerHTML = "";
 	});
 
 	it("renders successfully", async () => {
-		const el = document.createElement("legacys-end-app");
+		const el = /** @type {LegacysEndApp} */ (
+			document.createElement("legacys-end-app")
+		);
 		document.body.appendChild(el);
 		await el.updateComplete;
 
@@ -15,7 +19,9 @@ describe("LegacysEndApp Component", () => {
 	});
 
 	it("renders quest-hub when in hub", async () => {
-		const el = document.createElement("legacys-end-app");
+		const el = /** @type {LegacysEndApp} */ (
+			document.createElement("legacys-end-app")
+		);
 		// Force hub state
 		el.isInHub = true;
 		el.hasSeenIntro = true;
@@ -28,7 +34,9 @@ describe("LegacysEndApp Component", () => {
 	});
 
 	it("should navigate from Hub to Quest and back on completion", async () => {
-		const el = document.createElement("legacys-end-app");
+		const el = /** @type {LegacysEndApp} */ (
+			document.createElement("legacys-end-app")
+		);
 		// Initial State: Hub
 		el.isInHub = true;
 		el.hasSeenIntro = true;
@@ -92,7 +100,9 @@ describe("LegacysEndApp Component", () => {
 
 	describe("Router Chapter Navigation Fallback", () => {
 		it("should redirect to hub when quest is unavailable", async () => {
-			const el = document.createElement("legacys-end-app");
+			const el = /** @type {LegacysEndApp} */ (
+				document.createElement("legacys-end-app")
+			);
 			el.hasSeenIntro = true;
 			document.body.appendChild(el);
 			await el.updateComplete;
@@ -116,7 +126,9 @@ describe("LegacysEndApp Component", () => {
 		});
 
 		it("should fall back to last available chapter when requested chapter is locked", async () => {
-			const el = document.createElement("legacys-end-app");
+			const el = /** @type {LegacysEndApp} */ (
+				document.createElement("legacys-end-app")
+			);
 			el.hasSeenIntro = true;
 			document.body.appendChild(el);
 			await el.updateComplete;
@@ -143,7 +155,9 @@ describe("LegacysEndApp Component", () => {
 		});
 
 		it("should successfully jump to accessible chapter", async () => {
-			const el = document.createElement("legacys-end-app");
+			const el = /** @type {LegacysEndApp} */ (
+				document.createElement("legacys-end-app")
+			);
 			el.hasSeenIntro = true;
 			document.body.appendChild(el);
 			await el.updateComplete;
@@ -173,7 +187,9 @@ describe("LegacysEndApp Component", () => {
 	});
 	describe("GameZoneController Integration", () => {
 		it("should update hotSwitchState when entering context zones", async () => {
-			const el = document.createElement("legacys-end-app");
+			const el = /** @type {LegacysEndApp} */ (
+				document.createElement("legacys-end-app")
+			);
 			document.body.appendChild(el);
 			await el.updateComplete;
 

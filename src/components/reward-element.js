@@ -17,6 +17,14 @@ export class RewardElement extends LitElement {
 		y: { type: Number },
 	};
 
+	constructor() {
+		super();
+		this.image = "";
+		this.icon = "";
+		this.x = 0;
+		this.y = 0;
+	}
+
 	static styles = css`
     :host {
       position: absolute;

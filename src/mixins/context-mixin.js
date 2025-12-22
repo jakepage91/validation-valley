@@ -4,13 +4,24 @@ import { profileContext } from "../contexts/profile-context.js";
 import { themeContext } from "../contexts/theme-context.js";
 
 /**
+ * @typedef {Object} ContextMixinInterface
+ * @property {ContextProvider} profileProvider - Provider for profile context
+ * @property {ContextProvider} themeProvider - Provider for theme context
+ * @property {ContextProvider} characterProvider - Provider for character context
+ */
+
+/**
  * ContextMixin - Validates and initializes all application context providers
- * @param {any} superClass
+ * @template {new (...args: any[]) => HTMLElement} T
+ * @param {T} superClass
+ * @returns {T & (new (...args: any[]) => ContextMixinInterface)}
  */
 export const ContextMixin = (superClass) =>
+	/** @mixes ContextMixinInterface */
 	class extends superClass {
-		constructor() {
-			super();
+		/** @param {any[]} args */
+		constructor(...args) {
+			super(...args);
 			this.profileProvider = new ContextProvider(this, {
 				context: profileContext,
 				initialValue: { loading: true },

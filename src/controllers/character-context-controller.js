@@ -47,9 +47,17 @@ export class CharacterContextController {
 	}
 
 	/**
+	 * Called when the host is connected to the DOM
+	 */
+	hostConnected() {
+		// Initial setup if needed
+	}
+
+	/**
+	 * Called before the host updates
 	 * Update all character contexts based on current game state
 	 */
-	update() {
+	hostUpdate() {
 		const state = this.options.getState();
 
 		// Calculate derived values

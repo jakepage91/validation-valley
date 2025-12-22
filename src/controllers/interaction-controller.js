@@ -93,7 +93,6 @@ export class InteractionController {
 	isCloseToNpc() {
 		const state = this.options.getState();
 		const npcPos = this.options.getNpcPosition();
-		// @ts-expect-error - heroPos is guaranteed by default state if missing
 		const distance = this.calculateDistance(state.heroPos, npcPos);
 		return (
 			distance <

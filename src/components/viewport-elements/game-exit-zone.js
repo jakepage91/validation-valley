@@ -15,6 +15,12 @@ export class GameExitZone extends LitElement {
 		active: { type: Boolean },
 	};
 
+	constructor() {
+		super();
+		this.zoneConfig = {};
+		this.active = false;
+	}
+
 	render() {
 		if (!this.active || !this.zoneConfig) return "";
 

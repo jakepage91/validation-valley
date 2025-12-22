@@ -9,6 +9,10 @@ import {
 } from "../services/user-services.js";
 
 /**
+ * @typedef {import("../legacys-end-app.js").LegacysEndApp} LegacysEndApp
+ */
+
+/**
  * Setup application services
  * @param {LegacysEndApp} app
  */

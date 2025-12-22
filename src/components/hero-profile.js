@@ -10,8 +10,15 @@ import { sharedStyles } from "../styles/shared.js";
 
 /**
  * @element hero-profile
- * @property {String} imageSrc
- * @property {String} hotSwitchState
+ * @property {string} imageSrc
+ * @property {Object} profileData
+ * @property {Object} themeData
+ * @property {Object} suitData
+ * @property {Object} gearData
+ * @property {Object} powerData
+ * @property {Object} masteryData
+ * @property {string} tooltipText
+ * @property {string} hotSwitchState
  */
 export class HeroProfile extends LitElement {
 	static properties = {
@@ -30,6 +37,7 @@ export class HeroProfile extends LitElement {
 		super();
 		this.imageSrc = "";
 		this.tooltipText = "";
+		this.hotSwitchState = "";
 
 		// Initialize context consumers
 		new ContextConsumer(this, {

@@ -29,6 +29,8 @@ describe("ServiceController", () => {
 				id: 1,
 				name: "Legacy User",
 				role: "developer",
+				hp: 50,
+				avatarColor: "#ef4444",
 			}),
 			getServiceName: vi.fn().mockReturnValue("legacy"),
 		};
@@ -38,6 +40,8 @@ describe("ServiceController", () => {
 				id: 2,
 				name: "Mock User",
 				role: "tester",
+				hp: 75,
+				avatarColor: "#eab308",
 			}),
 			getServiceName: vi.fn().mockReturnValue("mock"),
 		};
@@ -47,6 +51,8 @@ describe("ServiceController", () => {
 				id: 3,
 				name: "New User",
 				role: "admin",
+				hp: 100,
+				avatarColor: "#22c55e",
 			}),
 			getServiceName: vi.fn().mockReturnValue("new"),
 		};
@@ -129,6 +135,8 @@ describe("ServiceController", () => {
 				id: 1,
 				name: "Legacy User",
 				role: "developer",
+				hp: 50,
+				avatarColor: "#ef4444",
 			});
 			expect(controller.userLoading).toBe(false);
 			expect(controller.userError).toBeNull();
@@ -152,7 +160,13 @@ describe("ServiceController", () => {
 			let loadingDuringFetch = false;
 			legacyService.fetchUserData.mockImplementation(async () => {
 				loadingDuringFetch = controller.userLoading;
-				return { id: 1, name: "Test", role: "user" };
+				return {
+					id: 1,
+					name: "Test",
+					role: "user",
+					hp: 50,
+					avatarColor: "#ef4444",
+				};
 			});
 
 			await controller.loadUserData();
@@ -181,7 +195,13 @@ describe("ServiceController", () => {
 		});
 
 		it("should update profile context with user data", () => {
-			controller.userData = { id: 1, name: "Test User", role: "admin" };
+			controller.userData = {
+				id: 1,
+				name: "Test User",
+				role: "admin",
+				hp: 100,
+				avatarColor: "#22c55e",
+			};
 			controller.userLoading = false;
 			controller.userError = null;
 
@@ -209,11 +229,19 @@ describe("ServiceController", () => {
 		});
 
 		it("getUserData should return current userData", () => {
-			controller.userData = { id: 1, name: "Test", role: "user" };
+			controller.userData = {
+				id: 1,
+				name: "Test",
+				role: "user",
+				hp: 50,
+				avatarColor: "#ef4444",
+			};
 			expect(controller.getUserData()).toEqual({
 				id: 1,
 				name: "Test",
 				role: "user",
+				hp: 50,
+				avatarColor: "#ef4444",
 			});
 		});
 

@@ -37,7 +37,9 @@ describe("QuestController", () => {
 		// Mock Host
 		host = {
 			addController: vi.fn(),
+			removeController: vi.fn(),
 			requestUpdate: vi.fn(),
+			updateComplete: Promise.resolve(true),
 		};
 
 		// Mock Quest Data
@@ -54,7 +56,7 @@ describe("QuestController", () => {
 
 		// Reset Mocks
 		vi.clearAllMocks();
-		getQuest.mockReturnValue(mockQuest);
+		vi.mocked(getQuest).mockReturnValue(mockQuest);
 
 		controller = new QuestController(host);
 	});
@@ -81,7 +83,7 @@ describe("QuestController", () => {
 			).toHaveBeenCalledWith("test-quest");
 			expect(controller.progressService.setCurrentQuest).toHaveBeenCalledWith(
 				"test-quest",
-				0,
+				"chapter-1",
 			);
 			expect(onQuestStart).toHaveBeenCalledWith(mockQuest);
 			expect(onChapterChange).toHaveBeenCalled();
@@ -89,7 +91,7 @@ describe("QuestController", () => {
 		});
 
 		it("should not start a quest if it does not exist", async () => {
-			getQuest.mockReturnValue(null);
+			vi.mocked(getQuest).mockReturnValue(null);
 			const onQuestStart = vi.fn();
 			controller.options.onQuestStart = onQuestStart;
 
@@ -136,7 +138,7 @@ describe("QuestController", () => {
 			expect(controller.currentChapter.id).toBe("chapter-2");
 			expect(controller.progressService.setCurrentQuest).toHaveBeenCalledWith(
 				"test-quest",
-				1,
+				"chapter-2",
 			);
 			expect(onChapterChange).toHaveBeenCalled();
 			expect(host.requestUpdate).toHaveBeenCalled();
@@ -203,7 +205,7 @@ describe("QuestController", () => {
 			expect(controller.currentChapter.id).toBe("chapter-2");
 			expect(controller.progressService.setCurrentQuest).toHaveBeenCalledWith(
 				"test-quest",
-				1,
+				"chapter-2",
 			);
 			expect(onQuestStart).toHaveBeenCalled();
 		});
@@ -228,7 +230,7 @@ describe("QuestController", () => {
 			expect(controller.currentChapter.id).toBe("chapter-2");
 			expect(controller.progressService.setCurrentQuest).toHaveBeenCalledWith(
 				"test-quest",
-				1,
+				"chapter-2",
 			);
 			expect(host.requestUpdate).toHaveBeenCalled();
 		});
@@ -331,7 +333,7 @@ describe("QuestController", () => {
 		});
 
 		it("should return false if quest does not exist", async () => {
-			getQuest.mockReturnValue(null);
+			vi.mocked(getQuest).mockReturnValue(null);
 			const result = await controller.loadQuest("non-existent");
 			expect(result).toBe(false);
 		});

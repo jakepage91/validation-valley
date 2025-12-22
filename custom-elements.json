@@ -1,0 +1,652 @@
+{
+	"version": "experimental",
+	"tags": [
+		{
+			"name": "about-slides",
+			"path": "./src/components/about-slides.js",
+			"properties": [
+				{
+					"name": "styles",
+					"type": "CSSResult[]",
+					"default": "[null,null]"
+				}
+			]
+		},
+		{
+			"name": "game-hud",
+			"path": "./src/components/game-hud.js",
+			"properties": [
+				{
+					"name": "properties",
+					"type": "{ currentChapterNumber: { type: NumberConstructor; }; totalChapters: { type: NumberConstructor; }; levelTitle: { type: StringConstructor; }; questTitle: { ...; }; }",
+					"default": "{\"currentChapterNumber\":{\"type\":\"Number\"},\"totalChapters\":{\"type\":\"Number\"},\"levelTitle\":{\"type\":\"String\"},\"questTitle\":{\"type\":\"String\"}}"
+				},
+				{
+					"name": "styles",
+					"type": "CSSResult[]",
+					"default": "[null,null]"
+				},
+				{
+					"name": "currentChapterNumber",
+					"type": "number",
+					"default": "1"
+				},
+				{
+					"name": "totalChapters",
+					"type": "number",
+					"default": "1"
+				},
+				{
+					"name": "levelTitle",
+					"type": "string",
+					"default": "\"\""
+				},
+				{
+					"name": "questTitle",
+					"type": "string",
+					"default": "\"\""
+				}
+			]
+		},
+		{
+			"name": "game-view",
+			"path": "./src/components/game-view.js",
+			"properties": [
+				{
+					"name": "properties",
+					"type": "{ gameState: { type: ObjectConstructor; }; }",
+					"default": "{\"gameState\":{\"type\":\"Object\"}}"
+				},
+				{
+					"name": "styles",
+					"type": "CSSResult[]",
+					"default": "[null,null]"
+				},
+				{
+					"name": "gameState",
+					"type": "Object",
+					"default": "{}"
+				}
+			],
+			"events": [
+				{
+					"name": "resume"
+				},
+				{
+					"name": "restart"
+				},
+				{
+					"name": "quit"
+				},
+				{
+					"name": "complete"
+				},
+				{
+					"name": "close-dialog"
+				}
+			]
+		},
+		{
+			"name": "game-viewport",
+			"path": "./src/components/game-viewport.js",
+			"properties": [
+				{
+					"name": "properties",
+					"type": "{ gameState: { type: ObjectConstructor; }; isAnimatingReward: { state: boolean; }; rewardAnimState: { state: boolean; }; isRewardCollected: { type: BooleanConstructor; }; }",
+					"default": "{\"gameState\":{\"type\":\"Object\"},\"isAnimatingReward\":{\"state\":true},\"rewardAnimState\":{\"state\":true},\"isRewardCollected\":{\"type\":\"Boolean\"}}"
+				},
+				{
+					"name": "styles",
+					"type": "CSSResult[]",
+					"default": "[null,null]"
+				},
+				{
+					"name": "gameState",
+					"type": "Object",
+					"default": "{}"
+				},
+				{
+					"name": "isAnimatingReward",
+					"type": "boolean",
+					"default": "false"
+				},
+				{
+					"name": "rewardAnimState",
+					"type": "string",
+					"default": "\"\""
+				},
+				{
+					"name": "isRewardCollected",
+					"type": "boolean",
+					"default": "false"
+				}
+			],
+			"events": [
+				{
+					"name": "reward-collected"
+				}
+			]
+		},
+		{
+			"name": "hero-profile",
+			"path": "./src/components/hero-profile.js",
+			"properties": [
+				{
+					"name": "profileData",
+					"type": "Object"
+				},
+				{
+					"name": "themeData",
+					"type": "Object"
+				},
+				{
+					"name": "suitData",
+					"type": "Object"
+				},
+				{
+					"name": "gearData",
+					"type": "Object"
+				},
+				{
+					"name": "powerData",
+					"type": "Object"
+				},
+				{
+					"name": "masteryData",
+					"type": "Object"
+				},
+				{
+					"name": "properties",
+					"type": "{ imageSrc: { type: StringConstructor; }; profileData: { state: boolean; }; themeData: { state: boolean; }; suitData: { state: boolean; }; gearData: { state: boolean; }; powerData: { ...; }; masteryData: { ...; }; tooltipText: { ...; }; hotSwitchState: { ...; }; }",
+					"default": "{\"imageSrc\":{\"type\":\"String\"},\"profileData\":{\"state\":true},\"themeData\":{\"state\":true},\"suitData\":{\"state\":true},\"gearData\":{\"state\":true},\"powerData\":{\"state\":true},\"masteryData\":{\"state\":true},\"tooltipText\":{\"type\":\"String\"},\"hotSwitchState\":{\"type\":\"String\"}}"
+				},
+				{
+					"name": "styles",
+					"type": "CSSResult[]",
+					"default": "[null,null]"
+				},
+				{
+					"name": "imageSrc",
+					"type": "string",
+					"default": "\"\""
+				},
+				{
+					"name": "tooltipText",
+					"type": "string",
+					"default": "\"\""
+				},
+				{
+					"name": "hotSwitchState",
+					"type": "string",
+					"default": "\"\""
+				}
+			]
+		},
+		{
+			"name": "level-dialog",
+			"path": "./src/components/level-dialog.js",
+			"properties": [
+				{
+					"name": "properties",
+					"type": "{ config: { type: ObjectConstructor; }; level: { type: StringConstructor; }; hotSwitchState: { type: StringConstructor; }; slideIndex: { ...; }; }",
+					"default": "{\"config\":{\"type\":\"Object\"},\"level\":{\"type\":\"String\"},\"hotSwitchState\":{\"type\":\"String\"},\"slideIndex\":{\"state\":true}}"
+				},
+				{
+					"name": "handleKeyDown",
+					"type": "(e: any) => void",
+					"default": "\"(e) => {\\n\\t\\tif (e.key === \\\"ArrowRight\\\" || e.code === \\\"Space\\\") {\\n\\t\\t\\te.stopPropagation();\\n\\t\\t\\tthis.nextSlide();\\n\\t\\t}\\n\\n\\t\\tif (e.key === \\\"ArrowLeft\\\") {\\n\\t\\t\\te.stopPropagation();\\n\\t\\t\\tthis.prevSlide();\\n\\t\\t}\\n\\t}\""
+				},
+				{
+					"name": "styles",
+					"type": "CSSResult[]",
+					"default": "[null,null]"
+				},
+				{
+					"name": "config",
+					"type": "object",
+					"default": "{}"
+				},
+				{
+					"name": "level",
+					"type": "string",
+					"default": "\"\""
+				},
+				{
+					"name": "hotSwitchState",
+					"type": "string",
+					"default": "\"legacy\""
+				},
+				{
+					"name": "slideIndex",
+					"type": "number",
+					"default": "0"
+				}
+			],
+			"events": [
+				{
+					"name": "complete"
+				},
+				{
+					"name": "toggle-hot-switch"
+				},
+				{
+					"name": "close"
+				}
+			]
+		},
+		{
+			"name": "npc-element",
+			"path": "./src/components/npc-element.js",
+			"properties": [
+				{
+					"name": "properties",
+					"type": "{ name: { type: StringConstructor; }; image: { type: StringConstructor; }; icon: { type: StringConstructor; }; x: { type: NumberConstructor; }; ... 4 more ...; isRewardCollected: { ...; }; }",
+					"default": "{\"name\":{\"type\":\"String\"},\"image\":{\"type\":\"String\"},\"icon\":{\"type\":\"String\"},\"x\":{\"type\":\"Number\"},\"y\":{\"type\":\"Number\"},\"isClose\":{\"type\":\"Boolean\"},\"action\":{\"type\":\"String\"},\"hasCollectedItem\":{\"type\":\"Boolean\"},\"isRewardCollected\":{\"type\":\"Boolean\"}}"
+				},
+				{
+					"name": "styles",
+					"type": "CSSResult",
+					"default": "\"css`\\n    :host {\\n      position: absolute;\\n      transform: translate(-50%, -50%);\\n      display: flex;\\n      flex-direction: column;\\n      align-items: center;\\n      width: 15%;\\n      aspect-ratio: 1/1;\\n      pointer-events: none; /* Prevent blocking clicks if needed, but interaction is usually via keyboard */\\n    }\\n\\n    .npc-img {\\n      width: 100%;\\n      height: 100%;\\n      object-fit: contain;\\n      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);\\n    }\\n\\n    .npc-name-tag {\\n      position: absolute;\\n      top: 100%;\\n      left: 50%;\\n      transform: translateX(-50%);\\n      margin-top: var(--wa-space-xs);\\n      box-shadow: var(--wa-shadow-small);\\n      opacity: 0.9;\\n      white-space: nowrap;\\n      z-index: 25;\\n    }\\n  `\""
+				},
+				{
+					"name": "name",
+					"type": "string",
+					"default": "\"\""
+				},
+				{
+					"name": "image",
+					"type": "string",
+					"default": "\"\""
+				},
+				{
+					"name": "icon",
+					"type": "string",
+					"default": "\"\""
+				},
+				{
+					"name": "x",
+					"type": "number",
+					"default": "0"
+				},
+				{
+					"name": "y",
+					"type": "number",
+					"default": "0"
+				},
+				{
+					"name": "isClose",
+					"type": "boolean",
+					"default": "false"
+				},
+				{
+					"name": "action",
+					"type": "string",
+					"default": "\"\""
+				},
+				{
+					"name": "hasCollectedItem",
+					"type": "boolean",
+					"default": "false"
+				},
+				{
+					"name": "isRewardCollected",
+					"type": "boolean",
+					"default": "false"
+				}
+			]
+		},
+		{
+			"name": "pause-menu",
+			"path": "./src/components/pause-menu.js",
+			"properties": [
+				{
+					"name": "properties",
+					"type": "{ open: { type: BooleanConstructor; }; }",
+					"default": "{\"open\":{\"type\":\"Boolean\"}}"
+				},
+				{
+					"name": "styles",
+					"type": "CSSResult",
+					"default": "\"css`\\n\\t\\t:host {\\n\\t\\t\\tdisplay: block;\\n\\t\\t}\\n\\n\\t\\twa-dialog {\\n\\t\\t\\t--header-spacing: 1.5rem;\\n\\t\\t\\t--body-spacing: 1.5rem;\\n\\t\\t\\t--footer-spacing: 0;\\n\\t\\t}\\n\\n\\t\\t/* Customizing the dialog header to match the game's pixel font style */\\n\\t\\twa-dialog::part(title) {\\n\\t\\t\\tfont-family: var(--wa-font-family-heading);\\n\\t\\t\\tfont-size: var(--wa-font-size-m);\\n\\t\\t\\tcolor: #fbbf24;\\n\\t\\t\\ttext-align: center;\\n\\t\\t\\twidth: 100%;\\n\\t\\t\\ttext-shadow: var(--wa-shadow-small);\\n\\t\\t}\\n\\n\\t\\t/* Hide the close button since we have explicit actions */\\n\\t\\twa-dialog::part(close-button) {\\n\\t\\t\\tdisplay: none;\\n\\t\\t}\\n\\n\\t\\twa-dialog::part(overlay) {\\n\\t\\t\\tbackground-color: rgba(0, 0, 0, 0.8);\\n\\t\\t\\tbackdrop-filter: blur(4px);\\n\\t\\t}\\n\\n\\t\\twa-dialog::part(panel) {\\n\\t\\t\\tbackground-color: #1f2937;\\n\\t\\t\\tborder: 4px solid #374151;\\n\\t\\t\\tborder-radius: 0;\\n\\t\\t\\tbox-shadow: var(--wa-shadow-large);\\n\\t\\t}\\n\\n\\t\\t.menu-buttons {\\n\\t\\t\\tdisplay: flex;\\n\\t\\t\\tflex-direction: column;\\n\\t\\t\\tgap: 1rem;\\n\\t\\t\\twidth: 100%;\\n\\t\\t}\\n\\n\\t\\t.menu-btn {\\n\\t\\t\\twidth: 100%;\\n\\t\\t\\t--border-radius: 0;\\n\\t\\t\\tfont-family: var(--wa-font-family-body);\\n\\t\\t\\tfont-size: var(--wa-font-size-2xs);\\n\\t\\t}\\n\\t`\""
+				},
+				{
+					"name": "open",
+					"type": "boolean",
+					"default": "false"
+				}
+			],
+			"events": [
+				{
+					"name": "resume"
+				},
+				{
+					"name": "restart"
+				},
+				{
+					"name": "quit"
+				}
+			]
+		},
+		{
+			"name": "quest-hub",
+			"path": "./src/components/quest-hub.js",
+			"description": "QuestHub - Quest selection UI\n\nDisplays available quests with:\n- Progress indicators\n- Lock status\n- Badges for completed quests\n- Continue button for in-progress quests",
+			"properties": [
+				{
+					"name": "availableQuests",
+					"type": "Array<Object>"
+				},
+				{
+					"name": "completedQuests",
+					"type": "Array<string>"
+				},
+				{
+					"name": "currentQuestId",
+					"type": "String"
+				},
+				{
+					"name": "properties",
+					"type": "{ quests: { type: ArrayConstructor; }; comingSoonQuests: { type: ArrayConstructor; }; showFullDescription: { type: BooleanConstructor; }; isFullscreen: { ...; }; }",
+					"default": "{\"quests\":{\"type\":\"Array\"},\"comingSoonQuests\":{\"type\":\"Array\"},\"showFullDescription\":{\"type\":\"Boolean\"},\"isFullscreen\":{\"type\":\"Boolean\"}}"
+				},
+				{
+					"name": "styles",
+					"type": "CSSResult[]",
+					"default": "[null,null]"
+				},
+				{
+					"name": "quests",
+					"type": "never[]",
+					"default": "[]"
+				},
+				{
+					"name": "comingSoonQuests",
+					"type": "Array<Object>",
+					"default": "[]"
+				},
+				{
+					"name": "showFullDescription",
+					"type": "boolean",
+					"default": "false"
+				},
+				{
+					"name": "isFullscreen",
+					"type": "boolean",
+					"default": "false"
+				}
+			],
+			"events": [
+				{
+					"name": "quest-select"
+				},
+				{
+					"name": "reset-progress"
+				},
+				{
+					"name": "open-about"
+				}
+			]
+		},
+		{
+			"name": "reward-element",
+			"path": "./src/components/reward-element.js",
+			"properties": [
+				{
+					"name": "properties",
+					"type": "{ image: { type: StringConstructor; }; icon: { type: StringConstructor; }; x: { type: NumberConstructor; }; y: { type: NumberConstructor; }; }",
+					"default": "{\"image\":{\"type\":\"String\"},\"icon\":{\"type\":\"String\"},\"x\":{\"type\":\"Number\"},\"y\":{\"type\":\"Number\"}}"
+				},
+				{
+					"name": "styles",
+					"type": "CSSResult",
+					"default": "\"css`\\n    :host {\\n      position: absolute;\\n      transform: translate(-50%, -50%);\\n      display: flex;\\n      justify-content: center;\\n      align-items: center;\\n    }\\n\\n    .reward-box {\\n      width: 100%;\\n      height: 100%;\\n      display: flex;\\n      align-items: center;\\n      justify-content: center;\\n      border-radius: 9999px;\\n      background-color: #4b5563;\\n      border: 2px solid #1f2937;\\n      box-shadow: var(--wa-shadow-medium);\\n      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\\n    }\\n\\n    .reward-box.has-image {\\n      background-color: transparent;\\n      border-color: transparent;\\n      box-shadow: none;\\n      animation: float 3s ease-in-out infinite;\\n    }\\n\\n    .reward-img {\\n      width: 100%;\\n      height: 100%;\\n      aspect-ratio: 1;\\n\\t  object-fit: contain;\\n    }\\n\\n    @keyframes pulse {\\n      0%, 100% { opacity: 1; }\\n      50% { opacity: .5; }\\n    }\\n\\n    @keyframes float {\\n      0%, 100% { transform: translateY(0); }\\n      50% { transform: translateY(-10px); }\\n    }\\n  `\""
+				},
+				{
+					"name": "image",
+					"type": "String",
+					"default": "\"\""
+				},
+				{
+					"name": "icon",
+					"type": "String",
+					"default": "\"\""
+				},
+				{
+					"name": "x",
+					"type": "Number",
+					"default": "0"
+				},
+				{
+					"name": "y",
+					"type": "Number",
+					"default": "0"
+				}
+			]
+		},
+		{
+			"name": "victory-screen",
+			"path": "./src/components/victory-screen.js",
+			"properties": [
+				{
+					"name": "properties",
+					"type": "{ quest: { type: ObjectConstructor; }; onReturn: { type: FunctionConstructor; }; }",
+					"default": "{\"quest\":{\"type\":\"Object\"},\"onReturn\":{\"type\":\"Function\"}}"
+				},
+				{
+					"name": "styles",
+					"type": "CSSResult[]",
+					"default": "[null,null]"
+				},
+				{
+					"name": "quest"
+				},
+				{
+					"name": "onReturn",
+					"type": "object"
+				},
+				{
+					"name": "keyboard"
+				}
+			]
+		},
+		{
+			"name": "game-context-zones",
+			"path": "./src/components/viewport-elements/game-context-zones.js",
+			"properties": [
+				{
+					"name": "properties",
+					"type": "{ active: { type: BooleanConstructor; }; state: { type: StringConstructor; }; }",
+					"default": "{\"active\":{\"type\":\"Boolean\"},\"state\":{\"type\":\"String\"}}"
+				},
+				{
+					"name": "styles",
+					"type": "(CSSResult | CSSResult[])[]",
+					"default": "[[\"nativeStyles\",\"utilityStyles\",\"syntaxHighlightStyles\"],null]"
+				},
+				{
+					"name": "active",
+					"description": "Whether context zones are active for this chapter.",
+					"type": "Boolean",
+					"default": "false"
+				},
+				{
+					"name": "state",
+					"description": "Current hot switch state ('legacy' | 'new').",
+					"type": "String",
+					"default": "\"legacy\""
+				}
+			]
+		},
+		{
+			"name": "game-controls",
+			"path": "./src/components/viewport-elements/game-controls.js",
+			"properties": [
+				{
+					"name": "styles",
+					"type": "(CSSResult | CSSResult[])[]",
+					"default": "[[\"nativeStyles\",\"utilityStyles\",\"syntaxHighlightStyles\"],null]"
+				}
+			]
+		},
+		{
+			"name": "game-exit-zone",
+			"path": "./src/components/viewport-elements/game-exit-zone.js",
+			"properties": [
+				{
+					"name": ".",
+					"type": "Object} zoneConfig - The config object for the exit zone {x, y, width, height, label"
+				},
+				{
+					"name": "properties",
+					"type": "{ zoneConfig: { type: ObjectConstructor; }; active: { type: BooleanConstructor; }; }",
+					"default": "{\"zoneConfig\":{\"type\":\"Object\"},\"active\":{\"type\":\"Boolean\"}}"
+				},
+				{
+					"name": "styles",
+					"type": "(CSSResult | CSSResult[])[]",
+					"default": "[[\"nativeStyles\",\"utilityStyles\",\"syntaxHighlightStyles\"],null]"
+				},
+				{
+					"name": "zoneConfig",
+					"type": "object",
+					"default": "{}"
+				},
+				{
+					"name": "active",
+					"description": "Whether the exit zone is active (e.g. item collected).",
+					"type": "Boolean",
+					"default": "false"
+				}
+			]
+		},
+		{
+			"name": "game-theme-zones",
+			"path": "./src/components/viewport-elements/game-theme-zones.js",
+			"properties": [
+				{
+					"name": "properties",
+					"type": "{ active: { type: BooleanConstructor; }; }",
+					"default": "{\"active\":{\"type\":\"Boolean\"}}"
+				},
+				{
+					"name": "styles",
+					"type": "CSSResult[][]",
+					"default": "[[\"nativeStyles\",\"utilityStyles\",\"syntaxHighlightStyles\"]]"
+				},
+				{
+					"name": "active",
+					"description": "Whether theme zones are active for this chapter.",
+					"type": "Boolean",
+					"default": "false"
+				}
+			]
+		},
+		{
+			"name": "legacys-end-app",
+			"path": "./src/legacys-end-app.js",
+			"properties": [
+				{
+					"name": "chapterId",
+					"type": "String"
+				},
+				{
+					"name": "hasCollectedItem",
+					"type": "Boolean"
+				},
+				{
+					"name": "themeMode",
+					"type": "String"
+				},
+				{
+					"name": "heroPos",
+					"type": "Object"
+				},
+				{
+					"name": "hotSwitchState",
+					"type": "String"
+				},
+				{
+					"name": "isEvolving",
+					"type": "Boolean"
+				},
+				{
+					"name": "lockedMessage",
+					"type": "String"
+				},
+				{
+					"name": "isPaused",
+					"type": "Boolean"
+				},
+				{
+					"name": "isRewardCollected",
+					"type": "Boolean"
+				},
+				{
+					"name": "properties",
+					"type": "{ chapterId: { type: StringConstructor; }; showDialog: { type: BooleanConstructor; }; hasCollectedItem: { type: BooleanConstructor; }; ... 10 more ...; isLoading: { ...; }; }",
+					"default": "{\"chapterId\":{\"type\":\"String\"},\"showDialog\":{\"type\":\"Boolean\"},\"hasCollectedItem\":{\"type\":\"Boolean\"},\"themeMode\":{\"type\":\"String\"},\"heroPos\":{\"type\":\"Object\"},\"hotSwitchState\":{\"type\":\"String\"},\"isEvolving\":{\"type\":\"Boolean\"},\"lockedMessage\":{\"type\":\"String\"},\"isPaused\":{\"type\":\"Boolean\"},\"isRewardCollected\":{\"type\":\"Boolean\"},\"currentQuest\":{\"type\":\"Object\"},\"isInHub\":{\"type\":\"Boolean\"},\"hasSeenIntro\":{\"type\":\"Boolean\"},\"isLoading\":{\"type\":\"Boolean\"}}"
+				},
+				{
+					"name": "styles",
+					"type": "CSSResult[]",
+					"default": "[null,null]"
+				},
+				{
+					"name": "isLoading",
+					"type": "boolean",
+					"default": "false"
+				},
+				{
+					"name": "showDialog",
+					"type": "Boolean",
+					"default": "false"
+				},
+				{
+					"name": "hasSeenIntro",
+					"type": "Boolean",
+					"default": "false"
+				},
+				{
+					"name": "showQuestCompleteDialog",
+					"type": "boolean",
+					"default": "false"
+				},
+				{
+					"name": "userData"
+				},
+				{
+					"name": "userLoading",
+					"type": "boolean",
+					"default": "true"
+				},
+				{
+					"name": "userError"
+				},
+				{
+					"name": "currentQuest",
+					"type": "Object"
+				},
+				{
+					"name": "isInHub",
+					"type": "Boolean",
+					"default": "false"
+				},
+				{
+					"name": "router"
+				},
+				{
+					"name": "profileProvider",
+					"type": "ContextProvider<Context<Symbol(), any>, Partial<ReactiveControllerHost> & HTMLElement>"
+				},
+				{
+					"name": "themeProvider",
+					"type": "ContextProvider<Context<Symbol(), any>, Partial<ReactiveControllerHost> & HTMLElement>"
+				},
+				{
+					"name": "characterProvider",
+					"type": "ContextProvider<Context<Symbol(), any>, Partial<ReactiveControllerHost> & HTMLElement>"
+				}
+			]
+		}
+	]
+}

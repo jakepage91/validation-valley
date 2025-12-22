@@ -40,7 +40,7 @@ describe("CharacterContextController", () => {
 				isRewardCollected: false,
 			});
 
-			controller.update();
+			controller.hostUpdate();
 
 			expect(characterProvider.setValue).toHaveBeenCalledWith(
 				expect.objectContaining({
@@ -61,7 +61,7 @@ describe("CharacterContextController", () => {
 				isRewardCollected: true,
 			});
 
-			controller.update();
+			controller.hostUpdate();
 
 			expect(characterProvider.setValue).toHaveBeenCalledWith(
 				expect.objectContaining({
@@ -79,7 +79,7 @@ describe("CharacterContextController", () => {
 				hasCollectedItem: true,
 			});
 
-			controller.update();
+			controller.hostUpdate();
 
 			expect(characterProvider.setValue).toHaveBeenCalledWith(
 				expect.objectContaining({
@@ -97,7 +97,7 @@ describe("CharacterContextController", () => {
 				hasCollectedItem: false,
 			});
 
-			controller.update();
+			controller.hostUpdate();
 
 			expect(characterProvider.setValue).toHaveBeenCalledWith(
 				expect.objectContaining({
@@ -112,7 +112,7 @@ describe("CharacterContextController", () => {
 				themeMode: "dark",
 			});
 
-			controller.update();
+			controller.hostUpdate();
 
 			expect(characterProvider.setValue).toHaveBeenCalledWith(
 				expect.objectContaining({
@@ -130,7 +130,7 @@ describe("CharacterContextController", () => {
 
 			getStateMock.mockReturnValue({ level: "1" });
 
-			expect(() => controller.update()).not.toThrow();
+			expect(() => controller.hostUpdate()).not.toThrow();
 		});
 	});
 });

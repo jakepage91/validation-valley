@@ -1,3 +1,4 @@
+import { GAME_CONFIG } from "../constants/game-config.js";
 /**
  * @typedef {import("lit").ReactiveController} ReactiveController
  * @typedef {import("lit").ReactiveControllerHost} ReactiveControllerHost
@@ -23,8 +24,6 @@
  *
  * @implements {ReactiveController}
  */
-import { GAME_CONFIG } from "../constants/game-config.js";
-
 export class GameZoneController {
 	/**
 	 * @param {ReactiveControllerHost} host
@@ -42,6 +41,20 @@ export class GameZoneController {
 		};
 
 		host.addController(this);
+	}
+
+	/**
+	 * Lifecycle method called when host connects to DOM
+	 */
+	hostConnected() {
+		// No setup needed for this controller
+	}
+
+	/**
+	 * Lifecycle method called when host disconnects from DOM
+	 */
+	hostDisconnected() {
+		// No cleanup needed for this controller
 	}
 
 	/**
@@ -68,7 +81,7 @@ export class GameZoneController {
 
 	/**
 	 * Get theme mode based on position (Level 2)
-	 * @param {number} x - X position
+	 * @param {number} _x - X position
 	 * @param {number} y - Y position
 	 * @returns {ThemeMode} 'dark' or 'light'
 	 */

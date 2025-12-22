@@ -2,6 +2,10 @@ import { VoiceController } from "../controllers/voice-controller.js";
 import { logger } from "../services/logger-service.js";
 
 /**
+ * @typedef {import('../components/level-dialog.js').LevelDialog} LevelDialog
+ */
+
+/**
  * Setup VoiceController
  * @param {import('../legacys-end-app.js').LegacysEndApp} app
  */
@@ -11,21 +15,27 @@ export function setupVoice(app) {
 		onInteract: () => app.handleInteract(),
 		onPause: () => app.togglePause(),
 		onNextSlide: () => {
-			const dialog = app.shadowRoot
-				.querySelector("game-view")
-				?.shadowRoot.querySelector("level-dialog");
+			const dialog = /** @type {LevelDialog} */ (
+				app.shadowRoot
+					.querySelector("game-view")
+					?.shadowRoot.querySelector("level-dialog")
+			);
 			if (dialog) dialog.nextSlide();
 		},
 		onPrevSlide: () => {
-			const dialog = app.shadowRoot
-				.querySelector("game-view")
-				?.shadowRoot.querySelector("level-dialog");
+			const dialog = /** @type {LevelDialog} */ (
+				app.shadowRoot
+					.querySelector("game-view")
+					?.shadowRoot.querySelector("level-dialog")
+			);
 			if (dialog) dialog.prevSlide();
 		},
 		onGetDialogText: () => {
-			const dialog = app.shadowRoot
-				.querySelector("game-view")
-				?.shadowRoot.querySelector("level-dialog");
+			const dialog = /** @type {LevelDialog} */ (
+				app.shadowRoot
+					.querySelector("game-view")
+					?.shadowRoot.querySelector("level-dialog")
+			);
 			return dialog ? dialog.getCurrentSlideText() : "";
 		},
 		onGetContext: () => ({

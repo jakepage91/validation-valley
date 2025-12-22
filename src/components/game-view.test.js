@@ -1,13 +1,15 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import "./game-view.js";
 
+/** @typedef {import("./game-view.js").GameView} GameView */
+
 describe("GameView Component", () => {
 	beforeEach(() => {
 		document.body.innerHTML = "";
 	});
 
 	it("renders loading state when no config is provided", async () => {
-		const el = document.createElement("game-view");
+		const el = /** @type {GameView} */ (document.createElement("game-view"));
 		document.body.appendChild(el);
 		await el.updateComplete;
 
@@ -15,7 +17,7 @@ describe("GameView Component", () => {
 	});
 
 	it("renders game-viewport when config is provided", async () => {
-		const el = document.createElement("game-view");
+		const el = /** @type {GameView} */ (document.createElement("game-view"));
 		el.gameState = {
 			config: {
 				canToggleTheme: true,

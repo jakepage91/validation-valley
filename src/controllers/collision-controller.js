@@ -44,6 +44,13 @@ export class CollisionController {
 	}
 
 	/**
+	 * Called when the host is connected to the DOM
+	 */
+	hostConnected() {
+		// Initial setup if needed
+	}
+
+	/**
 	 * Check if hero collides with exit zone
 	 * @param {number} x - Hero X position
 	 * @param {number} y - Hero Y position

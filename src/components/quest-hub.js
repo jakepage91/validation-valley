@@ -18,10 +18,10 @@ import { sharedStyles } from "../styles/shared.js";
  * - Continue button for in-progress quests
  *
  * @element quest-hub
- * @property {Array<Object>} availableQuests
- * @property {Array<Object>} comingSoonQuests
- * @property {Array<string>} completedQuests
- * @property {String} currentQuestId
+ * @property {Array<Quest>} quests
+ * @property {Array<Quest>} comingSoonQuests
+ * @property {Boolean} showFullDescription
+ * @property {Boolean} isFullscreen
  */
 export class QuestHub extends LitElement {
 	static properties = {
