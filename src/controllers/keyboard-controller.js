@@ -8,7 +8,6 @@
  * @property {(dx: number, dy: number) => void} [onMove] - Callback for movement input
  * @property {() => void} [onInteract] - Callback for interaction (Space key)
  * @property {() => void} [onPause] - Callback for pause (Escape key)
- * @property {() => boolean} [isEnabled] - Function to check if input is enabled
  */
 
 /**
@@ -36,7 +35,6 @@ export class KeyboardController {
 			onMove: () => {},
 			onInteract: () => {},
 			onPause: () => {},
-			isEnabled: () => true,
 			...options,
 		};
 
@@ -57,15 +55,10 @@ export class KeyboardController {
 	 * @param {KeyboardEvent} e
 	 */
 	handleKeyDown(e) {
-		// Handle Pause (Escape) - Always allowed unless specifically blocked by logic outside
+		// Handle Pause (Escape) - Always allowed
 		if (e.code === "Escape") {
 			e.preventDefault();
 			this.options.onPause();
-			return;
-		}
-
-		// Check if input is enabled
-		if (!this.options.isEnabled()) {
 			return;
 		}
 

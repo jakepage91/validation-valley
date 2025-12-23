@@ -11,7 +11,7 @@ describe("KeyboardController", () => {
 	let onMove;
 	let onInteract;
 	let onPause;
-	let isEnabled;
+	let _isEnabled;
 
 	beforeEach(() => {
 		host = {
@@ -24,7 +24,7 @@ describe("KeyboardController", () => {
 		onMove = vi.fn();
 		onInteract = vi.fn();
 		onPause = vi.fn();
-		isEnabled = vi.fn().mockReturnValue(true);
+		_isEnabled = vi.fn().mockReturnValue(true);
 	});
 
 	it("should initialize correctly", () => {
@@ -60,7 +60,7 @@ describe("KeyboardController", () => {
 
 	describe("Pause Key (Escape)", () => {
 		it("should trigger onPause when Escape is pressed", () => {
-			controller = new KeyboardController(host, { onPause, isEnabled });
+			controller = new KeyboardController(host, { onPause });
 			const event = new KeyboardEvent("keydown", { code: "Escape" });
 			const preventDefaultSpy = vi.spyOn(event, "preventDefault");
 
@@ -69,21 +69,11 @@ describe("KeyboardController", () => {
 			expect(onPause).toHaveBeenCalled();
 			expect(preventDefaultSpy).toHaveBeenCalled();
 		});
-
-		it("should trigger onPause even when input is disabled", () => {
-			isEnabled.mockReturnValue(false);
-			controller = new KeyboardController(host, { onPause, isEnabled });
-			const event = new KeyboardEvent("keydown", { code: "Escape" });
-
-			controller.handleKeyDown(event);
-
-			expect(onPause).toHaveBeenCalled();
-		});
 	});
 
 	describe("Interaction Key (Space)", () => {
 		it("should trigger onInteract when Space is pressed", () => {
-			controller = new KeyboardController(host, { onInteract, isEnabled });
+			controller = new KeyboardController(host, { onInteract });
 			const event = new KeyboardEvent("keydown", { code: "Space" });
 			const preventDefaultSpy = vi.spyOn(event, "preventDefault");
 
@@ -92,23 +82,12 @@ describe("KeyboardController", () => {
 			expect(onInteract).toHaveBeenCalled();
 			expect(preventDefaultSpy).toHaveBeenCalled();
 		});
-
-		it("should NOT trigger onInteract when input is disabled", () => {
-			isEnabled.mockReturnValue(false);
-			controller = new KeyboardController(host, { onInteract, isEnabled });
-			const event = new KeyboardEvent("keydown", { code: "Space" });
-
-			controller.handleKeyDown(event);
-
-			expect(onInteract).not.toHaveBeenCalled();
-		});
 	});
 
 	describe("Movement Keys", () => {
 		beforeEach(() => {
 			controller = new KeyboardController(host, {
 				onMove,
-				isEnabled,
 				speed: 2.5,
 			});
 		});
@@ -141,13 +120,6 @@ describe("KeyboardController", () => {
 			const event = new KeyboardEvent("keydown", { key: "w" });
 			controller.handleKeyDown(event);
 			expect(onMove).toHaveBeenCalledWith(0, -2.5);
-		});
-
-		it("should NOT move when input is disabled", () => {
-			isEnabled.mockReturnValue(false);
-			const event = new KeyboardEvent("keydown", { key: "ArrowUp" });
-			controller.handleKeyDown(event);
-			expect(onMove).not.toHaveBeenCalled();
 		});
 	});
 });

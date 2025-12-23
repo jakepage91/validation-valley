@@ -1,7 +1,6 @@
 import { html, LitElement } from "lit";
 import { processImagePath } from "../../utils/process-assets.js";
 import "@awesome.me/webawesome/dist/components/button/button.js";
-import { KeyboardController } from "../../controllers/keyboard-controller.js";
 import { styles } from "./victory-screen.css.js";
 
 export class VictoryScreen extends LitElement {
@@ -14,12 +13,6 @@ export class VictoryScreen extends LitElement {
 		super();
 		this.quest = null;
 		this.onReturn = () => {};
-
-		// Use KeyboardController for consistent keyboard handling
-		this.keyboard = new KeyboardController(this, {
-			onInteract: () => this.onReturn(),
-			isEnabled: () => true,
-		});
 	}
 
 	render() {

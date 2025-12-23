@@ -8,11 +8,11 @@ import "../level-dialog.js";
 import "../pause-menu.js";
 import "@awesome.me/webawesome/dist/components/card/card.js";
 import "@awesome.me/webawesome/dist/components/button/button.js";
+import { KeyboardController } from "../../controllers/keyboard-controller.js";
 import { setupCharacterContexts } from "../../setup/setup-character-contexts.js";
 import { setupCollision } from "../../setup/setup-collision.js";
 import { setupGame } from "../../setup/setup-game.js";
 import { setupInteraction } from "../../setup/setup-interaction.js";
-import { setupKeyboard } from "../../setup/setup-keyboard.js";
 import { setupService } from "../../setup/setup-service.js";
 import { setupVoice } from "../../setup/setup-voice.js";
 import { setupZones } from "../../setup/setup-zones.js";
@@ -60,11 +60,12 @@ export class GameView extends LitElement {
 
 	/**
 	 * Setup game controllers
-	 * TODO: Refactor to remove app dependency
 	 */
 	#setupControllers() {
-		// Initialize basic input controllers
-		setupKeyboard(this.app);
+		// Initialize keyboard controller (now internal to GameView)
+		this.#setupKeyboard();
+
+		// Initialize remaining controllers (still using app)
 		setupGame(this.app);
 		setupVoice(this.app);
 
@@ -89,6 +90,43 @@ export class GameView extends LitElement {
 			this.app.characterContexts.options.powerProvider = this.app.powerProvider;
 			this.app.characterContexts.options.masteryProvider =
 				this.app.masteryProvider;
+		}
+	}
+
+	/**
+	 * Setup keyboard controller (internal to GameView)
+	 */
+	#setupKeyboard() {
+		this.keyboard = new KeyboardController(this, {
+			speed: 2.5,
+			onMove: (dx, dy) => this.handleMove(dx, dy),
+			onInteract: () => this.handleInteract(),
+			onPause: () => this.togglePause(),
+		});
+	}
+
+	/**
+	 * Handle keyboard/voice movement input
+	 */
+	handleMove(dx, dy) {
+		this.app.handleMove(dx, dy);
+	}
+
+	/**
+	 * Handle interaction (talk to NPC, etc.)
+	 */
+	handleInteract() {
+		this.app.handleInteract();
+	}
+
+	/**
+	 * Toggle pause state
+	 */
+	togglePause() {
+		// Toggle pause state directly in gameState
+		const currentState = this.gameState?.ui?.isPaused ?? false;
+		if (this.app?.gameState) {
+			this.app.gameState.setPaused(!currentState);
 		}
 	}
 
