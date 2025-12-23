@@ -149,9 +149,18 @@ export class GameView extends LitElement {
 
 			<pause-menu
 				.open="${ui?.isPaused}"
-				@resume="${() => this.dispatchEvent(new CustomEvent("resume"))}"
-				@restart="${() => this.dispatchEvent(new CustomEvent("restart"))}"
-				@quit="${() => this.dispatchEvent(new CustomEvent("quit"))}"
+				@resume="${() => {
+					this.app.gameState.setPaused(false);
+					this.dispatchEvent(new CustomEvent("resume"));
+				}}"
+				@restart="${() => {
+					this.app.gameState.setPaused(false);
+					this.dispatchEvent(new CustomEvent("restart"));
+				}}"
+				@quit="${() => {
+					this.app.gameState.setPaused(false);
+					this.dispatchEvent(new CustomEvent("quit"));
+				}}"
 			></pause-menu>
 
 			${
