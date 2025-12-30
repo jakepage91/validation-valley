@@ -1,7 +1,13 @@
+import "@awesome.me/webawesome/dist/components/spinner/spinner.js";
+import "@awesome.me/webawesome/dist/styles/webawesome.css";
 import { html, LitElement } from "lit";
+import "./components/game-view/game-view.js";
+import "./components/quest-hub/quest-hub.js";
 import { ROUTES } from "./constants/routes.js";
+import { styles } from "./legacys-end-app.css.js";
 import { GameSessionManager } from "./managers/game-session-manager.js";
 import { ContextMixin } from "./mixins/context-mixin.js";
+import "./pixel.css";
 import { GameStateService } from "./services/game-state-service.js";
 import { logger } from "./services/logger-service.js";
 import { ProgressService } from "./services/progress-service.js";
@@ -17,12 +23,6 @@ import { setupQuest } from "./setup/setup-quest.js";
 import { setupSessionManager } from "./setup/setup-session-manager.js";
 import { GameStateMapper } from "./utils/game-state-mapper.js";
 import { Router } from "./utils/router.js";
-import "./components/quest-hub/quest-hub.js";
-import "./components/game-view/game-view.js";
-import "@awesome.me/webawesome/dist/components/spinner/spinner.js";
-import "@awesome.me/webawesome/dist/styles/webawesome.css";
-import "./pixel.css";
-import { styles } from "./legacys-end-app.css.js";
 
 /**
  * @typedef {import("@awesome.me/webawesome/dist/components/dialog/dialog.js").default} DialogElement
@@ -223,6 +223,9 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 				this.syncSessionState();
 			}
 		});
+
+		// Initial sync
+		this.syncSessionState();
 
 		// Always show hub on start
 		this.isInHub = true;
@@ -458,6 +461,64 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 		this.sessionManager.returnToHub();
 	}
 
+	/**
+	 * Handle level completion
+	 */
+	handleLevelComplete() {
+		this.showDialog = false;
+
+		// If we were showing the next chapter dialog (after reward collection),
+		// advance to the next chapter
+		if (this.isRewardCollected && this.questController?.hasNextChapter()) {
+			console.log("📖 Advancing to next chapter after preview");
+			this.triggerLevelTransition();
+		} else {
+			// Otherwise, just mark item as collected (initial dialog completion)
+			this.gameState.setCollectedItem(true);
+		}
+	}
+
+	/**
+	 * Handle dialog close
+	 */
+	handleCloseDialog() {
+		this.showDialog = false;
+		this.hasSeenIntro = true;
+	}
+
+	/**
+	 * Handle hot switch toggle
+	 */
+	handleToggleHotSwitch() {
+		const newState = this.hotSwitchState === "legacy" ? "new" : "legacy";
+		this.gameState.setHotSwitchState(newState);
+		logger.info("🔄 Hot Switch toggled to:", newState);
+	}
+
+	/**
+	 * Handle reward collected
+	 */
+	handleRewardCollected() {
+		logger.info("🎉 LegacysEndApp received reward-collected event");
+		this.gameState.setRewardCollected(true);
+		this.requestUpdate(); // Force update just in case
+	}
+
+	/**
+	 * Handle return to hub
+	 */
+	handleReturnToHub() {
+		this.showQuestCompleteDialog = false;
+		this.questController.returnToHub();
+	}
+
+	/**
+	 * Handle progress reset
+	 */
+	handleResetProgress() {
+		this.gameService.resetProgress();
+	}
+
 	getActiveService() {
 		const chapterData = this.getChapterData(this.chapterId);
 		return this.serviceController.getActiveService(
@@ -506,7 +567,7 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 				.comingSoonQuests="${getComingSoonQuests()}"
 				@quest-select="${(e) => this.handleQuestSelect(e.detail.questId)}"
 				@quest-continue="${(e) => this.handleContinueQuest(e.detail.questId)}"
-				@reset-progress="${() => this.gameService.resetProgress()}"
+				@reset-progress="${() => this.handleResetProgress()}"
 			></quest-hub>
 		`;
 	}
@@ -541,40 +602,11 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 				@resume="${this.handleResume}"
 				@restart="${this.handleRestartQuest}"
 				@quit="${this.handleQuitToHub}"
-				@complete="${() => {
-					this.showDialog = false;
-
-					// If we were showing the next chapter dialog (after reward collection),
-					// advance to the next chapter
-					if (
-						this.isRewardCollected &&
-						this.questController?.hasNextChapter()
-					) {
-						console.log("📖 Advancing to next chapter after preview");
-						this.triggerLevelTransition();
-					} else {
-						// Otherwise, just mark item as collected (initial dialog completion)
-						this.gameState.setCollectedItem(true);
-					}
-				}}"
-				@close-dialog="${() => {
-					this.showDialog = false;
-					this.hasSeenIntro = true;
-				}}"
-				@toggle-hot-switch="${() => {
-					const newState = this.hotSwitchState === "legacy" ? "new" : "legacy";
-					this.gameState.setHotSwitchState(newState);
-					logger.info("🔄 Hot Switch toggled to:", newState);
-				}}"
-				@reward-collected="${() => {
-					logger.info("🎉 LegacysEndApp received reward-collected event");
-					this.gameState.setRewardCollected(true);
-					this.requestUpdate(); // Force update just in case
-				}}"
-				@return-to-hub="${() => {
-					this.showQuestCompleteDialog = false;
-					this.questController.returnToHub();
-				}}"
+				@complete="${this.handleLevelComplete}"
+				@close-dialog="${this.handleCloseDialog}"
+				@toggle-hot-switch="${this.handleToggleHotSwitch}"
+				@reward-collected="${this.handleRewardCollected}"
+				@return-to-hub="${this.handleReturnToHub}"
 			></game-view>
 		`;
 	}
