@@ -1,5 +1,5 @@
 import { html, LitElement } from "lit";
-import { sharedStyles } from "../../styles/shared.js";
+import { styles } from "./game-theme-zones.css.js";
 
 /**
  * @element game-theme-zones
@@ -29,7 +29,7 @@ export class GameThemeZones extends LitElement {
 		`;
 	}
 
-	static styles = [sharedStyles];
+	static styles = styles;
 }
 
 customElements.define("game-theme-zones", GameThemeZones);

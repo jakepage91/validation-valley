@@ -1,4 +1,5 @@
-import { css, html, LitElement } from "lit";
+import { html, LitElement } from "lit";
+import { styles } from "./game-view.css.js";
 import "./victory-screen.js";
 import "../hero-profile.js";
 import "../npc-element.js";
@@ -16,7 +17,6 @@ import { setupInteraction } from "../../setup/setup-interaction.js";
 import { setupService } from "../../setup/setup-service.js";
 import { setupVoice } from "../../setup/setup-voice.js";
 import { setupZones } from "../../setup/setup-zones.js";
-import { sharedStyles } from "../../styles/shared.js";
 
 /**
  * @element game-view
@@ -196,39 +196,7 @@ export class GameView extends LitElement {
 		`;
 	}
 
-	static styles = [
-		...sharedStyles,
-		css`
-		:host {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			height: 100vh;
-			width: 100vw;
-			background-color: var(--wa-color-neutral-fill-loud);
-			background-image: linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px);
-			background-size: 40px 40px;
-			color: var(--wa-color-text-normal);
-			position: relative;
-			overflow: hidden;
-			font-family: var(--wa-font-family-body);
-			box-sizing: border-box;
-		}
-
-		main {
-			width: 100%;
-			max-width: 90rem;
-			height: 100%;
-			box-shadow: var(--wa-shadow-large);
-			position: relative;
-			transition: all 1s;
-			display: flex;
-			flex-direction: column;
-			box-sizing: border-box;
-		}
-
-	`,
-	];
+	static styles = styles;
 }
 
 customElements.define("game-view", GameView);
