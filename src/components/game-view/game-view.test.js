@@ -26,6 +26,27 @@ describe("GameView Component", () => {
 			},
 			hero: {
 				pos: { x: 0, y: 0 },
+				isEvolving: false,
+				hotSwitchState: null,
+			},
+			ui: {
+				isPaused: false,
+				showDialog: false,
+				isQuestCompleted: false,
+				lockedMessage: "",
+			},
+			quest: {
+				title: "Test Quest",
+				data: {},
+				chapterNumber: 1,
+				totalChapters: 3,
+				isLastChapter: false,
+				levelId: "1",
+			},
+			levelState: {
+				hasCollectedItem: false,
+				isRewardCollected: false,
+				isCloseToTarget: false,
 			},
 		};
 		document.body.appendChild(el);
@@ -85,7 +106,29 @@ describe("GameView Component", () => {
 
 			el = /** @type {GameView} */ (document.createElement("game-view"));
 			el.app = mockApp;
-			el.gameState = { ui: { isPaused: false } };
+			el.gameState = {
+				ui: {
+					isPaused: false,
+					showDialog: false,
+					isQuestCompleted: false,
+					lockedMessage: "",
+				},
+				hero: { pos: { x: 0, y: 0 }, isEvolving: false, hotSwitchState: null },
+				config: { hasHotSwitch: false },
+				quest: {
+					title: "",
+					data: {},
+					chapterNumber: 0,
+					totalChapters: 0,
+					isLastChapter: false,
+					levelId: "",
+				},
+				levelState: {
+					hasCollectedItem: false,
+					isRewardCollected: false,
+					isCloseToTarget: false,
+				},
+			};
 			document.body.appendChild(el);
 			await el.updateComplete;
 		});

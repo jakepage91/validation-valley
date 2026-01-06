@@ -16,6 +16,7 @@ import { Observable } from "../utils/observable.js";
  * - 'state-change': Game state has changed
  * - 'navigation': Navigation event (quest start, hub return)
  * - 'loading': Loading state changed
+ * @extends {Observable<Object>}
  */
 export class GameSessionManager extends Observable {
 	constructor(options = {}) {

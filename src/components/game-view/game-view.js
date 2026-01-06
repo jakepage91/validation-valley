@@ -19,14 +19,19 @@ import { styles } from "./game-view.css.js";
 import "./victory-screen.js";
 
 /**
+ * @typedef {import('../../utils/game-state-mapper.js').GameState} GameState
+ */
+
+/**
  * @element game-view
- * @property {Object} gameState
- * @property {import('../../legacys-end-app.js').LegacysEndApp} app - Reference to main app for controller setup (temporary, will be removed)
+ * @property {GameState} gameState
+ * @property {import('../../legacys-end-app.js').LegacysEndApp} app - Reference to Main App for controller setup (temporary, will be removed)
  * @property {import('../../controllers/collision-controller.js').CollisionController} collision
  * @property {import('../../controllers/game-zone-controller.js').GameZoneController} zones
  * @property {import('../../controllers/interaction-controller.js').InteractionController} interaction
  * @property {import('../../controllers/keyboard-controller.js').KeyboardController} keyboard
  * @property {import('../../controllers/voice-controller.js').VoiceController} voice
+ * @property {import('../../controllers/game-controller.js').GameController} gameController
  */
 export class GameView extends LitElement {
 	static properties = {
@@ -36,7 +41,8 @@ export class GameView extends LitElement {
 
 	constructor() {
 		super();
-		this.gameState = {};
+		/** @type {GameState} */
+		this.gameState = /** @type {GameState} */ ({});
 		this.app = null;
 		this._controllersInitialized = false;
 		this._autoMoveRequestId = null;
@@ -50,6 +56,8 @@ export class GameView extends LitElement {
 		this.keyboard = null;
 		/** @type {import('../../controllers/voice-controller.js').VoiceController} */
 		this.voice = null;
+		/** @type {import('../../controllers/game-controller.js').GameController} */
+		this.gameController = null;
 	}
 
 	connectedCallback() {
@@ -61,6 +69,9 @@ export class GameView extends LitElement {
 		}
 	}
 
+	/**
+	 * @param {import('lit').PropertyValues} changedProperties
+	 */
 	updated(changedProperties) {
 		super.updated(changedProperties);
 		// Initialize controllers if app becomes available after initial render
@@ -123,6 +134,9 @@ export class GameView extends LitElement {
 
 	/**
 	 * Handle keyboard/voice movement input
+	 * @param {number} dx
+	 * @param {number} dy
+	 * @param {boolean} [isAuto]
 	 */
 	handleMove(dx, dy, isAuto = false) {
 		if (!isAuto) {
@@ -165,6 +179,9 @@ export class GameView extends LitElement {
 
 	/**
 	 * Auto-move hero to target position
+	 * @param {number} targetX
+	 * @param {number} targetY
+	 * @param {number} [step]
 	 */
 	moveTo(targetX, targetY, step = 0.4) {
 		this.stopAutoMove();
@@ -304,7 +321,7 @@ export class GameView extends LitElement {
 				<level-dialog
 					.config="${dialogConfig}"
 					.level="${quest?.levelId}"
-					.hotSwitchState="${hero?.hotSwitchState}"
+					.hotSwitchState="${hero?.hotSwitchState || ""}"
 					@complete="${() => this.handleLevelComplete()}"
 					@close="${() => this.dispatchEvent(new CustomEvent("close-dialog"))}"
 				></level-dialog>

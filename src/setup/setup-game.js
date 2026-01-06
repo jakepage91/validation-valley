@@ -79,13 +79,18 @@ export function setupGameService(app) {
 }
 
 /**
+ * @typedef {import('lit').LitElement & { gameService: import('../services/game-service.js').GameService }} GameApp
+ */
+/**
  * Setup GameController
- * @param {any} host
- * @param {import('../legacys-end-app.js').LegacysEndApp} app
+ * @param {import('lit').LitElement} host
+ * @param {GameApp} app
  */
 export function setupGameController(host, app) {
 	// Create GameController with GameService
-	host.gameController = new GameController(host, {
+	/** @type {import('lit').LitElement & { gameController: GameController }} */ (
+		host
+	).gameController = new GameController(host, {
 		gameService: app.gameService,
 	});
 }

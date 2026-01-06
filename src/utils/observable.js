@@ -1,6 +1,7 @@
 /**
  * Observable - Base class for reactive objects
  * Implements the Observer pattern
+ * @template T
  */
 export class Observable {
 	constructor() {
@@ -19,8 +20,8 @@ export class Observable {
 
 	/**
 	 * Notify all listeners of a change
-	 * @param {any} data - Data to pass to listeners
-	 * @param {any} [oldData] - Optional previous state
+	 * @param {T} data - Data to pass to listeners
+	 * @param {T} [oldData] - Optional previous state
 	 */
 	notify(data, oldData) {
 		this.listeners.forEach((listener) => {

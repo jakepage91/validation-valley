@@ -6,12 +6,57 @@
  * Maps the application state to the view state required by GameView.
  * This decouples the internal application state structure from the view's props.
  */
+/**
+ * @typedef {Object} GameState
+ * @property {Object} config
+ * @property {boolean} [config.canToggleTheme]
+ * @property {boolean} [config.hasHotSwitch]
+ * @property {boolean} [config.isFinalBoss]
+ * @property {Object} ui
+ * @property {boolean} ui.isPaused
+ * @property {boolean} ui.showDialog
+ * @property {boolean} ui.isQuestCompleted
+ * @property {string} ui.lockedMessage
+ * @property {Object} quest
+ * @property {string} quest.title
+ * @property {Object} quest.data
+ * @property {number} quest.chapterNumber
+ * @property {number} quest.totalChapters
+ * @property {boolean} quest.isLastChapter
+ * @property {string} quest.levelId
+ * @property {Object} hero
+ * @property {{x: number, y: number}} hero.pos
+ * @property {boolean} hero.isEvolving
+ * @property {import('../services/game-state-service.js').HotSwitchState} hero.hotSwitchState
+ * @property {Object} levelState
+ * @property {boolean} levelState.hasCollectedItem
+ * @property {boolean} levelState.isRewardCollected
+ * @property {boolean} levelState.isCloseToTarget
+ */
+
+/**
+ * @typedef {Object} AppSource
+ * @property {import('../controllers/interaction-controller.js').InteractionController} [interaction]
+ * @property {import('../controllers/quest-controller.js').QuestController} questController
+ * @property {import('../services/game-state-service.js').GameStateService} gameState
+ * @property {boolean} isPaused
+ * @property {boolean} showDialog
+ * @property {boolean} showQuestCompleteDialog
+ * @property {{name: string}} currentQuest
+ * @property {string} chapterId
+ * @property {{x: number, y: number}} heroPos
+ * @property {boolean} isEvolving
+ * @property {import('../services/game-state-service.js').HotSwitchState} hotSwitchState
+ * @property {boolean} hasCollectedItem
+ * @property {boolean} isRewardCollected
+ */
+
 export const GameStateMapper = {
 	/**
 	 * Maps the current app state to a GameState object.
-	 * @param {Object} app - The application instance (LegacysEndApp)
+	 * @param {AppSource} app - The application instance source
 	 * @param {Object} config - The current chapter configuration
-	 * @returns {Object} The mapped game state
+	 * @returns {GameState} The mapped game state
 	 */
 	map(app, config) {
 		const isCloseToTarget = app.interaction?.isCloseToNpc() || false;
@@ -23,7 +68,7 @@ export const GameStateMapper = {
 				isPaused: app.isPaused || false,
 				showDialog: app.showDialog,
 				isQuestCompleted: app.showQuestCompleteDialog,
-				lockedMessage: app.interaction?.lockedMessage,
+				lockedMessage: app.gameState.getState().lockedMessage,
 			},
 			quest: {
 				title: app.currentQuest?.name,

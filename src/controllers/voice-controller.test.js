@@ -132,7 +132,10 @@ describe("VoiceController", () => {
 
 	describe("processCommand", () => {
 		it("should inject context into AI prompt", async () => {
-			controller.aiSession = { prompt: vi.fn().mockResolvedValue("{}") };
+			controller.aiSession = {
+				prompt: vi.fn().mockResolvedValue("{}"),
+				destroy: vi.fn(),
+			};
 			await controller.processCommand("next");
 			expect(controller.aiSession.prompt).toHaveBeenCalledWith(
 				expect.stringContaining(
@@ -215,9 +218,9 @@ describe("VoiceController", () => {
 	});
 
 	describe("narrateDialogue", () => {
-		it("should use npcSession for narration if available", async () => {
+		it("should narrate dialogue using NPC session", async () => {
 			const promptSpy = vi.fn().mockResolvedValue("Narrated text");
-			controller.npcSession = { prompt: promptSpy };
+			controller.npcSession = { prompt: promptSpy, destroy: vi.fn() };
 
 			await controller.narrateDialogue("Original text");
 

@@ -1,11 +1,11 @@
+import "@awesome.me/webawesome/dist/components/tag/tag.js";
+import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
 import { ContextConsumer } from "@lit/context";
 import { html, LitElement } from "lit";
 import { characterContext } from "../contexts/character-context.js";
 import { profileContext } from "../contexts/profile-context.js";
 import { themeContext } from "../contexts/theme-context.js";
 import { processImagePath } from "../utils/process-assets.js";
-import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
-import "@awesome.me/webawesome/dist/components/tag/tag.js";
 import { styles } from "./hero-profile.css.js";
 
 /**

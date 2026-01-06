@@ -126,9 +126,27 @@ describe("GameView Integration", () => {
 	it("should re-dispatch 'complete' event from level-dialog", async () => {
 		element = new GameView();
 		element.gameState = {
-			config: { title: "Test" },
-			hero: { pos: { x: 0, y: 0 } },
-			ui: { showDialog: true },
+			config: { hasHotSwitch: true },
+			hero: { pos: { x: 0, y: 0 }, isEvolving: false, hotSwitchState: null },
+			ui: {
+				showDialog: true,
+				isPaused: false,
+				isQuestCompleted: false,
+				lockedMessage: "",
+			},
+			quest: {
+				title: "Test Quest",
+				data: {},
+				chapterNumber: 1,
+				totalChapters: 3,
+				isLastChapter: false,
+				levelId: "1",
+			},
+			levelState: {
+				hasCollectedItem: false,
+				isRewardCollected: false,
+				isCloseToTarget: false,
+			},
 		};
 		// Mock app for handleLevelComplete
 		element.app = {
@@ -158,9 +176,27 @@ describe("GameView Integration", () => {
 	it("should re-dispatch 'close-dialog' event from level-dialog close", async () => {
 		element = new GameView();
 		element.gameState = {
-			config: { title: "Test" },
-			hero: { pos: { x: 0, y: 0 } },
-			ui: { showDialog: true },
+			config: { hasHotSwitch: true },
+			hero: { pos: { x: 0, y: 0 }, isEvolving: false, hotSwitchState: null },
+			ui: {
+				showDialog: true,
+				isPaused: false,
+				isQuestCompleted: false,
+				lockedMessage: "",
+			},
+			quest: {
+				title: "Test Quest",
+				data: {},
+				chapterNumber: 1,
+				totalChapters: 3,
+				isLastChapter: false,
+				levelId: "1",
+			},
+			levelState: {
+				hasCollectedItem: false,
+				isRewardCollected: false,
+				isCloseToTarget: false,
+			},
 		};
 		container.appendChild(element);
 		await element.updateComplete;

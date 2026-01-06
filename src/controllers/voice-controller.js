@@ -10,6 +10,32 @@ import {
 } from "../config/voice-training-prompts.js";
 import { aiService } from "../services/ai-service.js";
 import { logger } from "../services/logger-service.js";
+
+/**
+ * @typedef {Object} SpeechRecognition
+ * @property {boolean} continuous
+ * @property {boolean} interimResults
+ * @property {string} lang
+ * @property {function(): void} start
+ * @property {function(): void} stop
+ * @property {function(Event): void} onstart
+ * @property {function(Event): void} onresult
+ * @property {function(Event): void} onend
+ * @property {function(Event): void} onerror
+ * @property {function(): void} abort
+ */
+
+/**
+ * @typedef {Object} AISession
+ * @property {function(string): Promise<string>} prompt
+ * @property {function(): void} destroy
+ */
+
+/**
+ * @typedef {Object} SpeechRecognitionErrorEvent
+ * @property {string} error
+ * @property {string} message
+ */
 import { voiceSynthesisService } from "../services/voice-synthesis-service.js";
 
 /**
@@ -70,9 +96,9 @@ export class VoiceController {
 		this.recognition = null;
 		/** @type {boolean} */
 		this.isSpeaking = false;
-		/** @type {any} */
+		/** @type {AISession|null} */
 		this.aiSession = null;
-		/** @type {any} */
+		/** @type {AISession|null} */
 		this.npcSession = null;
 		/** @type {number} */
 		this.restartAttempts = 0;
@@ -124,8 +150,11 @@ export class VoiceController {
 			};
 
 			this.recognition.onerror = (event) => {
-				console.error("❌ Voice recognition error:", event.error);
-				if (event.error === "not-allowed") {
+				const errorEvent = /** @type {SpeechRecognitionErrorEvent} */ (
+					/** @type {unknown} */ (event)
+				);
+				console.error("❌ Voice recognition error:", errorEvent.error);
+				if (errorEvent.error === "not-allowed") {
 					this.isListening = false;
 				}
 			};

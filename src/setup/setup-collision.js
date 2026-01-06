@@ -1,12 +1,17 @@
 import { CollisionController } from "../controllers/collision-controller.js";
 
 /**
- * Setup CollisionController
- * @param {any} host
- * @param {import('../legacys-end-app.js').LegacysEndApp} app
+ * @typedef {import('lit').LitElement & { triggerLevelTransition: () => void }} CollisionHost
  */
-export function setupCollision(host, app) {
-	host.collision = new CollisionController(host, {
+/**
+ * Setup CollisionController
+ * @param {CollisionHost} host
+ * @param {import('lit').LitElement} _app
+ */
+export function setupCollision(host, _app) {
+	/** @type {CollisionHost & { collision: CollisionController }} */ (
+		host
+	).collision = new CollisionController(host, {
 		onExitCollision: () => host.triggerLevelTransition(),
 	});
 }

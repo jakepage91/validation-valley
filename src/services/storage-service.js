@@ -19,7 +19,7 @@ export class LocalStorageAdapter {
 	 * Get item from storage.
 	 * Parses JSON automatically.
 	 * @param {string} key - The key to retrieve
-	 * @returns {any} Parsed value or null if not found or error
+	 * @returns {unknown} Parsed value or null if not found or error
 	 */
 	getItem(key) {
 		try {
@@ -35,7 +35,7 @@ export class LocalStorageAdapter {
 	 * Set item in storage.
 	 * Stringifies value to JSON automatically.
 	 * @param {string} key - The key to set
-	 * @param {any} value - The value to store
+	 * @param {unknown} value - The value to store
 	 */
 	setItem(key, value) {
 		try {
