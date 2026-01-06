@@ -3,8 +3,11 @@ import { eventBus, GameEvents } from "../core/event-bus.js";
 import { StartQuestUseCase } from "./start-quest.js";
 
 describe("StartQuestUseCase", () => {
+	/** @type {StartQuestUseCase} */
 	let useCase;
+	/** @type {any} */
 	let mockQuestController;
+	/** @type {any} */
 	let mockQuest;
 
 	beforeEach(() => {
@@ -26,7 +29,6 @@ describe("StartQuestUseCase", () => {
 
 		// Create use case instance
 		useCase = new StartQuestUseCase({
-			// @ts-expect-error - Partial mock for testing
 			questController: mockQuestController,
 		});
 	});

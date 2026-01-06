@@ -3,8 +3,11 @@ import { ROUTES } from "../constants/routes.js";
 import { ReturnToHubUseCase } from "./return-to-hub.js";
 
 describe("ReturnToHubUseCase", () => {
+	/** @type {ReturnToHubUseCase} */
 	let useCase;
+	/** @type {any} */
 	let mockQuestController;
+	/** @type {any} */
 	let mockRouter;
 
 	beforeEach(() => {
