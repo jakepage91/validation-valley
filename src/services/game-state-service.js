@@ -40,6 +40,8 @@ import {
  * - Active context (hot switch state)
  * - UI state (paused, evolving, locked messages)
  * - Theme mode
+ *
+ * @implements {import('./interfaces.js').IGameStateService}
  * @extends {Observable<GameState>}
  */
 export class GameStateService extends Observable {
