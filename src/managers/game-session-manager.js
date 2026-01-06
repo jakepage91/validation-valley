@@ -1,5 +1,6 @@
 import { ROUTES } from "../constants/routes.js";
 import { logger } from "../services/logger-service.js";
+import { CompleteQuestUseCase } from "../use-cases/complete-quest.js";
 import { ContinueQuestUseCase } from "../use-cases/continue-quest.js";
 import { ReturnToHubUseCase } from "../use-cases/return-to-hub.js";
 import { StartQuestUseCase } from "../use-cases/start-quest.js";
@@ -117,6 +118,19 @@ export class GameSessionManager extends Observable {
 			});
 		}
 		return this.__returnToHubUseCase;
+	}
+
+	/**
+	 * Lazy-initialize CompleteQuestUseCase
+	 * @returns {CompleteQuestUseCase}
+	 */
+	get _completeQuestUseCase() {
+		if (!this.__completeQuestUseCase) {
+			this.__completeQuestUseCase = new CompleteQuestUseCase({
+				questController: this.questController,
+			});
+		}
+		return this.__completeQuestUseCase;
 	}
 
 	/**
@@ -247,7 +261,15 @@ export class GameSessionManager extends Observable {
 	 * Complete entire quest
 	 */
 	completeQuest() {
-		this.questController?.completeQuest();
+		const result = this._completeQuestUseCase.execute();
+
+		if (result.success) {
+			// Quest completed, notify observers
+			this.notify({
+				type: "quest-complete",
+				questId: result.questId,
+			});
+		}
 	}
 
 	returnToHub(replace = false) {
