@@ -6,6 +6,19 @@
  * improving abstraction, documentation, and testability.
  */
 
+// Import types from their source files
+/** @typedef {import('./game-state-service.js').GameState} GameState */
+/** @typedef {import('./game-state-service.js').HotSwitchState} HotSwitchState */
+/** @typedef {import('./game-state-service.js').ThemeMode} ThemeMode */
+/** @typedef {import('./progress-service.js').ProgressState} ProgressState */
+/** @typedef {import('./quest-registry-service.js').Quest} Quest */
+/** @typedef {import('../config/game-configuration.js').AnimationConfig} AnimationConfig */
+/** @typedef {import('../config/game-configuration.js').GameplayConfig} GameplayConfig */
+/** @typedef {import('../config/game-configuration.js').StorageConfig} StorageConfig */
+/** @typedef {import('../config/game-configuration.js').FeaturesConfig} FeaturesConfig */
+/** @typedef {import('../config/game-configuration.js').ViewportConfig} ViewportConfig */
+/** @typedef {import('../config/game-configuration.js').GameConfig} GameConfig */
+
 /**
  * @typedef {Object} IGameStateService
  * @property {() => GameState} getState - Get current game state
@@ -19,7 +32,7 @@
  * @property {(message: string|null) => void} setLockedMessage - Set locked message
  * @property {(mode: ThemeMode) => void} setThemeMode - Set theme mode
  * @property {() => void} resetChapterState - Reset chapter-specific state
- * @property {(callback: Function) => () => void} subscribe - Subscribe to state changes
+ * @property {(callback: (state: GameState, oldState: GameState) => void) => Function} subscribe - Subscribe to state changes
  */
 
 /**

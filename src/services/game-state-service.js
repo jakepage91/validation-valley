@@ -5,6 +5,8 @@ import {
 	ThemeModeValidator,
 } from "../utils/validators.js";
 
+/** @typedef {import('./interfaces.js').IGameStateService} IGameStateService */
+
 /**
  * @typedef {Object} HeroPosition
  * @property {number} x - X coordinate percentage (0-100)
@@ -41,7 +43,8 @@ import {
  * - UI state (paused, evolving, locked messages)
  * - Theme mode
  *
- * @implements {import('./interfaces.js').IGameStateService}
+ * Implements IGameStateService interface (see interfaces.js)
+ * @implements {IGameStateService}
  * @extends {Observable<GameState>}
  */
 export class GameStateService extends Observable {

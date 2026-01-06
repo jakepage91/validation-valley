@@ -47,7 +47,10 @@ export class EventBus {
 			this._listeners.set(event, new Set());
 		}
 
-		this._listeners.get(event).add(callback);
+		const listeners = this._listeners.get(event);
+		if (listeners) {
+			listeners.add(callback);
+		}
 
 		// Return unsubscribe function
 		return () => this.off(event, callback);
@@ -61,6 +64,7 @@ export class EventBus {
 	 * @returns {UnsubscribeFunction} Function to unsubscribe
 	 */
 	once(event, callback) {
+		/** @param {T} data */
 		const wrappedCallback = (data) => {
 			callback(data);
 			this.off(event, wrappedCallback);
@@ -72,17 +76,18 @@ export class EventBus {
 	/**
 	 * Unsubscribe from an event
 	 * @param {string} event - Event name
-	 * @param {Function} callback - Callback function to remove
+	 * @param {Function} callback - Callback to remove
 	 */
 	off(event, callback) {
-		const listeners = this._listeners.get(event);
-		if (listeners) {
-			listeners.delete(callback);
+		const callbacks = this._listeners.get(event); // Changed from this.listeners to this._listeners
+		if (!callbacks) return;
 
-			// Clean up empty listener sets
-			if (listeners.size === 0) {
-				this._listeners.delete(event);
-			}
+		// Assuming the intent is to remove from a Set, not an Array
+		callbacks.delete(callback);
+
+		// Clean up empty listener sets
+		if (callbacks.size === 0) {
+			this._listeners.delete(event);
 		}
 	}
 

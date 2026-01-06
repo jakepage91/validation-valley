@@ -162,22 +162,25 @@ export class GameConfiguration {
 
 	/**
 	 * Deep merge two objects
+	 * @param {any} target
+	 * @param {any} source
+	 * @returns {any}
 	 * @private
 	 */
 	_deepMerge(target, source) {
-		const result = { ...target };
+		const output = { ...target };
 		for (const key in source) {
 			if (
 				source[key] &&
 				typeof source[key] === "object" &&
 				!Array.isArray(source[key])
 			) {
-				result[key] = this._deepMerge(target[key] || {}, source[key]);
+				output[key] = this._deepMerge(target[key] || {}, source[key]);
 			} else {
-				result[key] = source[key];
+				output[key] = source[key];
 			}
 		}
-		return result;
+		return output;
 	}
 
 	/**
