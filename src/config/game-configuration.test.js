@@ -97,8 +97,8 @@ describe("GameConfiguration", () => {
 
 		it("should deep merge overrides", () => {
 			const config = new GameConfiguration("test", {
-				// @ts-expect-error - Testing partial override
 				viewport: {
+					// @ts-expect-error - Testing partial override (missing context property)
 					zones: {
 						theme: {
 							darkThreshold: 75,
