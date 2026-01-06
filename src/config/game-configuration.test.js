@@ -86,6 +86,7 @@ describe("GameConfiguration", () => {
 	describe("Configuration overrides", () => {
 		it("should apply overrides", () => {
 			const config = new GameConfiguration("test", {
+				// @ts-expect-error - Testing partial override
 				animation: {
 					rewardDuration: 500,
 				},
@@ -96,6 +97,7 @@ describe("GameConfiguration", () => {
 
 		it("should deep merge overrides", () => {
 			const config = new GameConfiguration("test", {
+				// @ts-expect-error - Testing partial override
 				viewport: {
 					zones: {
 						theme: {
@@ -113,6 +115,7 @@ describe("GameConfiguration", () => {
 		it("should throw on negative reward duration", () => {
 			expect(() => {
 				new GameConfiguration("test", {
+					// @ts-expect-error - Testing partial override
 					animation: {
 						rewardDuration: -1,
 					},
@@ -123,6 +126,7 @@ describe("GameConfiguration", () => {
 		it("should throw on negative interaction distance", () => {
 			expect(() => {
 				new GameConfiguration("test", {
+					// @ts-expect-error - Testing partial override
 					gameplay: {
 						interactionDistance: -1,
 					},
@@ -133,6 +137,7 @@ describe("GameConfiguration", () => {
 		it("should throw on zero hero speed", () => {
 			expect(() => {
 				new GameConfiguration("test", {
+					// @ts-expect-error - Testing partial override
 					gameplay: {
 						heroSpeed: 0,
 					},
@@ -143,6 +148,7 @@ describe("GameConfiguration", () => {
 		it("should throw on empty storage key", () => {
 			expect(() => {
 				new GameConfiguration("test", {
+					// @ts-expect-error - Testing partial override
 					storage: {
 						progressKey: "",
 					},

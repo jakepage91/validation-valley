@@ -28,7 +28,7 @@ describe("PositionValidator", () => {
 	});
 
 	it("should reject non-number x", () => {
-		const result = PositionValidator.validate("50", 50);
+		const result = PositionValidator.validate(/** @type {any} */ ("50"), 50);
 		expect(result.isValid).toBe(false);
 		expect(result.errors[0].field).toBe("x");
 	});
@@ -75,7 +75,7 @@ describe("ThemeModeValidator", () => {
 	});
 
 	it("should reject non-string theme", () => {
-		const result = ThemeModeValidator.validate(123);
+		const result = ThemeModeValidator.validate(/** @type {any} */ (123));
 		expect(result.isValid).toBe(false);
 	});
 
@@ -113,7 +113,7 @@ describe("HotSwitchStateValidator", () => {
 	});
 
 	it("should reject non-string non-null state", () => {
-		const result = HotSwitchStateValidator.validate(123);
+		const result = HotSwitchStateValidator.validate(/** @type {any} */ (123));
 		expect(result.isValid).toBe(false);
 	});
 
@@ -151,7 +151,7 @@ describe("QuestIdValidator", () => {
 	});
 
 	it("should reject non-string quest ID", () => {
-		const result = QuestIdValidator.validate(123);
+		const result = QuestIdValidator.validate(/** @type {any} */ (123));
 		expect(result.isValid).toBe(false);
 	});
 
@@ -187,8 +187,8 @@ describe("CompositeValidator", () => {
 	it("should validate object against schema", () => {
 		const obj = { x: 50, y: 75, theme: "dark" };
 		const schema = {
-			x: (v) => PositionValidator.validate(v, 0),
-			y: (v) => PositionValidator.validate(0, v),
+			x: /** @param {any} v */ (v) => PositionValidator.validate(v, 0),
+			y: /** @param {any} v */ (v) => PositionValidator.validate(0, v),
 			theme: ThemeModeValidator.validate,
 		};
 
@@ -199,7 +199,7 @@ describe("CompositeValidator", () => {
 	it("should collect errors from object validation", () => {
 		const obj = { x: -1, theme: "invalid" };
 		const schema = {
-			x: (v) => PositionValidator.validate(v, 0),
+			x: /** @param {any} v */ (v) => PositionValidator.validate(v, 0),
 			theme: ThemeModeValidator.validate,
 		};
 

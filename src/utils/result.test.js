@@ -52,25 +52,30 @@ describe("Result", () => {
 
 	describe("map", () => {
 		it("should map Ok value", () => {
-			const result = Result.Ok(42).map((x) => x * 2);
+			const result = Result.Ok(42).map(/** @param {number} x */ (x) => x * 2);
 			expect(result.unwrap()).toBe(84);
 		});
 
 		it("should not map Err value", () => {
 			const error = new Error("Failed");
-			const result = Result.Err(error).map((x) => x * 2);
+			const result = Result.Err(error).map(
+				/** @param {number} x */ (x) => x * 2,
+			);
 			expect(result.error).toBe(error);
 		});
 	});
 
 	describe("mapErr", () => {
 		it("should not map Ok error", () => {
-			const result = Result.Ok(42).mapErr((_e) => new Error("Mapped"));
+			const result = Result.Ok(42).mapErr(
+				/** @param {Error} _e */ (_e) => new Error("Mapped"),
+			);
 			expect(result.value).toBe(42);
 		});
 
 		it("should map Err error", () => {
 			const result = Result.Err(new Error("Original")).mapErr(
+				/** @param {Error} _e */
 				(_e) => new Error("Mapped"),
 			);
 			expect(result.error.message).toBe("Mapped");
@@ -79,19 +84,23 @@ describe("Result", () => {
 
 	describe("andThen", () => {
 		it("should chain Ok results", () => {
-			const result = Result.Ok(42).andThen((x) => Result.Ok(x * 2));
+			const result = Result.Ok(42).andThen(
+				/** @param {number} x */ (x) => Result.Ok(x * 2),
+			);
 			expect(result.unwrap()).toBe(84);
 		});
 
 		it("should short-circuit on Err", () => {
 			const error = new Error("Failed");
-			const result = Result.Err(error).andThen((x) => Result.Ok(x * 2));
+			const result = Result.Err(error).andThen(
+				/** @param {number} x */ (x) => Result.Ok(x * 2),
+			);
 			expect(result.error).toBe(error);
 		});
 
 		it("should propagate Err from chained operation", () => {
-			const result = Result.Ok(42).andThen((_x) =>
-				Result.Err(new Error("Chain failed")),
+			const result = Result.Ok(42).andThen(
+				/** @param {number} _x */ (_x) => Result.Err(new Error("Chain failed")),
 			);
 			expect(result.isErr()).toBe(true);
 			expect(result.error.message).toBe("Chain failed");
@@ -101,12 +110,14 @@ describe("Result", () => {
 	describe("unwrapOrElse", () => {
 		it("should return value for Ok", () => {
 			const result = Result.Ok(42);
-			expect(result.unwrapOrElse((_e) => 0)).toBe(42);
+			expect(result.unwrapOrElse(/** @param {Error} _e */ (_e) => 0)).toBe(42);
 		});
 
 		it("should compute value from error for Err", () => {
 			const result = Result.Err(new Error("Failed"));
-			expect(result.unwrapOrElse((e) => e.message.length)).toBe(6);
+			expect(
+				result.unwrapOrElse(/** @param {Error} e */ (e) => e.message.length),
+			).toBe(6);
 		});
 	});
 
@@ -114,8 +125,8 @@ describe("Result", () => {
 		it("should call ok handler for Ok", () => {
 			const result = Result.Ok(42);
 			const value = result.match({
-				ok: (x) => x * 2,
-				err: (_e) => 0,
+				ok: /** @param {number} x */ (x) => x * 2,
+				err: /** @param {Error} _e */ (_e) => 0,
 			});
 			expect(value).toBe(84);
 		});
@@ -123,8 +134,8 @@ describe("Result", () => {
 		it("should call err handler for Err", () => {
 			const result = Result.Err(new Error("Failed"));
 			const value = result.match({
-				ok: (x) => x * 2,
-				err: (e) => e.message,
+				ok: /** @param {number} x */ (x) => x * 2,
+				err: /** @param {Error} e */ (e) => e.message,
 			});
 			expect(value).toBe("Failed");
 		});

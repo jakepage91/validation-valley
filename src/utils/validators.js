@@ -68,10 +68,10 @@ export class PositionValidator {
 	}
 
 	/**
-	 * Validate and return Result
+	 * Validate position and return Result
 	 * @param {number} x
 	 * @param {number} y
-	 * @returns {Result<{x: number, y: number}, ValidationError[]>}
+	 * @returns {Result}
 	 */
 	static validateResult(x, y) {
 		const validation = PositionValidator.validate(x, y);
@@ -117,9 +117,9 @@ export class ThemeModeValidator {
 	}
 
 	/**
-	 * Validate and return Result
+	 * Validate theme mode and return Result
 	 * @param {string} mode
-	 * @returns {Result<string, ValidationError[]>}
+	 * @returns {Result}
 	 */
 	static validateResult(mode) {
 		const validation = ThemeModeValidator.validate(mode);
@@ -165,9 +165,9 @@ export class HotSwitchStateValidator {
 	}
 
 	/**
-	 * Validate and return Result
+	 * Validate hot switch state and return Result
 	 * @param {string | null} state
-	 * @returns {Result<string | null, ValidationError[]>}
+	 * @returns {Result}
 	 */
 	static validateResult(state) {
 		const validation = HotSwitchStateValidator.validate(state);
@@ -218,9 +218,9 @@ export class QuestIdValidator {
 	}
 
 	/**
-	 * Validate and return Result
+	 * Validate quest ID and return Result
 	 * @param {string} questId
-	 * @returns {Result<string, ValidationError[]>}
+	 * @returns {Result}
 	 */
 	static validateResult(questId) {
 		const validation = QuestIdValidator.validate(questId);
