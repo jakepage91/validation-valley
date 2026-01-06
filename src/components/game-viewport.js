@@ -2,7 +2,8 @@ import "@awesome.me/webawesome/dist/components/card/card.js";
 import "@awesome.me/webawesome/dist/components/details/details.js";
 import { html, LitElement } from "lit";
 import { classMap } from "lit/directives/class-map.js";
-import { GAME_CONFIG } from "../constants/game-config.js";
+import { gameConfig } from "../config/game-configuration.js"; // New import
+import "../constants/game-config.js"; // Legacy - being phased out
 import { processBackgroundStyle } from "../utils/process-assets.js";
 import "./game-hud.js";
 import { styles } from "./game-viewport.css.js";
@@ -93,7 +94,7 @@ export class GameViewport extends LitElement {
 			setTimeout(() => {
 				this.rewardAnimState = "moving";
 				this.requestUpdate();
-			}, GAME_CONFIG.ANIMATION.REWARD_DELAY);
+			}, gameConfig.animation.rewardDuration / 2);
 
 			// Step 3: End
 			setTimeout(() => {
@@ -108,7 +109,7 @@ export class GameViewport extends LitElement {
 					}),
 				);
 				this.requestUpdate();
-			}, GAME_CONFIG.ANIMATION.REWARD_DURATION);
+			}, gameConfig.animation.rewardDuration);
 		}
 	}
 
