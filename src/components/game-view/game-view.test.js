@@ -18,7 +18,7 @@ describe("GameView Component", () => {
 
 	it("renders game-viewport when config is provided", async () => {
 		const el = /** @type {GameView} */ (document.createElement("game-view"));
-		el.gameState = {
+		el.gameState = /** @type {any} */ ({
 			config: {
 				canToggleTheme: true,
 				hasHotSwitch: true,
@@ -47,7 +47,7 @@ describe("GameView Component", () => {
 				isRewardCollected: false,
 				isCloseToTarget: false,
 			},
-		};
+		});
 		document.body.appendChild(el);
 		await el.updateComplete;
 
@@ -107,7 +107,7 @@ describe("GameView Component", () => {
 
 			el = /** @type {GameView} */ (document.createElement("game-view"));
 			el.app = mockApp;
-			el.gameState = {
+			el.gameState = /** @type {any} */ ({
 				ui: {
 					isPaused: false,
 					showDialog: false,
@@ -128,7 +128,7 @@ describe("GameView Component", () => {
 					isRewardCollected: false,
 					isCloseToTarget: false,
 				},
-			};
+			});
 			document.body.appendChild(el);
 			await el.updateComplete;
 		});

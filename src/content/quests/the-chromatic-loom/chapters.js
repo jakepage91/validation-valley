@@ -17,6 +17,8 @@ export const THE_CHROMATIC_LOOM_CHAPTERS = {
 		title: "The Fortress of Design",
 		description:
 			"The object symbolizing the variety of external Design Systems. Interacting reveals the need for CSS Custom Properties (Design Tokens) to achieve visual consistency and thematic adaptation (Dark Mode).",
+		problemTitle: "Rigid Structure",
+		problemDesc: "Start by selecting the element to inspect its styles.",
 		hasThemeZones: true,
 		codeSnippets: {
 			start: [

@@ -16,40 +16,46 @@ export const Difficulty = {
 };
 
 /**
- * @typedef {Object} Coordinate
+ * @typedef {Object} Vector2
  * @property {number} x
  * @property {number} y
  */
 
 /**
- * @typedef {Object} Zone
- * @property {number} x
- * @property {number} y
+ * @typedef {Object} Size
  * @property {number} width
  * @property {number} height
- * @property {string} [label]
  */
 
 /**
- * @typedef {Object} HeroConfig
- * @property {string} image
- * @property {string} [reward]
+ * @typedef {Vector2 & Size} Rect
  */
 
 /**
- * @typedef {Object} RewardConfig
- * @property {string} name
+ * @typedef {Rect & { label?: string, type?: string }} Zone
+ */
+
+/**
+ * @typedef {Object} RenderableConfig
+ * @property {string} [name]
  * @property {string} [icon]
  * @property {string} image
- * @property {Coordinate} position
  */
 
 /**
- * @typedef {Object} NpcConfig
- * @property {string} name
- * @property {string} [icon]
- * @property {string} image
- * @property {Coordinate} position
+ * @typedef {RenderableConfig & { position: Vector2 }} PlacedConfig
+ */
+
+/**
+ * @typedef {RenderableConfig & { reward?: string }} HeroConfig
+ */
+
+/**
+ * @typedef {PlacedConfig & { name: string }} RewardConfig
+ */
+
+/**
+ * @typedef {PlacedConfig & { name: string }} NpcConfig
  */
 
 /**
@@ -77,15 +83,15 @@ export const Difficulty = {
  * @property {number} [powerLevel]
  * @property {string} title
  * @property {string} description
- * @property {string} [problemTitle]
- * @property {any} [problemDesc]
+ * @property {string} problemTitle
+ * @property {any} problemDesc
  * @property {string} [solutionTitle]
  * @property {string} [solutionDesc]
  * @property {string[]} [architecturalChanges]
  * @property {CodeSnippetsConfig} [codeSnippets]
  * @property {GameStats} [stats]
  * @property {string} [serviceType]
- * @property {Coordinate} startPos
+ * @property {Vector2} startPos
  * @property {Zone} [exitZone]
  * @property {string} [backgroundStyle]
  * @property {string} [postDialogBackgroundStyle]
@@ -99,13 +105,13 @@ export const Difficulty = {
  */
 
 /**
- * @typedef {Object} Quest
+ * @typedef {Object} QuestData
  * @property {string} id
  * @property {string} name
  * @property {string} [subtitle]
- * @property {string} [description]
- * @property {string} [icon]
- * @property {string} [difficulty]
+ * @property {string} description
+ * @property {string} icon
+ * @property {string} difficulty
  * @property {string} [estimatedTime]
  * @property {string} [color]
  * @property {string} [legacyProblem]
@@ -120,11 +126,18 @@ export const Difficulty = {
  */
 
 /**
- * @typedef {Quest & {
- *   isCompleted?: boolean;
- *   isLocked?: boolean;
- *   progress?: number;
- *   inProgress?: boolean;
- *   icon?: string;
- * }} EnrichedQuest
+ * @typedef {Object} QuestProgress
+ * @property {boolean} [isCompleted]
+ * @property {boolean} [isLocked]
+ * @property {number} [progress]
+ * @property {boolean} [inProgress]
+ */
+
+/**
+ * @typedef {QuestData & QuestProgress} Quest
+ */
+
+/**
+ * @deprecated Use Quest instead
+ * @typedef {Quest} EnrichedQuest
  */

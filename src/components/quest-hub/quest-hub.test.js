@@ -19,6 +19,7 @@ describe("QuestHub Component", () => {
 				name: "Quest 1",
 				description: "Desc 1",
 				difficulty: "Beginner",
+				icon: "quest-icon",
 				progress: 0,
 				isCompleted: false,
 				isLocked: false,
@@ -29,6 +30,7 @@ describe("QuestHub Component", () => {
 				name: "Quest 2",
 				description: "Desc 2",
 				difficulty: "Advanced",
+				icon: "quest-icon",
 				progress: 50,
 				isCompleted: false,
 				isLocked: false,
@@ -55,6 +57,7 @@ describe("QuestHub Component", () => {
 				name: "Future Quest",
 				description: "Coming Soon",
 				difficulty: "Beginner",
+				icon: "quest-icon",
 			},
 		];
 		document.body.appendChild(el);

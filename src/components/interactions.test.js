@@ -130,7 +130,7 @@ describe("GameView Integration", () => {
 
 	it("should re-dispatch 'complete' event from level-dialog", async () => {
 		element = new GameView();
-		element.gameState = {
+		element.gameState = /** @type {any} */ ({
 			config: { hasHotSwitch: true },
 			hero: { pos: { x: 0, y: 0 }, isEvolving: false, hotSwitchState: null },
 			ui: {
@@ -151,7 +151,7 @@ describe("GameView Integration", () => {
 				isRewardCollected: false,
 				isCloseToTarget: false,
 			},
-		};
+		});
 		// Mock app for handleLevelComplete
 		element.app = {
 			showDialog: true,
@@ -179,7 +179,7 @@ describe("GameView Integration", () => {
 
 	it("should re-dispatch 'close-dialog' event from level-dialog close", async () => {
 		element = new GameView();
-		element.gameState = {
+		element.gameState = /** @type {any} */ ({
 			config: { hasHotSwitch: true },
 			hero: { pos: { x: 0, y: 0 }, isEvolving: false, hotSwitchState: null },
 			ui: {
@@ -200,7 +200,7 @@ describe("GameView Integration", () => {
 				isRewardCollected: false,
 				isCloseToTarget: false,
 			},
-		};
+		});
 		container.appendChild(element);
 		await element.updateComplete;
 

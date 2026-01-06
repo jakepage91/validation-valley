@@ -7,30 +7,43 @@
  * This decouples the internal application state structure from the view's props.
  */
 /**
+ * @typedef {Object} UIState
+ * @property {boolean} isPaused
+ * @property {boolean} showDialog
+ * @property {boolean} isQuestCompleted
+ * @property {string} lockedMessage
+ */
+
+/**
+ * @typedef {Object} QuestState
+ * @property {import('../content/quests/quest-types.js').QuestData} data
+ * @property {number} chapterNumber
+ * @property {number} totalChapters
+ * @property {boolean} isLastChapter
+ * @property {string} levelId
+ */
+
+/**
+ * @typedef {Object} HeroViewState
+ * @property {import('../content/quests/quest-types.js').Vector2} pos
+ * @property {boolean} isEvolving
+ * @property {import('../services/game-state-service.js').HotSwitchState} hotSwitchState
+ */
+
+/**
+ * @typedef {Object} LevelViewState
+ * @property {boolean} hasCollectedItem
+ * @property {boolean} isRewardCollected
+ * @property {boolean} isCloseToTarget
+ */
+
+/**
  * @typedef {Object} GameState
- * @property {Object} config
- * @property {boolean} [config.canToggleTheme]
- * @property {boolean} [config.hasHotSwitch]
- * @property {boolean} [config.isFinalBoss]
- * @property {Object} ui
- * @property {boolean} ui.isPaused
- * @property {boolean} ui.showDialog
- * @property {boolean} ui.isQuestCompleted
- * @property {string} ui.lockedMessage
- * @property {Object} quest
- * @property {Object} quest.data
- * @property {number} quest.chapterNumber
- * @property {number} quest.totalChapters
- * @property {boolean} quest.isLastChapter
- * @property {string} quest.levelId
- * @property {Object} hero
- * @property {{x: number, y: number}} hero.pos
- * @property {boolean} hero.isEvolving
- * @property {import('../services/game-state-service.js').HotSwitchState} hero.hotSwitchState
- * @property {Object} levelState
- * @property {boolean} levelState.hasCollectedItem
- * @property {boolean} levelState.isRewardCollected
- * @property {boolean} levelState.isCloseToTarget
+ * @property {import('../content/quests/quest-types.js').LevelConfig} config
+ * @property {UIState} ui
+ * @property {QuestState} quest
+ * @property {HeroViewState} hero
+ * @property {LevelViewState} levelState
  */
 
 /**
@@ -41,9 +54,9 @@
  * @property {boolean} isPaused
  * @property {boolean} showDialog
  * @property {boolean} showQuestCompleteDialog
- * @property {{name: string}} currentQuest
+ * @property {import('../content/quests/quest-types.js').QuestData} currentQuest
  * @property {string} chapterId
- * @property {{x: number, y: number}} heroPos
+ * @property {import('../content/quests/quest-types.js').Vector2} heroPos
  * @property {boolean} isEvolving
  * @property {import('../services/game-state-service.js').HotSwitchState} hotSwitchState
  * @property {boolean} hasCollectedItem
@@ -54,7 +67,7 @@ export const GameStateMapper = {
 	/**
 	 * Maps the current app state to a GameState object.
 	 * @param {AppSource} app - The application instance source
-	 * @param {Object} config - The current chapter configuration
+	 * @param {import('../content/quests/quest-types.js').LevelConfig} config - The current chapter configuration
 	 * @returns {GameState} The mapped game state
 	 */
 	map(app, config) {

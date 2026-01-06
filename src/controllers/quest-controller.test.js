@@ -53,6 +53,9 @@ describe("QuestController", () => {
 		mockQuest = {
 			id: "test-quest",
 			name: "Test Quest",
+			description: "Test Description",
+			icon: "test-icon",
+			difficulty: "beginner",
 			chapterIds: ["chapter-1", "chapter-2", "chapter-3"],
 			chapters: {
 				"chapter-1": { id: "chapter-1", title: "Chapter 1" },
@@ -371,10 +374,10 @@ describe("QuestController", () => {
 		});
 
 		it("getAvailableQuests should return quests from registry", () => {
-			const mockAvailableQuests = [
+			const mockAvailableQuests = /** @type {any} */ ([
 				{ id: "quest-1", name: "Quest 1" },
 				{ id: "quest-2", name: "Quest 2" },
-			];
+			]);
 			vi.spyOn(controller.registry, "getAvailableQuests").mockReturnValue(
 				mockAvailableQuests,
 			);
