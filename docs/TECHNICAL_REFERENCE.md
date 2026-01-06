@@ -69,7 +69,7 @@ Services are pure logic classes that manage specific domains of the application 
     *   `heroPos`: `{x, y}` coordinates of the player.
     *   `hasCollectedItem`: Boolean, true if the level's objective item is collected.
     *   `isRewardCollected`: Boolean, true if the visual reward sequence is finished.
-    *   `hotSwitchState`: `HotSwitchState` (`legacy` | `new` | `test` | `null`) indicating the current API context (Level 6 mechanic).
+    *   `hotSwitchState`: `HotSwitchState` (`legacy` | `new` | `test` | `null`) indicating the current API context. **Defaults to `null`** - only set explicitly by zone interactions or user actions.
     *   `isPaused`: Boolean, game pause state.
     *   `themeMode`: `ThemeMode` (`light` | `dark`), visual theme.
 
@@ -130,6 +130,7 @@ Managers are high-level coordinators that orchestrate logic between multiple ser
     *   Handles navigation requests (Route -> Quest).
     *   Manages "Auto-Move" logic (clicking to move).
     *   Coordinates level transitions (evolutions).
+    *   **Note**: No longer automatically sets `hotSwitchState` based on `serviceType`. The state remains `null` unless explicitly set by zone interactions.
 *   **Key Methods**:
     *   `startQuest(questId)`: Initializes a quest.
     *   `returnToHub()`: Cleans up quest state and redirects to Hub.
@@ -182,7 +183,7 @@ Controllers are specialized classes (often using Lit's Reactive Controller patte
 *   `InteractionOptions`: Callbacks for game state access and UI triggers.
 **Outputs**:
 *   `onShowDialog()`: Opens the dialog UI.
-*   `onLocked(msg)`: Triggers a "locked" feedback message (e.g., "REQ: NEW API").
+*   `onLocked(msg)`: Triggers a "locked" feedback message.
 **Key Logic**:
 *   **Proximity**: Hero must be within `interactionDistance` (default 15) of the NPC.
 *   **Final Boss**: Special logic blocks interaction if `hotSwitchState` is 'legacy' (requires 'new' context).
@@ -305,6 +306,7 @@ Visual UI elements built with `Lit`.
 **Structure**:
 *   **Slides**: Narrative -> Problem -> Code Analysis -> Confirmation.
 *   **Interactive**: Displays syntax-highlighted code blocks.
+*   **Note**: The "CONTROL CONSOLE" slide and `isFinalBoss` logic have been removed. All levels now use the standard confirmation flow.
 
 ### `HeroProfile`
 **Element**: `<hero-profile>`
