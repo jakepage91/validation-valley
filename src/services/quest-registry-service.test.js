@@ -42,8 +42,8 @@ describe("Quest Registry Service", () => {
 		it("should return quest by ID", () => {
 			const quest = getQuest("quest-1");
 			expect(quest).toBeDefined();
-			expect(quest.id).toBe("quest-1");
-			expect(quest.name).toBe("First Quest");
+			expect(quest?.id).toBe("quest-1");
+			expect(quest?.name).toBe("First Quest");
 		});
 
 		it("should return undefined for non-existent quest", () => {

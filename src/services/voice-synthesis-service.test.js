@@ -58,29 +58,29 @@ describe("VoiceSynthesisService", () => {
 		it("should return English voice for hero", () => {
 			const voice = service.getBestVoice("en-US", "hero");
 			expect(voice).toBeDefined();
-			expect(voice.lang).toBe("en-US");
-			expect(voice.name).toContain("Google US English");
+			expect(voice?.lang).toBe("en-US");
+			expect(voice?.name).toContain("Google US English");
 		});
 
 		it("should return Spanish voice for hero", () => {
 			const voice = service.getBestVoice("es-ES", "hero");
 			expect(voice).toBeDefined();
-			expect(voice.lang).toBe("es-ES");
-			expect(voice.name).toContain("español");
+			expect(voice?.lang).toBe("es-ES");
+			expect(voice?.name).toContain("español");
 		});
 
 		it("should return different voice for NPC", () => {
 			const voice = service.getBestVoice("en-US", "npc");
 			expect(voice).toBeDefined();
-			expect(voice.lang).toBe("en-US");
+			expect(voice?.lang).toBe("en-US");
 			// NPCs can get either male or female voices
-			expect(["Google US English", "Samantha"]).toContain(voice.name);
+			expect(["Google US English", "Samantha"]).toContain(voice?.name);
 		});
 
 		it("should handle language normalization", () => {
 			const voice = service.getBestVoice("es", "hero");
 			expect(voice).toBeDefined();
-			expect(voice.lang).toBe("es-ES");
+			expect(voice?.lang).toBe("es-ES");
 		});
 	});
 
@@ -91,7 +91,7 @@ describe("VoiceSynthesisService", () => {
 		});
 
 		it("should not speak if text is not a string", () => {
-			service.speak(null, { lang: "en-US" });
+			service.speak(/** @type {any} */ (null), { lang: "en-US" });
 			expect(speechSynthesisMock.speak).not.toHaveBeenCalled();
 		});
 
@@ -185,7 +185,7 @@ describe("VoiceSynthesisService", () => {
 		});
 
 		it("should handle missing synthesis gracefully", () => {
-			service.synthesis = null;
+			service.synthesis = /** @type {any} */ (null);
 			expect(() => service.cancel()).not.toThrow();
 		});
 	});

@@ -3,7 +3,7 @@ import { logger } from "./logger-service.js";
 /**
  * Storage Interface (Implicit)
  * @typedef {Object} StorageAdapter
- * @property {function(string): any} getItem
+ * @property {function(string): unknown} getItem
  * @property {function(string, any): void} setItem
  * @property {function(string): void} removeItem
  * @property {function(): void} clear

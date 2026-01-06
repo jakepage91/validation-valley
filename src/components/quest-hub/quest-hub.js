@@ -143,7 +143,7 @@ export class QuestHub extends LitElement {
 					<span class="quest-time">
 						<wa-icon name="clock"></wa-icon> ${quest.estimatedTime}
 					</span>
-					<wa-badge .variant="${this.getDifficultyVariant(quest.difficulty)}">
+					<wa-badge .variant="${this.getDifficultyVariant(quest.difficulty || "beginner")}">
 						${quest.difficulty}
 					</wa-badge>
 				</div>
@@ -283,7 +283,7 @@ export class QuestHub extends LitElement {
 
 	dispatchOpenAbout() {
 		const aboutSlides = /** @type {AboutSlides} */ (
-			this.shadowRoot.querySelector("about-slides")
+			this.shadowRoot?.querySelector("about-slides")
 		);
 		aboutSlides.show();
 	}

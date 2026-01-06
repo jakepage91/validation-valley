@@ -106,7 +106,7 @@ export class VoiceSynthesisService {
 	 * @param {boolean} [options.queue] - Whether to queue or interrupt current speech
 	 * @param {() => void} [options.onStart] - Callback when speech starts
 	 * @param {() => void} [options.onEnd] - Callback when speech ends
-	 * @param {(event: any) => void} [options.onError] - Callback on error
+	 * @param {(event: Event) => void} [options.onError] - Callback on error
 	 */
 	speak(text, options = {}) {
 		// Validate text parameter

@@ -67,7 +67,7 @@ export const GameStateMapper = {
 				isPaused: app.isPaused || false,
 				showDialog: app.showDialog,
 				isQuestCompleted: app.showQuestCompleteDialog,
-				lockedMessage: app.gameState.getState().lockedMessage,
+				lockedMessage: app.gameState.getState().lockedMessage || "",
 			},
 			quest: {
 				data: app.currentQuest,

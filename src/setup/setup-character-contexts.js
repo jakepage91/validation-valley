@@ -6,15 +6,17 @@ import { CharacterContextController } from "../controllers/character-context-con
  */
 export function setupCharacterContexts(app) {
 	app.characterContexts = new CharacterContextController(app, {
-		suitProvider: null, // Will be set in connectedCallback
-		gearProvider: null,
-		powerProvider: null,
-		masteryProvider: null,
+		suitProvider: undefined, // Will be set in connectedCallback
+		gearProvider: undefined,
+		powerProvider: undefined,
+		masteryProvider: undefined,
 		getState: () => ({
-			level: app.chapterId,
-			chapterData: app.getChapterData(app.chapterId),
+			level: app.chapterId || "", // Ensure string
+			chapterData: app.getChapterData(app.chapterId || ""),
 			themeMode: app.themeMode,
-			hotSwitchState: app.hotSwitchState,
+			hotSwitchState: /** @type {string|undefined} */ (
+				app.hotSwitchState || undefined
+			),
 			hasCollectedItem: app.hasCollectedItem,
 			userData: /** @type {import("../services/user-services.js").UserData} */ (
 				app.userData

@@ -58,14 +58,14 @@ export class KeyboardController {
 		// Handle Pause (Escape) - Always allowed
 		if (e.code === "Escape") {
 			e.preventDefault();
-			this.options.onPause();
+			this.options.onPause?.();
 			return;
 		}
 
 		// Handle interaction (Space)
 		if (e.code === "Space") {
 			e.preventDefault();
-			this.options.onInteract();
+			this.options.onInteract?.();
 			return;
 		}
 
@@ -92,7 +92,7 @@ export class KeyboardController {
 		}
 
 		if (moveX !== 0 || moveY !== 0) {
-			this.options.onMove(moveX, moveY);
+			this.options.onMove?.(moveX, moveY);
 		}
 	}
 }

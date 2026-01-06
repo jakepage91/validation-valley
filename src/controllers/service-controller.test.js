@@ -117,7 +117,10 @@ describe("ServiceController", () => {
 		});
 
 		it("should return null if serviceType is null", () => {
-			const service = controller.getActiveService(null, null);
+			const service = controller.getActiveService(
+				/** @type {any} */ (null),
+				null,
+			);
 			expect(service).toBeNull();
 		});
 	});
@@ -223,7 +226,7 @@ describe("ServiceController", () => {
 		});
 
 		it("should do nothing if no profileProvider", () => {
-			controller.options.profileProvider = null;
+			controller.options.profileProvider = undefined;
 			controller.updateProfileContext();
 			// Should not throw
 		});

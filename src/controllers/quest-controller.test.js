@@ -29,7 +29,7 @@ vi.mock("../services/progress-service.js", () => {
 import { getQuest } from "../services/quest-registry-service.js";
 
 describe("QuestController", () => {
-	/** @type {any} */
+	/** @type {import("lit").ReactiveControllerHost} */
 	let host;
 	/**
 	 * @type {QuestController}
@@ -84,7 +84,7 @@ describe("QuestController", () => {
 			expect(getQuest).toHaveBeenCalledWith("test-quest");
 			expect(controller.currentQuest).toEqual(mockQuest);
 			expect(controller.currentChapterIndex).toBe(0);
-			expect(controller.currentChapter.id).toBe("chapter-1");
+			expect(controller.currentChapter?.id).toBe("chapter-1");
 			expect(
 				controller.progressService.resetQuestProgress,
 			).toHaveBeenCalledWith("test-quest");
@@ -98,7 +98,7 @@ describe("QuestController", () => {
 		});
 
 		it("should not start a quest if it does not exist", async () => {
-			vi.mocked(getQuest).mockReturnValue(null);
+			vi.mocked(getQuest).mockReturnValue(/** @type {any} */ (null));
 			const onQuestStart = vi.fn();
 			controller.options.onQuestStart = onQuestStart;
 
@@ -109,7 +109,7 @@ describe("QuestController", () => {
 		});
 
 		it("should not start a quest if it is not available", async () => {
-			/** @type {any} */ (
+			/** @type {import("vitest").Mock} */ (
 				controller.progressService.isQuestAvailable
 			).mockReturnValue(false);
 			const onQuestStart = vi.fn();
@@ -144,7 +144,7 @@ describe("QuestController", () => {
 
 			// Should advance to next chapter
 			expect(controller.currentChapterIndex).toBe(1);
-			expect(controller.currentChapter.id).toBe("chapter-2");
+			expect(controller.currentChapter?.id).toBe("chapter-2");
 			expect(controller.progressService.setCurrentQuest).toHaveBeenCalledWith(
 				"test-quest",
 				"chapter-2",
@@ -159,7 +159,10 @@ describe("QuestController", () => {
 
 			// Advance to last chapter (index 2 because mockQuest has 3 chapters)
 			controller.currentChapterIndex = 2;
-			controller.currentChapter = /** @type {any} */ ({ id: "chapter-3" });
+			controller.currentChapter =
+				/** @type {import("../content/quests/quest-types.js").LevelConfig} */ (
+					/** @type {unknown} */ ({ id: "chapter-3" })
+				);
 
 			controller.completeChapter();
 
@@ -176,7 +179,7 @@ describe("QuestController", () => {
 	describe("resumeQuest", () => {
 		it("should resume quest from progress service if no current quest", async () => {
 			// Setup progress service to return a saved quest
-			/** @type {any} */ (
+			/** @type {import("vitest").Mock} */ (
 				controller.progressService.getProgress
 			).mockReturnValue({
 				currentQuest: "test-quest",
@@ -192,7 +195,7 @@ describe("QuestController", () => {
 		});
 
 		it("should do nothing if no quest to resume", async () => {
-			/** @type {any} */ (
+			/** @type {import("vitest").Mock} */ (
 				controller.progressService.getProgress
 			).mockReturnValue({}); // No current quest
 
@@ -205,9 +208,9 @@ describe("QuestController", () => {
 	describe("continueQuest", () => {
 		it("should continue from the first uncompleted chapter", async () => {
 			// Mock that chapter 1 is completed
-			/** @type {any} */ (
+			/** @type {import("vitest").Mock} */ (
 				controller.progressService.isChapterCompleted
-			).mockImplementation((/** @type {any} */ id) => id === "chapter-1");
+			).mockImplementation((/** @type {unknown} */ id) => id === "chapter-1");
 			const onQuestStart = vi.fn();
 			controller.options.onQuestStart = onQuestStart;
 
@@ -215,7 +218,7 @@ describe("QuestController", () => {
 
 			expect(controller.currentQuest).toEqual(mockQuest);
 			expect(controller.currentChapterIndex).toBe(1); // Should skip to chapter 2
-			expect(controller.currentChapter.id).toBe("chapter-2");
+			expect(controller.currentChapter?.id).toBe("chapter-2");
 			expect(controller.progressService.setCurrentQuest).toHaveBeenCalledWith(
 				"test-quest",
 				"chapter-2",
@@ -232,15 +235,15 @@ describe("QuestController", () => {
 
 		it("should jump to valid chapter if accessible", () => {
 			// Mock previous chapters as completed
-			/** @type {any} */ (
+			/** @type {import("vitest").Mock} */ (
 				controller.progressService.isChapterCompleted
-			).mockImplementation((/** @type {any} */ id) => id === "chapter-1");
+			).mockImplementation((/** @type {unknown} */ id) => id === "chapter-1");
 
 			const result = controller.jumpToChapter("chapter-2");
 
 			expect(result).toBe(true);
 			expect(controller.currentChapterIndex).toBe(1);
-			expect(controller.currentChapter.id).toBe("chapter-2");
+			expect(controller.currentChapter?.id).toBe("chapter-2");
 			expect(controller.progressService.setCurrentQuest).toHaveBeenCalledWith(
 				"test-quest",
 				"chapter-2",
@@ -261,7 +264,7 @@ describe("QuestController", () => {
 
 		it("should fail to jump if previous chapters are not completed (sequential check)", () => {
 			// Chapter 1 is NOT completed
-			/** @type {any} */ (
+			/** @type {import("vitest").Mock} */ (
 				controller.progressService.isChapterCompleted
 			).mockReturnValue(false);
 
@@ -312,11 +315,11 @@ describe("QuestController", () => {
 			const chapterData = controller.getCurrentChapterData();
 
 			expect(chapterData).toBeDefined();
-			expect(chapterData.id).toBe("chapter-1");
-			expect(/** @type {any} */ (chapterData).questId).toBe("test-quest");
-			expect(/** @type {any} */ (chapterData).index).toBe(0);
-			expect(/** @type {any} */ (chapterData).total).toBe(3);
-			expect(/** @type {any} */ (chapterData).isQuestComplete).toBe(false);
+			expect(chapterData?.id).toBe("chapter-1");
+			expect(/** @type {any} */ (chapterData)?.questId).toBe("test-quest");
+			expect(/** @type {any} */ (chapterData)?.index).toBe(0);
+			expect(/** @type {any} */ (chapterData)?.total).toBe(3);
+			expect(/** @type {any} */ (chapterData)?.isQuestComplete).toBe(false);
 		});
 
 		it("should return null if no current quest", () => {
@@ -328,7 +331,7 @@ describe("QuestController", () => {
 		it("should indicate when on last chapter", () => {
 			controller.currentChapterIndex = 2; // Last chapter
 			const chapterData = controller.getCurrentChapterData();
-			expect(/** @type {any} */ (chapterData).isQuestComplete).toBe(true);
+			expect(/** @type {any} */ (chapterData)?.isQuestComplete).toBe(true);
 		});
 	});
 
@@ -348,7 +351,7 @@ describe("QuestController", () => {
 		});
 
 		it("should return false if quest does not exist", async () => {
-			vi.mocked(getQuest).mockReturnValue(null);
+			vi.mocked(getQuest).mockReturnValue(/** @type {any} */ (null));
 			const result = await controller.loadQuest("non-existent");
 			expect(result).toBe(false);
 		});

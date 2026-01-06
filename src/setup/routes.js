@@ -13,13 +13,16 @@ export function setupRoutes(router, app) {
 		app.sessionManager.returnToHub();
 	});
 
-	router.addRoute(ROUTES.QUEST(":id"), (/** @type {{id: string}} */ params) => {
-		app.sessionManager.startQuest(params.id);
-	});
+	router.addRoute(
+		ROUTES.QUEST(":id"),
+		(/** @type {Record<string, string>} */ params) => {
+			app.sessionManager.startQuest(params.id);
+		},
+	);
 
 	router.addRoute(
 		ROUTES.CHAPTER(":id", ":chapterId"),
-		(/** @type {{id: string, chapterId: string}} */ params) => {
+		(/** @type {Record<string, string>} */ params) => {
 			app.sessionManager.loadChapter(params.id, params.chapterId);
 		},
 	);

@@ -21,11 +21,13 @@ describe("Process Assets", () => {
 		});
 
 		it("should return undefined for undefined input", () => {
-			expect(processBackgroundStyle(undefined)).toBeUndefined();
+			expect(
+				processBackgroundStyle(/** @type {any} */ (undefined)),
+			).toBeUndefined();
 		});
 
 		it("should return null for null input", () => {
-			expect(processBackgroundStyle(null)).toBeNull();
+			expect(processBackgroundStyle(/** @type {any} */ (null))).toBeNull();
 		});
 
 		it("should return empty string for empty string input", () => {
@@ -101,11 +103,11 @@ describe("Process Assets", () => {
 
 	describe("processImagePath", () => {
 		it("should return undefined for undefined input", () => {
-			expect(processImagePath(undefined)).toBeUndefined();
+			expect(processImagePath(/** @type {any} */ (undefined))).toBeUndefined();
 		});
 
 		it("should return null for null input", () => {
-			expect(processImagePath(null)).toBeNull();
+			expect(processImagePath(/** @type {any} */ (null))).toBeNull();
 		});
 
 		it("should return empty string for empty string input", () => {

@@ -41,7 +41,9 @@ describe("ProgressService", () => {
 
 		service = new ProgressService(
 			mockStorage,
-			/** @type {any} */ (mockRegistry),
+			/** @type {typeof import('../services/quest-registry-service.js')} */ (
+				/** @type {unknown} */ (mockRegistry)
+			),
 		);
 	});
 
@@ -88,7 +90,7 @@ describe("ProgressService", () => {
 		});
 
 		it("should handle missing chapterStates object", () => {
-			service.progress.chapterStates = undefined;
+			service.progress.chapterStates = {};
 
 			// Should recover and set default
 			service.updateChapterState("c1", { visited: true });
@@ -96,7 +98,7 @@ describe("ProgressService", () => {
 			expect(service.getChapterState("c1")).toEqual({ visited: true });
 
 			// Get should handle missing safely
-			service.progress.chapterStates = undefined;
+			service.progress.chapterStates = {};
 			expect(service.getChapterState("c2")).toEqual({});
 		});
 

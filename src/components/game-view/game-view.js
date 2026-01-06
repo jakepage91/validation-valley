@@ -43,20 +43,21 @@ export class GameView extends LitElement {
 		super();
 		/** @type {GameState} */
 		this.gameState = /** @type {GameState} */ ({});
+		/** @type {any} */
 		this.app = null;
 		this._controllersInitialized = false;
 		this._autoMoveRequestId = null;
-		/** @type {import('../../controllers/collision-controller.js').CollisionController} */
+		/** @type {import('../../controllers/collision-controller.js').CollisionController | null} */
 		this.collision = null;
-		/** @type {import('../../controllers/game-zone-controller.js').GameZoneController} */
+		/** @type {import('../../controllers/game-zone-controller.js').GameZoneController | null} */
 		this.zones = null;
-		/** @type {import('../../controllers/interaction-controller.js').InteractionController} */
+		/** @type {import('../../controllers/interaction-controller.js').InteractionController | null} */
 		this.interaction = null;
-		/** @type {import('../../controllers/keyboard-controller.js').KeyboardController} */
+		/** @type {import('../../controllers/keyboard-controller.js').KeyboardController | null} */
 		this.keyboard = null;
-		/** @type {import('../../controllers/voice-controller.js').VoiceController} */
+		/** @type {import('../../controllers/voice-controller.js').VoiceController | null} */
 		this.voice = null;
-		/** @type {import('../../controllers/game-controller.js').GameController} */
+		/** @type {import('../../controllers/game-controller.js').GameController | null} */
 		this.gameController = null;
 	}
 
@@ -94,7 +95,7 @@ export class GameView extends LitElement {
 
 		// Initialize remaining controllers (still using app)
 		setupGameController(this, this.app);
-		setupVoice(this, this.app);
+		setupVoice(/** @type {any} */ (this), this.app);
 
 		// Initialize game mechanics controllers
 		setupZones(this, this.app);
@@ -157,7 +158,7 @@ export class GameView extends LitElement {
 		y = Math.max(2, Math.min(98, y));
 
 		// Check Exit Collision
-		if (this.app.questController?.hasExitZone()) {
+		if (this.app.questController?.hasExitZone() && this.collision) {
 			this.collision.checkExitZone(
 				x,
 				y,
@@ -167,14 +168,14 @@ export class GameView extends LitElement {
 		}
 
 		this.app.gameState.setHeroPosition(x, y);
-		this.zones.checkZones(x, y);
+		this.zones?.checkZones(x, y);
 	}
 
 	/**
 	 * Handle interaction (talk to NPC, etc.)
 	 */
 	handleInteract() {
-		this.interaction.handleInteract();
+		this.interaction?.handleInteract();
 	}
 
 	/**

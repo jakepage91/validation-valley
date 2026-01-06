@@ -57,7 +57,9 @@ describe("InteractionController", () => {
 
 		it("should return Infinity if target is missing", () => {
 			controller = new InteractionController(host);
-			expect(controller.calculateDistance({ x: 0, y: 0 }, null)).toBe(Infinity);
+			expect(
+				controller.calculateDistance({ x: 0, y: 0 }, /** @type {any} */ (null)),
+			).toBe(Infinity);
 		});
 	});
 

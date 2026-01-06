@@ -47,7 +47,7 @@ export class QuestController {
 		this.host = host;
 		/** @type {QuestControllerOptions} */
 		this.options = {
-			progressService: null,
+			progressService: undefined,
 			registry: DefaultRegistry,
 			onQuestStart: (_quest) => {},
 			onChapterChange: (_chapter, _index) => {},
@@ -60,7 +60,7 @@ export class QuestController {
 		this.progressService =
 			this.options.progressService || new ProgressService();
 		/** @type {typeof DefaultRegistry} */
-		this.registry = this.options.registry;
+		this.registry = this.options.registry || DefaultRegistry;
 		/** @type {Quest|null} */
 		this.currentQuest = null;
 		/** @type {Chapter|null} */
@@ -130,9 +130,9 @@ export class QuestController {
 		this.progressService.setCurrentQuest(questId, chapterId);
 
 		// Notify host
-		this.options.onQuestStart(quest);
+		this.options.onQuestStart?.(quest);
 		if (this.currentChapter) {
-			this.options.onChapterChange(this.currentChapter, 0);
+			this.options.onChapterChange?.(this.currentChapter, 0);
 		}
 
 		this.host.requestUpdate();
@@ -170,9 +170,9 @@ export class QuestController {
 		this.currentChapter = this.getCurrentChapterData();
 
 		// Notify host
-		this.options.onQuestStart(quest); // Notify that quest has "started" (loaded)
+		this.options.onQuestStart?.(quest); // Notify that quest has "started" (loaded)
 		if (this.currentChapter) {
-			this.options.onChapterChange(
+			this.options.onChapterChange?.(
 				this.currentChapter,
 				this.currentChapterIndex,
 			);
@@ -203,9 +203,9 @@ export class QuestController {
 		// Ensure content is loaded (if currentQuest was set but content missing)
 
 		// Notify host
-		this.options.onQuestStart(this.currentQuest);
+		this.options.onQuestStart?.(this.currentQuest);
 		if (this.currentChapter) {
-			this.options.onChapterChange(
+			this.options.onChapterChange?.(
 				this.currentChapter,
 				this.currentChapterIndex,
 			);
@@ -253,9 +253,9 @@ export class QuestController {
 		this.progressService.setCurrentQuest(questId, chapterId);
 
 		// Notify host
-		this.options.onQuestStart(quest);
+		this.options.onQuestStart?.(quest);
 		if (this.currentChapter) {
-			this.options.onChapterChange(this.currentChapter, nextChapterIndex);
+			this.options.onChapterChange?.(this.currentChapter, nextChapterIndex);
 		}
 
 		this.host.requestUpdate();
@@ -283,8 +283,11 @@ export class QuestController {
 		// We allow re-playing any completed chapter or the immediate next one.
 		// Strict mode: can't skip ahead of unlocked progress.
 		for (let i = 0; i < index; i++) {
-			const prevChapterId = this.currentQuest.chapterIds[i];
-			if (!this.progressService.isChapterCompleted(prevChapterId)) {
+			const prevChapterId = this.currentQuest.chapterIds?.[i];
+			if (
+				prevChapterId &&
+				!this.progressService.isChapterCompleted(prevChapterId)
+			) {
 				logger.warn(
 					`🚫 Cannot jump to ${chapterId}. Previous chapter ${prevChapterId} not completed.`,
 				);
@@ -300,9 +303,11 @@ export class QuestController {
 		this.progressService.setCurrentQuest(this.currentQuest.id, targetChapterId);
 
 		// Notify host
-		this.options.onQuestStart(this.currentQuest); // Notify that quest has "started" (loaded)
+		if (this.currentQuest) {
+			this.options.onQuestStart?.(this.currentQuest); // Notify that quest has "started" (loaded)
+		}
 		if (this.currentChapter) {
-			this.options.onChapterChange(
+			this.options.onChapterChange?.(
 				this.currentChapter,
 				this.currentChapterIndex,
 			);
@@ -355,10 +360,11 @@ export class QuestController {
 		}
 
 		const nextChapterId =
-			this.currentQuest.chapterIds[this.currentChapterIndex + 1];
-		const nextChapterData = this.currentQuest.chapters
-			? this.currentQuest.chapters[nextChapterId]
-			: null;
+			this.currentQuest?.chapterIds?.[this.currentChapterIndex + 1];
+		const nextChapterData =
+			this.currentQuest?.chapters && nextChapterId
+				? this.currentQuest.chapters[nextChapterId]
+				: null;
 
 		return nextChapterData;
 	}
@@ -406,11 +412,17 @@ export class QuestController {
 
 		// Save progress
 		const chapterId =
-			this.currentQuest.chapterIds?.[this.currentChapterIndex] ?? null;
-		this.progressService.setCurrentQuest(this.currentQuest.id, chapterId);
+			this.currentQuest?.chapterIds?.[this.currentChapterIndex] ?? null;
+		this.progressService.setCurrentQuest(
+			this.currentQuest?.id || "",
+			chapterId || null,
+		);
 
 		// Notify host
-		this.options.onChapterChange(this.currentChapter, this.currentChapterIndex);
+		this.options.onChapterChange?.(
+			/** @type {Chapter} */ (this.currentChapter),
+			this.currentChapterIndex,
+		);
 		this.host.requestUpdate();
 	}
 
@@ -426,7 +438,7 @@ export class QuestController {
 		this.progressService.completeQuest(this.currentQuest.id);
 
 		// Notify host - the host is responsible for calling returnToHub after any animations/messages
-		this.options.onQuestComplete(this.currentQuest);
+		this.options.onQuestComplete?.(this.currentQuest);
 	}
 
 	/**
@@ -438,10 +450,13 @@ export class QuestController {
 		this.currentChapterIndex = 0;
 
 		// Clear current quest in progress
-		this.progressService.setCurrentQuest(null, null);
+		this.progressService.setCurrentQuest(
+			/** @type {string} */ (/** @type {unknown} */ (null)),
+			null,
+		);
 
 		// Notify host
-		this.options.onReturnToHub();
+		this.options.onReturnToHub?.();
 		this.host.requestUpdate();
 	}
 
@@ -521,7 +536,7 @@ export class QuestController {
 	 * @returns {boolean}
 	 */
 	hasExitZone() {
-		return this.currentChapter && !!this.currentChapter.exitZone;
+		return !!this.currentChapter?.exitZone;
 	}
 
 	/**

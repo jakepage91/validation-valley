@@ -14,7 +14,7 @@
  * @param {string} action - The action to execute
  * @param {unknown} value - Optional value for the action
  * @param {VoiceController} controller - VoiceController instance with options
- * @param {string} [lang] - Language for feedback
+ * @param {string|null} [lang] - Language for feedback
  */
 export function executeVoiceAction(action, value, controller, lang = null) {
 	const { options } = controller;
@@ -22,24 +22,24 @@ export function executeVoiceAction(action, value, controller, lang = null) {
 	// Command action mapping
 	/** @type {Object.<string, Function>} */
 	const actionHandlers = {
-		move_up: () => options.onMove(0, -5),
-		move_down: () => options.onMove(0, 5),
-		move_left: () => options.onMove(-5, 0),
-		move_right: () => options.onMove(5, 0),
+		move_up: () => options.onMove?.(0, -5),
+		move_down: () => options.onMove?.(0, 5),
+		move_left: () => options.onMove?.(-5, 0),
+		move_right: () => options.onMove?.(5, 0),
 
-		move_to_npc: () => options.onMoveToNpc(),
-		move_to_exit: () => options.onMoveToExit(),
+		move_to_npc: () => options.onMoveToNpc?.(),
+		move_to_exit: () => options.onMoveToExit?.(),
 
-		pause: () => options.onPause(),
+		pause: () => options.onPause?.(),
 
-		next_slide: () => options.onNextSlide(),
-		prev_slide: () => options.onPrevSlide(),
+		next_slide: () => options.onNextSlide?.(),
+		prev_slide: () => options.onPrevSlide?.(),
 
 		interact: () => {
-			options.onInteract();
+			options.onInteract?.();
 			// After a short delay, narrate the dialogue
 			setTimeout(() => {
-				const dialogText = options.onGetDialogText();
+				const dialogText = options.onGetDialogText?.();
 				if (dialogText) {
 					controller.narrateDialogue(dialogText, lang);
 				}
@@ -52,7 +52,7 @@ export function executeVoiceAction(action, value, controller, lang = null) {
 
 		debug: () => {
 			if (value) {
-				options.onDebugAction(action, value);
+				options.onDebugAction?.(/** @type {string} */ (action), value);
 			}
 		},
 	};

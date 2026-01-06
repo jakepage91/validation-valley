@@ -43,7 +43,8 @@ describe("LevelDialog Interactions", () => {
 		expect(element.slideIndex).toBe(0);
 
 		// Find NEXT button
-		const buttons = element.shadowRoot.querySelectorAll("wa-button");
+		const buttons = element.shadowRoot?.querySelectorAll("wa-button");
+		if (!buttons) throw new Error("Shadow root not found");
 		const nextBtn = buttons[buttons.length - 1];
 
 		expect(nextBtn.textContent.trim()).toContain("NEXT");
@@ -69,7 +70,8 @@ describe("LevelDialog Interactions", () => {
 
 		expect(element.slideIndex).toBe(1);
 
-		const buttons = element.shadowRoot.querySelectorAll("wa-button");
+		const buttons = element.shadowRoot?.querySelectorAll("wa-button");
+		if (!buttons) throw new Error("Shadow root not found");
 		const prevBtn = buttons[0]; // First button is PREV
 
 		expect(prevBtn.textContent.trim()).toContain("PREV");
@@ -97,7 +99,8 @@ describe("LevelDialog Interactions", () => {
 		const completeSpy = vi.fn();
 		element.addEventListener("complete", completeSpy);
 
-		const buttons = element.shadowRoot.querySelectorAll("wa-button");
+		const buttons = element.shadowRoot?.querySelectorAll("wa-button");
+		if (!buttons) throw new Error("Shadow root not found");
 		const actionBtn = buttons[buttons.length - 1]; // "EVOLVE" or "COMPLETE"
 
 		expect(actionBtn.textContent.trim()).toMatch(/EVOLVE|COMPLETE/);
@@ -164,10 +167,10 @@ describe("GameView Integration", () => {
 		const completeSpy = vi.fn();
 		element.addEventListener("complete", completeSpy);
 
-		const dialog = element.shadowRoot.querySelector("level-dialog");
+		const dialog = element.shadowRoot?.querySelector("level-dialog");
 		expect(dialog).toBeTruthy();
 
-		dialog.dispatchEvent(new CustomEvent("complete"));
+		dialog?.dispatchEvent(new CustomEvent("complete"));
 
 		// handleLevelComplete sets showDialog to false and calls setCollectedItem
 		expect(element.app.showDialog).toBe(false);
@@ -204,10 +207,10 @@ describe("GameView Integration", () => {
 		const closeSpy = vi.fn();
 		element.addEventListener("close-dialog", closeSpy);
 
-		const dialog = element.shadowRoot.querySelector("level-dialog");
+		const dialog = element.shadowRoot?.querySelector("level-dialog");
 		expect(dialog).toBeTruthy();
 
-		dialog.dispatchEvent(new CustomEvent("close"));
+		dialog?.dispatchEvent(new CustomEvent("close"));
 
 		expect(closeSpy).toHaveBeenCalled();
 	});

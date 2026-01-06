@@ -37,8 +37,9 @@ export function isQuestLocked(questId, completedQuests = []) {
 	const quest = getQuest(questId);
 	if (!quest) return false;
 
-	return quest.prerequisites.some(
-		(prereq) => !completedQuests.includes(prereq),
+	return (
+		quest.prerequisites?.some((prereq) => !completedQuests.includes(prereq)) ??
+		false
 	);
 }
 

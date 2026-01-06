@@ -17,7 +17,7 @@ export function setupGameService(app) {
 			const data = app.getChapterData(chapterId);
 			if (data) {
 				// Use manager for consistent state and navigation
-				app.sessionManager.loadChapter(app.currentQuest?.id, chapterId);
+				app.sessionManager.loadChapter(app.currentQuest?.id || "", chapterId);
 			}
 		},
 		giveItem: () => {

@@ -10,7 +10,7 @@ export const GATE_OF_IDENTITY_QUEST = {
 	legacyProblem:
 		"Scattered authentication logic, repetitive `isLoggedIn()` checks across components, and vulnerable redirection flows.",
 	prerequisites: ["the-orb-of-inquiry"],
-	shortcuts: /** @type {any[]} */ ([]),
+	shortcuts: /** @type {string[]} */ ([]),
 	difficulty: Difficulty.ADVANCED,
 	icon: "shield",
 	color: "#ef4444",
@@ -23,7 +23,7 @@ export const GATE_OF_IDENTITY_QUEST = {
 		"Frontend Perimeter Security",
 		"Route Protection",
 	],
-	chapterIds: /** @type {any[]} */ ([]),
+	chapterIds: /** @type {string[]} */ ([]),
 	// Chapter data
 	chapters: GATE_OF_IDENTITY_CHAPTERS,
 	reward: {

@@ -37,7 +37,7 @@ export class AboutSlides extends LitElement {
 	show() {
 		const dialog =
 			/** @type {import("@awesome.me/webawesome/dist/components/dialog/dialog.js").default} */ (
-				this.shadowRoot.querySelector("wa-dialog")
+				this.shadowRoot?.querySelector("wa-dialog")
 			);
 		if (dialog) {
 			dialog.open = true;
@@ -50,7 +50,7 @@ export class AboutSlides extends LitElement {
 	hide() {
 		const dialog =
 			/** @type {import("@awesome.me/webawesome/dist/components/dialog/dialog.js").default} */ (
-				this.shadowRoot.querySelector("wa-dialog")
+				this.shadowRoot?.querySelector("wa-dialog")
 			);
 		if (dialog) {
 			dialog.open = false;

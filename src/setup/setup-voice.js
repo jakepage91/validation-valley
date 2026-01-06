@@ -60,12 +60,12 @@ export function setupVoice(host, app) {
 				isRewardCollected: app.hasCollectedItem,
 			}),
 			onMoveToNpc: () => {
-				const state = host.interaction.options.getState();
-				const npcPos = /** @type {any} */ (state.chapterData)?.npc?.position;
+				const state = host.interaction.options.getState?.();
+				const npcPos = /** @type {any} */ (state?.chapterData)?.npc?.position;
 				if (!npcPos) return;
 
 				// Centralized move logic in GameView
-				const dist = host.interaction.options.interactionDistance - 2;
+				const dist = (host.interaction.options.interactionDistance || 0) - 2;
 				host.moveTo(npcPos.x - dist, npcPos.y);
 			},
 			onMoveToExit: () => {

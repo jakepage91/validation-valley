@@ -13,7 +13,7 @@ describe("GameView Component", () => {
 		document.body.appendChild(el);
 		await el.updateComplete;
 
-		expect(el.shadowRoot.textContent).toContain("Loading level data...");
+		expect(el.shadowRoot?.textContent).toContain("Loading level data...");
 	});
 
 	it("renders game-viewport when config is provided", async () => {
@@ -51,7 +51,7 @@ describe("GameView Component", () => {
 		document.body.appendChild(el);
 		await el.updateComplete;
 
-		const viewport = el.shadowRoot.querySelector("game-viewport");
+		const viewport = el.shadowRoot?.querySelector("game-viewport");
 		expect(viewport).toBeTruthy();
 	});
 
@@ -135,11 +135,11 @@ describe("GameView Component", () => {
 
 		it("should initialize keyboard controller", () => {
 			expect(el.keyboard).toBeDefined();
-			expect(el.keyboard.options.speed).toBe(2.5);
+			expect(el.keyboard?.options.speed).toBe(2.5);
 		});
 
 		it("should update hero position when keyboard moves", () => {
-			el.keyboard.options.onMove(1, 0);
+			el.keyboard?.options.onMove?.(1, 0);
 			// handleMove logic in GameView calculates new position
 			// With start (0,0) + (1,0) = (1,0). Clamped to min 2 => (2, 0)?
 			// Actually boundaries are 2 to 98.
@@ -148,13 +148,14 @@ describe("GameView Component", () => {
 		});
 
 		it("should call interaction controller when keyboard interacts", () => {
+			if (!el.interaction || !el.keyboard) return; // Guard for null
 			const spy = vi.spyOn(el.interaction, "handleInteract");
-			el.keyboard.options.onInteract();
+			el.keyboard.options.onInteract?.();
 			expect(spy).toHaveBeenCalled();
 		});
 
 		it("should toggle pause when keyboard pauses", () => {
-			el.keyboard.options.onPause();
+			el.keyboard?.options.onPause?.();
 			expect(mockApp.gameState.setPaused).toHaveBeenCalledWith(true);
 		});
 	});

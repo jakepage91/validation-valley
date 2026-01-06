@@ -120,27 +120,27 @@ export class GameViewport extends LitElement {
 
 		return html`
 			<game-hud 
-				.currentChapterNumber="${quest?.chapterNumber}" 
-				.totalChapters="${quest?.totalChapters}"
-				.levelTitle="${config.title}"
-				.questTitle="${quest?.data?.name}"
+				.currentChapterNumber="${quest?.chapterNumber || 0}" 
+				.totalChapters="${quest?.totalChapters || 0}"
+				.levelTitle="${config?.title || ""}"
+				.questTitle="${quest?.data?.name || ""}"
 			></game-hud>
 
 			<div class="game-area" style="background: ${processBackgroundStyle(backgroundStyle)}">
 				<game-controls></game-controls>
 				
 				<game-theme-zones
-					?active="${config.hasThemeZones}"
+					?active="${config?.hasThemeZones || false}"
 				></game-theme-zones>
 
 				<game-exit-zone 
-					.zoneConfig="${config.exitZone}" 
-					?active="${levelState?.hasCollectedItem}"
+					.zoneConfig="${config?.exitZone || /** @type {any} */ ({})}" 
+					.active="${levelState?.hasCollectedItem || false}"
 				></game-exit-zone>
 
 				<game-context-zones 
-					?active="${config?.hasHotSwitch}"
-					.state="${hero?.hotSwitchState}"
+					?active="${config?.hasHotSwitch || false}"
+					.state="${hero?.hotSwitchState || "legacy"}"
 				></game-context-zones>
 
 				${this._renderNPC()}
@@ -152,19 +152,19 @@ export class GameViewport extends LitElement {
 
 	_renderNPC() {
 		const { config, levelState } = this.gameState;
-		if (!config.npc) return "";
+		if (!config?.npc) return "";
 
 		return html`
 			<npc-element
 				.name="${config.npc.name}"
 				.image="${config.npc.image}"
-				.icon="${config.npc.icon}"
+				.icon="${config.npc.icon || "user"}"
 				.x="${config.npc.position.x}"
 				.y="${config.npc.position.y}"
-				.isClose="${levelState?.isCloseToTarget}"
-				.action="${this.gameState.ui?.lockedMessage}"
-				.hasCollectedItem="${levelState?.hasCollectedItem}"
-				.isRewardCollected="${levelState.isRewardCollected}"
+				.isClose="${levelState?.isCloseToTarget || false}"
+				.action="${this.gameState.ui?.lockedMessage || ""}"
+				.hasCollectedItem="${levelState?.hasCollectedItem || false}"
+				.isRewardCollected="${levelState?.isRewardCollected || false}"
 			></npc-element>
 		`;
 	}
@@ -173,29 +173,29 @@ export class GameViewport extends LitElement {
 		const { config, levelState, hero } = this.gameState;
 		if (
 			!this.isAnimatingReward &&
-			(levelState?.hasCollectedItem || !config.reward)
+			(levelState?.hasCollectedItem || !config?.reward)
 		) {
 			return "";
 		}
 
 		// Calculations for animation or static position
-		let x = config.reward.position.x;
-		let y = config.reward.position.y;
+		let x = config?.reward?.position?.x || 0;
+		let y = config?.reward?.position?.y || 0;
 
 		if (this.isAnimatingReward) {
 			if (this.rewardAnimState === "growing") {
 				x = 50;
 				y = 50;
 			} else if (this.rewardAnimState === "moving") {
-				x = hero?.pos?.x;
-				y = hero?.pos?.y;
+				x = hero?.pos?.x || 0;
+				y = hero?.pos?.y || 0;
 			}
 		}
 
 		return html`
 			<reward-element
-				.image="${config.reward.image}"
-				.icon="${config.reward.icon}"
+				.image="${config?.reward?.image || ""}"
+				.icon="${config?.reward?.icon || "star"}"
 				.x="${x}"
 				.y="${y}"
 				class=${classMap({ [this.rewardAnimState]: this.isAnimatingReward })}
@@ -205,26 +205,28 @@ export class GameViewport extends LitElement {
 
 	_renderHero() {
 		const { config, hero } = this.gameState;
-		const transition = hero?.isEvolving
+		if (!hero) return "";
+
+		const transition = hero.isEvolving
 			? "opacity 0.5s ease-out"
 			: "left 0.075s linear, top 0.075s linear";
 
 		// Use reward image if collected, otherwise normal hero image
 		const imageSrc =
-			this.isRewardCollected && config.hero?.reward
+			this.isRewardCollected && config?.hero?.reward
 				? config.hero.reward
-				: config.hero?.image;
+				: config?.hero?.image;
 
 		return html`
 			<hero-profile 
 				style="
-					left: ${hero.pos.x}%; 
-					top: ${hero.pos.y}%;
+					left: ${hero.pos?.x || 0}%; 
+					top: ${hero.pos?.y || 0}%;
 					opacity: ${hero.isEvolving ? 0 : 1};
 					transition: ${transition};
 				"
-				.imageSrc="${imageSrc}"
-				.hotSwitchState="${hero.hotSwitchState}"
+				.imageSrc="${imageSrc || ""}"
+				.hotSwitchState="${hero.hotSwitchState || "legacy"}"
 			></hero-profile>
 		`;
 	}

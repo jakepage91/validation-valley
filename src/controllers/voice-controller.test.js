@@ -148,12 +148,12 @@ describe("VoiceController", () => {
 
 	describe("executeAction", () => {
 		it("should handle 'move_to_npc'", () => {
-			controller.executeAction("move_to_npc");
+			controller.executeAction("move_to_npc", null);
 			expect(options.onMoveToNpc).toHaveBeenCalled();
 		});
 
 		it("should handle 'move_to_exit'", () => {
-			controller.executeAction("move_to_exit");
+			controller.executeAction("move_to_exit", null);
 			expect(options.onMoveToExit).toHaveBeenCalled();
 		});
 
@@ -236,74 +236,76 @@ describe("VoiceController", () => {
 	describe("Lifecycle", () => {
 		it("should start recognition when start() is called", () => {
 			controller.start();
-			expect(controller.recognition.start).toHaveBeenCalled();
+			expect(controller.recognition?.start).toHaveBeenCalled();
 		});
 
 		it("should stop recognition when stop() is called", () => {
 			controller.isListening = true;
 			controller.stop();
-			expect(controller.recognition.stop).toHaveBeenCalled();
+			expect(controller.recognition?.stop).toHaveBeenCalled();
 			expect(controller.isListening).toBe(false);
 		});
 
 		it("should not start if already listening", () => {
 			controller.isListening = true;
 			controller.start();
-			expect(controller.recognition.start).not.toHaveBeenCalled();
+			expect(controller.recognition?.start).not.toHaveBeenCalled();
 		});
 	});
 
 	describe("Command Processing", () => {
 		it("should handle movement commands", () => {
-			controller.executeAction("move_up");
+			controller.executeAction("move_up", null);
 			expect(options.onMove).toHaveBeenCalledWith(0, -5);
 		});
 
 		it("should handle move_down command", () => {
-			controller.executeAction("move_down");
+			controller.executeAction("move_down", null);
 			expect(options.onMove).toHaveBeenCalledWith(0, 5);
 		});
 
 		it("should handle move_left command", () => {
-			controller.executeAction("move_left");
+			controller.executeAction("move_left", null);
 			expect(options.onMove).toHaveBeenCalledWith(-5, 0);
 		});
 
 		it("should handle move_right command", () => {
-			controller.executeAction("move_right");
+			controller.executeAction("move_right", null);
 			expect(options.onMove).toHaveBeenCalledWith(5, 0);
 		});
 
 		it("should handle pause command", () => {
-			controller.executeAction("pause");
+			controller.executeAction("pause", null);
 			expect(options.onPause).toHaveBeenCalled();
 		});
 
 		it("should handle next_slide command", () => {
-			controller.executeAction("next_slide");
+			controller.executeAction("next_slide", null);
 			expect(options.onNextSlide).toHaveBeenCalled();
 		});
 
 		it("should handle prev_slide command", () => {
-			controller.executeAction("prev_slide");
+			controller.executeAction("prev_slide", null);
 			expect(options.onPrevSlide).toHaveBeenCalled();
 		});
 
 		it("should handle unknown commands gracefully", () => {
-			expect(() => controller.executeAction("unknown_action")).not.toThrow();
+			expect(() =>
+				controller.executeAction("unknown_action", null),
+			).not.toThrow();
 		});
 	});
 
 	describe("Error Handling", () => {
 		it("should handle recognition errors gracefully", () => {
 			const errorEvent = /** @type {any} */ ({ error: "network" });
-			expect(() => controller.recognition.onerror(errorEvent)).not.toThrow();
+			expect(() => controller.recognition?.onerror?.(errorEvent)).not.toThrow();
 		});
 
 		it("should stop listening on not-allowed error", () => {
 			controller.isListening = true;
 			const errorEvent = /** @type {any} */ ({ error: "not-allowed" });
-			controller.recognition.onerror(errorEvent);
+			controller.recognition?.onerror?.(errorEvent);
 			expect(controller.isListening).toBe(false);
 		});
 	});

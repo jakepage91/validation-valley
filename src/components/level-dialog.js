@@ -61,7 +61,7 @@ export class LevelDialog extends LitElement {
 				this.updateComplete.then(() => {
 					requestAnimationFrame(() => {
 						const btn = /** @type {HTMLElement} */ (
-							this.shadowRoot.querySelector(".complete-btn")
+							this.shadowRoot?.querySelector(".complete-btn")
 						);
 						if (btn) btn.focus();
 					});
@@ -194,6 +194,7 @@ export class LevelDialog extends LitElement {
 	renderCode({ title = "Identified Problem", code, language = "js" }, type) {
 		return html`
 			<h6 class="slide-title ${type}">${title}</h6>
+			<!-- @ts-ignore -->
 			<syntax-highlight language="${language}" class="${type}" .innerHTML=${escapeHtml(code)}></syntax-highlight>
 		`;
 	}
@@ -292,7 +293,7 @@ export class LevelDialog extends LitElement {
           </div>
         `;
 			default:
-				return null;
+				return /** @type {any} */ (null);
 		}
 	}
 

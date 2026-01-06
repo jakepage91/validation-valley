@@ -31,7 +31,7 @@ export class VictoryScreen extends LitElement {
 		const collectedRewards = [];
 		if (this.quest.chapterIds && this.quest.chapters) {
 			this.quest.chapterIds.forEach((chapterId) => {
-				const chapter = this.quest.chapters[chapterId];
+				const chapter = this.quest?.chapters?.[chapterId];
 				if (chapter?.reward) {
 					collectedRewards.push(chapter.reward);
 				}
@@ -58,9 +58,9 @@ export class VictoryScreen extends LitElement {
 				</div>
 
 				<p class="victory-text"><small>
-					You earned the badge: <b>"${this.quest.reward.badge}"</b>
+					You earned the badge: <b>"${this.quest?.reward?.badge}"</b>
 					<br/>
-					Ability gained: <b>"${this.quest.reward.ability}"</b>
+					Ability gained: <b>"${this.quest?.reward?.ability}"</b>
 				</small></p>
 				<wa-button class="ng-btn" @click="${this.onReturn}">
 					RETURN TO HUB

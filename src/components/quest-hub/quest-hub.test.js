@@ -38,10 +38,10 @@ describe("QuestHub Component", () => {
 		document.body.appendChild(el);
 		await el.updateComplete;
 
-		const cards = el.shadowRoot.querySelectorAll("wa-card");
-		expect(cards.length).toBe(2);
-		expect(el.shadowRoot.textContent).toContain("Quest 1");
-		expect(el.shadowRoot.textContent).toContain("Quest 2");
+		const cards = el.shadowRoot?.querySelectorAll("wa-card");
+		expect(cards?.length).toBe(2);
+		expect(el.shadowRoot?.textContent).toContain("Quest 1");
+		expect(el.shadowRoot?.textContent).toContain("Quest 2");
 	});
 
 	it("renders coming soon quests", async () => {
@@ -60,6 +60,6 @@ describe("QuestHub Component", () => {
 		document.body.appendChild(el);
 		await el.updateComplete;
 
-		expect(el.shadowRoot.textContent).toContain("Future Quest");
+		expect(el.shadowRoot?.textContent).toContain("Future Quest");
 	});
 });

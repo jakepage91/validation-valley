@@ -15,7 +15,7 @@ export const TOKEN_OF_AGNOSTICISM_QUEST = {
 		"Achieve Visual Adaptation to any theme or brand. Grant your component aesthetic flexibility without breaking encapsulation.",
 	legacyProblem: "Hardcoded styles or components that cannot change themes.",
 	prerequisites: ["tunic-of-isolation"],
-	shortcuts: /** @type {any[]} */ ([]),
+	shortcuts: /** @type {string[]} */ ([]),
 	difficulty: Difficulty.INTERMEDIATE,
 	icon: "palette",
 	estimatedTime: "20-30 min",

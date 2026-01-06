@@ -84,48 +84,48 @@ import { Router } from "./utils/router.js";
 export class LegacysEndApp extends ContextMixin(LitElement) {
 	// Services (added by setupServices)
 	/** @type {import("./services/progress-service.js").ProgressService} */
-	progressService;
+	progressService = /** @type {any} */ (null);
 	/** @type {import("./services/game-state-service.js").GameStateService} */
-	gameState;
+	gameState = /** @type {any} */ (null);
 	/** @type {import("./services/storage-service.js").LocalStorageAdapter} */
-	storageAdapter;
+	storageAdapter = /** @type {any} */ (null);
 	/** @type {import("./services/game-service.js").GameService} */
-	gameService;
+	gameService = /** @type {any} */ (null);
 	/** @type {Object} */
-	services;
+	services = {};
 	/** @type {import("./managers/game-session-manager.js").GameSessionManager} */
-	sessionManager;
+	sessionManager = /** @type {any} */ (null);
 
 	// Router
 	/** @type {import("./utils/router.js").Router} */
-	router;
+	router = /** @type {any} */ (null);
 
 	// Controllers (added by setupControllers)
 	/** @type {import("./controllers/quest-controller.js").QuestController} */
-	questController;
+	questController = /** @type {any} */ (null);
 	/** @type {import("./controllers/service-controller.js").ServiceController} */
-	serviceController;
+	serviceController = /** @type {any} */ (null);
 	/** @type {import("./controllers/character-context-controller.js").CharacterContextController} */
-	characterContexts;
+	characterContexts = /** @type {any} */ (null);
 
 	// User Data
 	/** @type {Object} */
-	userData;
+	userData = {};
 	/** @type {Boolean} */
-	userLoading;
+	userLoading = false;
 	/** @type {string|null} */
-	userError;
+	userError = null;
 
 	// Additional providers (referenced in connectedCallback)
 	// Note: These may not be properly initialized - potential bug
 	/** @type {import("@lit/context").ContextProvider<any, any>} */
-	suitProvider;
+	suitProvider = /** @type {any} */ (null);
 	/** @type {import("@lit/context").ContextProvider<any, any>} */
-	gearProvider;
+	gearProvider = /** @type {any} */ (null);
 	/** @type {import("@lit/context").ContextProvider<any, any>} */
-	powerProvider;
+	powerProvider = /** @type {any} */ (null);
 	/** @type {import("@lit/context").ContextProvider<any, any>} */
-	masteryProvider;
+	masteryProvider = /** @type {any} */ (null);
 
 	static properties = {
 		chapterId: { type: String },
@@ -153,6 +153,7 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 		this.isLoading = true;
 		this.showDialog = false;
 		this.hasSeenIntro = false;
+		this.isPaused = false;
 		this.showQuestCompleteDialog = false;
 
 		// Initialize Services
@@ -163,7 +164,7 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 		this.gameState.subscribe(() => this.syncState());
 
 		// Initialize user data state
-		this.userData = null;
+		this.userData = {};
 		this.userLoading = true;
 		this.userError = null;
 
@@ -221,7 +222,7 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 		// Start intro sequence
 		setTimeout(() => {
 			const introDialog = /** @type {DialogElement} */ (
-				this.shadowRoot.getElementById("intro-dialog")
+				this.shadowRoot?.getElementById("intro-dialog")
 			);
 			if (introDialog) {
 				introDialog.open = true;
@@ -394,10 +395,10 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 	}
 
 	getActiveService() {
-		const chapterData = this.getChapterData(this.chapterId);
+		const chapterData = this.getChapterData(this.chapterId || "");
 		return this.serviceController.getActiveService(
 			chapterData?.serviceType,
-			this.hotSwitchState,
+			this.hotSwitchState || null,
 		);
 	}
 
@@ -455,7 +456,7 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 	}
 
 	renderGame() {
-		const currentConfig = this.getChapterData(this.chapterId);
+		const currentConfig = this.getChapterData(this.chapterId || "");
 		if (!currentConfig) {
 			return html`<div>Loading level data...</div>`;
 		}
@@ -467,7 +468,10 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 			effectiveConfig.backgroundStyle = currentConfig.postDialogBackgroundStyle;
 		}
 
-		const gameState = GameStateMapper.map(this, effectiveConfig);
+		const gameState = GameStateMapper.map(
+			/** @type {any} */ (this),
+			effectiveConfig || {},
+		);
 
 		return html`
 			<game-view

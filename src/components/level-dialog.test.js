@@ -18,7 +18,7 @@ describe("LevelDialog Component", () => {
 		document.body.appendChild(el);
 		await el.updateComplete;
 
-		expect(el.shadowRoot.textContent).toContain("Intro Narrative");
+		expect(el.shadowRoot?.textContent).toContain("Intro Narrative");
 	});
 
 	it("renders problem slide if description is missing", async () => {
@@ -31,6 +31,6 @@ describe("LevelDialog Component", () => {
 		document.body.appendChild(el);
 		await el.updateComplete;
 
-		expect(el.shadowRoot.textContent).toContain("Problem Description");
+		expect(el.shadowRoot?.textContent).toContain("Problem Description");
 	});
 });

@@ -92,8 +92,11 @@ export class InteractionController {
 	 * @returns {boolean}
 	 */
 	isCloseToNpc() {
-		const state = this.options.getState();
-		const npcPos = this.options.getNpcPosition();
+		const state = this.options.getState?.();
+		const npcPos = this.options.getNpcPosition?.();
+
+		if (!state?.heroPos || !npcPos) return false;
+
 		const distance = this.calculateDistance(state.heroPos, npcPos);
 		return (
 			distance <
@@ -105,7 +108,9 @@ export class InteractionController {
 	 * Handle interaction attempt
 	 */
 	handleInteract() {
-		const state = this.options.getState();
+		const state = this.options.getState?.();
+		if (!state) return;
+
 		const isClose = this.isCloseToNpc();
 		const { chapterData, hotSwitchState, hasCollectedItem } = state;
 
@@ -113,17 +118,17 @@ export class InteractionController {
 		if (chapterData?.isFinalBoss && isClose) {
 			if (hotSwitchState === "new") {
 				// Allow dialog to open for final victory sequence
-				this.options.onShowDialog();
+				this.options.onShowDialog?.();
 			} else {
-				this.options.onLocked("REQ: NEW API");
-				setTimeout(() => this.options.onLocked(null), 1000);
+				this.options.onLocked?.("REQ: NEW API");
+				setTimeout(() => this.options.onLocked?.(null), 1000);
 			}
 			return;
 		}
 
 		// Regular interaction
 		if (isClose && !hasCollectedItem) {
-			this.options.onShowDialog();
+			this.options.onShowDialog?.();
 		}
 	}
 }

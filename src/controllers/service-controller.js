@@ -36,7 +36,7 @@ export class ServiceController {
 		/** @type {ServiceControllerOptions} */
 		this.options = {
 			services: {},
-			profileProvider: null,
+			profileProvider: undefined,
 			getActiveService: () => null,
 			onDataLoaded: () => {},
 			onError: () => {},
@@ -66,14 +66,14 @@ export class ServiceController {
 		this.updateProfileContext();
 
 		try {
-			const service = this.options.getActiveService();
+			const service = this.options.getActiveService?.();
 			if (service) {
 				this.userData = await service.fetchUserData(1);
-				this.options.onDataLoaded(this.userData);
+				this.options.onDataLoaded?.(this.userData);
 			}
 		} catch (e) {
-			this.userError = e.message;
-			this.options.onError(e.message);
+			this.userError = /** @type {Error} */ (e).message;
+			this.options.onError?.(/** @type {Error} */ (e).message);
 		} finally {
 			this.userLoading = false;
 			this.updateProfileContext();
@@ -91,7 +91,7 @@ export class ServiceController {
 			role: this.userData?.role,
 			loading: this.userLoading,
 			error: this.userError,
-			serviceName: this.options.getActiveService()?.getServiceName(),
+			serviceName: this.options.getActiveService?.()?.getServiceName(),
 		});
 	}
 
@@ -129,15 +129,17 @@ export class ServiceController {
 		if (!serviceType) return null;
 
 		// If service type is NEW (dynamic), check hotSwitchState
+		// Please verify if HotSwitchState allows undefined or if these methods need fixes
 		if (serviceType === "new") {
-			if (hotSwitchState === "legacy") return this.options.services.legacy;
-			if (hotSwitchState === "new") return this.options.services.new;
+			if (hotSwitchState === "legacy")
+				return this.options.services?.legacy || null;
+			if (hotSwitchState === "new") return this.options.services?.new || null;
 			return null; // Neutral zone - no service active
 		}
 
 		// Static service mapping
-		if (serviceType === "legacy") return this.options.services.legacy;
-		if (serviceType === "mock") return this.options.services.mock;
+		if (serviceType === "legacy") return this.options.services?.legacy || null;
+		if (serviceType === "mock") return this.options.services?.mock || null;
 
 		return null;
 	}

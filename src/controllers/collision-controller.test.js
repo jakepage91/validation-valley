@@ -62,7 +62,9 @@ describe("CollisionController", () => {
 		});
 
 		it("should return false if exitZone is null", () => {
-			expect(controller.checkExitZone(50, 50, null, true)).toBe(false);
+			expect(
+				controller.checkExitZone(50, 50, /** @type {any} */ (null), true),
+			).toBe(false);
 		});
 
 		it("should detect collision when item is collected and overlapping", () => {

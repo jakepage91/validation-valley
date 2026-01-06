@@ -30,7 +30,7 @@ describe("LegacysEndApp Component", () => {
 		document.body.appendChild(el);
 		await el.updateComplete;
 
-		const hub = el.shadowRoot.querySelector("quest-hub");
+		const hub = el.shadowRoot?.querySelector("quest-hub");
 		expect(hub).toBeTruthy();
 	});
 
@@ -46,24 +46,26 @@ describe("LegacysEndApp Component", () => {
 		await el.updateComplete;
 
 		// 1. Verify in Hub
-		const hub = el.shadowRoot.querySelector("quest-hub");
+		const hub = el.shadowRoot?.querySelector("quest-hub");
 		expect(hub).toBeTruthy();
 
 		// 2. Simulate Start Quest by dispatching custom event
 		const questId = "the-aura-of-sovereignty";
-		hub.dispatchEvent(
-			new CustomEvent("quest-select", {
-				detail: { questId },
-				bubbles: true,
-				composed: true,
-			}),
-		);
+		if (hub) {
+			/** @type {HTMLElement} */ (hub).dispatchEvent(
+				new CustomEvent("quest-select", {
+					detail: { questId },
+					bubbles: true,
+					composed: true,
+				}),
+			);
+		}
 
 		// Wait for event to be handled and quest to start
 		// await new Promise((resolve) => setTimeout(resolve, 100));
 		// Poll for game-view
 		let retries = 0;
-		while (!el.shadowRoot.querySelector("game-view") && retries < 10) {
+		while (!el.shadowRoot?.querySelector("game-view") && retries < 10) {
 			await new Promise((resolve) => setTimeout(resolve, 50));
 			await el.updateComplete;
 			retries++;
@@ -72,14 +74,16 @@ describe("LegacysEndApp Component", () => {
 		await el.updateComplete;
 
 		// Verify switch to GameView
-		const gameView = el.shadowRoot.querySelector("game-view");
+		const gameView = el.shadowRoot?.querySelector("game-view");
 		expect(gameView).toBeTruthy();
 		// Verify quest controller state indirectly via view
 		expect(el.isInHub).toBe(false);
 
 		// 3. Simulate Level Completion (GameView -> QuestController -> App)
 		// Dispatch 'complete' event from game-view
-		gameView.dispatchEvent(new CustomEvent("complete"));
+		if (gameView) {
+			gameView.dispatchEvent(new CustomEvent("complete"));
+		}
 
 		await el.updateComplete;
 
@@ -87,7 +91,7 @@ describe("LegacysEndApp Component", () => {
 		// NOT return to hub yet.
 		// Verify we are still in game view but maybe chapter changed?
 		// QuestController handles this.
-		expect(el.shadowRoot.querySelector("game-view")).toBeTruthy();
+		expect(el.shadowRoot?.querySelector("game-view")).toBeTruthy();
 		expect(el.isInHub).toBe(false);
 
 		// To verify return to hub, we'd need to complete ALL chapters.

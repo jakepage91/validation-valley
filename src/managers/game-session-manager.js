@@ -27,25 +27,25 @@ export class GameSessionManager extends Observable {
 		 *   gameState: import('../services/game-state-service').GameStateService;
 		 *   progressService: import('../services/progress-service').ProgressService;
 		 *   questController: import('../controllers/quest-controller').QuestController;
-		 *   router: any;
+		 *   router: import("../utils/router.js").Router;
 		 *   controllers: {
-		 *     keyboard: any;
-		 *     interaction: any;
-		 *     collision: any;
-		 *     zones: any;
+		 *     keyboard: import("../controllers/keyboard-controller.js").KeyboardController;
+		 *     interaction: import("../controllers/interaction-controller.js").InteractionController;
+		 *     collision: import("../controllers/collision-controller.js").CollisionController;
+		 *     zones: import("../controllers/game-zone-controller.js").GameZoneController;
 		 *   };
 		 * }}
 		 */
 		this.options = {
-			gameState: null,
-			progressService: null,
-			questController: null,
-			router: null,
+			gameState: /** @type {any} */ (null),
+			progressService: /** @type {any} */ (null),
+			questController: /** @type {any} */ (null),
+			router: /** @type {any} */ (null),
 			controllers: {
-				keyboard: null,
-				interaction: null,
-				collision: null,
-				zones: null,
+				keyboard: /** @type {any} */ (null),
+				interaction: /** @type {any} */ (null),
+				collision: /** @type {any} */ (null),
+				zones: /** @type {any} */ (null),
 			},
 			...options,
 		};
@@ -329,7 +329,7 @@ export class GameSessionManager extends Observable {
 				/** @type {import('../services/quest-registry-service').Quest} */ quest,
 			) => {
 				logger.info(`✅ Completed quest: ${quest.name}`);
-				logger.info(`🏆 Earned badge: ${quest.reward.badge}`);
+				logger.info(`🏆 Earned badge: ${quest.reward?.badge}`);
 				this.notify({
 					type: "quest-complete",
 					quest,

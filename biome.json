@@ -22,7 +22,13 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"recommended": true,
+			"suspicious": {
+				"noExplicitAny": "error"
+			}
 		}
+	},
+	"assist": {
+		"enabled": true
 	}
 }

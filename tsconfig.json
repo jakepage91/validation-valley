@@ -8,6 +8,7 @@
 		"noEmit": true,
 		"moduleResolution": "bundler",
 		"noImplicitAny": true,
+		"strict": true,
 		"plugins": [
 			{
 				"name": "ts-lit-plugin",

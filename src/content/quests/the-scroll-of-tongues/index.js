@@ -10,7 +10,7 @@ export const THE_SCROLL_OF_TONGUES_QUEST = {
 	legacyProblem:
 		"Hardcoded strings, date/number format issues across regions, lack of localization.",
 	prerequisites: ["the-crimson-altar"],
-	shortcuts: /** @type {any[]} */ ([]),
+	shortcuts: /** @type {string[]} */ ([]),
 	difficulty: Difficulty.INTERMEDIATE,
 	icon: "globe",
 	estimatedTime: "25-35 min",
@@ -20,7 +20,7 @@ export const THE_SCROLL_OF_TONGUES_QUEST = {
 		"Contextual Formatting",
 		"String Management",
 	],
-	chapterIds: /** @type {any[]} */ ([]),
+	chapterIds: /** @type {string[]} */ ([]),
 	// Chapter data
 	chapters: THE_SCROLL_OF_TONGUES_CHAPTERS,
 	reward: {
