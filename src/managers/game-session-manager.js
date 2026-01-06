@@ -1,6 +1,8 @@
 import { ROUTES } from "../constants/routes.js";
-import { eventBus, GameEvents } from "../core/event-bus.js";
 import { logger } from "../services/logger-service.js";
+import { ContinueQuestUseCase } from "../use-cases/continue-quest.js";
+import { ReturnToHubUseCase } from "../use-cases/return-to-hub.js";
+import { StartQuestUseCase } from "../use-cases/start-quest.js";
 import { Observable } from "../utils/observable.js";
 
 /**
@@ -78,6 +80,46 @@ export class GameSessionManager extends Observable {
 	}
 
 	/**
+	 * Lazy-initialize StartQuestUseCase
+	 * @returns {StartQuestUseCase}
+	 */
+	get _startQuestUseCase() {
+		if (!this.__startQuestUseCase) {
+			this.__startQuestUseCase = new StartQuestUseCase({
+				questController: this.questController,
+			});
+		}
+		return this.__startQuestUseCase;
+	}
+
+	/**
+	 * Lazy-initialize ContinueQuestUseCase
+	 * @returns {ContinueQuestUseCase}
+	 */
+	get _continueQuestUseCase() {
+		if (!this.__continueQuestUseCase) {
+			this.__continueQuestUseCase = new ContinueQuestUseCase({
+				questController: this.questController,
+			});
+		}
+		return this.__continueQuestUseCase;
+	}
+
+	/**
+	 * Lazy-initialize ReturnToHubUseCase
+	 * @returns {ReturnToHubUseCase}
+	 */
+	get _returnToHubUseCase() {
+		if (!this.__returnToHubUseCase) {
+			this.__returnToHubUseCase = new ReturnToHubUseCase({
+				questController: this.questController,
+				router: this.router,
+			});
+		}
+		return this.__returnToHubUseCase;
+	}
+
+	/**
 	 * Get current game state for rendering
 	 */
 	getGameState() {
@@ -98,37 +140,21 @@ export class GameSessionManager extends Observable {
 	async startQuest(/** @type {string} */ questId) {
 		this.isLoading = true;
 		this.notify({ type: "loading", isLoading: true });
-		eventBus.emit(GameEvents.LOADING_START, { source: "startQuest" });
 
-		try {
-			await this.questController.startQuest(questId);
-			this.currentQuest = this.questController.currentQuest;
+		const result = await this._startQuestUseCase.execute(questId);
+
+		if (result.success) {
+			this.currentQuest = result.quest;
 			this.isInHub = false;
-
-			// Emit events for decoupled communication
-			eventBus.emit(GameEvents.QUEST_START, {
-				questId,
-				quest: this.currentQuest,
-			});
-			eventBus.emit(GameEvents.NAVIGATE_QUEST, { questId });
-
 			this.notify({
 				type: "navigation",
 				location: "quest",
 				questId,
 			});
-		} catch (error) {
-			logger.error("Failed to start quest:", error);
-			eventBus.emit(GameEvents.ERROR, {
-				message: "Failed to start quest",
-				error,
-				context: { questId },
-			});
-		} finally {
-			this.isLoading = false;
-			this.notify({ type: "loading", isLoading: false });
-			eventBus.emit(GameEvents.LOADING_END, { source: "startQuest" });
 		}
+
+		this.isLoading = false;
+		this.notify({ type: "loading", isLoading: false });
 	}
 
 	/**
@@ -137,32 +163,21 @@ export class GameSessionManager extends Observable {
 	async continueQuest(/** @type {string} */ questId) {
 		this.isLoading = true;
 		this.notify({ type: "loading", isLoading: true });
-		eventBus.emit(GameEvents.LOADING_START, { source: "continueQuest" });
 
-		try {
-			await this.questController.continueQuest(questId);
-			this.currentQuest = this.questController.currentQuest;
+		const result = await this._continueQuestUseCase.execute(questId);
+
+		if (result.success) {
+			this.currentQuest = result.quest;
 			this.isInHub = false;
-
-			eventBus.emit(GameEvents.NAVIGATE_QUEST, { questId });
-
 			this.notify({
 				type: "navigation",
 				location: "quest",
 				questId,
 			});
-		} catch (error) {
-			logger.error("Failed to continue quest:", error);
-			eventBus.emit(GameEvents.ERROR, {
-				message: "Failed to continue quest",
-				error,
-				context: { questId },
-			});
-		} finally {
-			this.isLoading = false;
-			this.notify({ type: "loading", isLoading: false });
-			eventBus.emit(GameEvents.LOADING_END, { source: "continueQuest" });
 		}
+
+		this.isLoading = false;
+		this.notify({ type: "loading", isLoading: false });
 	}
 
 	/**
@@ -243,26 +258,16 @@ export class GameSessionManager extends Observable {
 		this._isReturningToHub = true;
 
 		try {
-			logger.info(`🏛️ Returning to Hub`);
+			const result = this._returnToHubUseCase.execute(replace);
 
-			// Update internal state
-			this.currentQuest = null;
-			this.isInHub = true;
-
-			// Reset quest controller if needed
-			if (this.questController?.currentQuest) {
-				this.questController.returnToHub();
+			if (result.success) {
+				this.currentQuest = null;
+				this.isInHub = true;
+				this.notify({
+					type: "navigation",
+					location: "hub",
+				});
 			}
-
-			// Navigate if we are not already at the hub URL
-			if (this.router?.currentPath !== ROUTES.HUB) {
-				this.router.navigate(ROUTES.HUB, replace);
-			}
-
-			this.notify({
-				type: "navigation",
-				location: "hub",
-			});
 		} finally {
 			this._isReturningToHub = false;
 		}
