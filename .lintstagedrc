@@ -1,5 +1,9 @@
 {
     "*": [
       "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true"
+    ],
+    "src/**/*.{js,ts}": [
+      "lit-analyzer --quiet",
+      "bash -c 'tsc --noEmit'"
     ]
 }
