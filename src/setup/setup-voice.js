@@ -7,34 +7,29 @@ import { logger } from "../services/logger-service.js";
 
 /**
  * Setup VoiceController
+ * @param {any} host
  * @param {import('../legacys-end-app.js').LegacysEndApp} app
  */
-export function setupVoice(app) {
-	app.voice = new VoiceController(app, {
-		onMove: (dx, dy) => app.handleMove(dx, dy),
-		onInteract: () => app.handleInteract(),
-		onPause: () => app.togglePause(),
+export function setupVoice(host, app) {
+	host.voice = new VoiceController(host, {
+		onMove: (dx, dy) => host.handleMove(dx, dy),
+		onInteract: () => host.handleInteract(),
+		onPause: () => host.togglePause(),
 		onNextSlide: () => {
 			const dialog = /** @type {LevelDialog} */ (
-				app.shadowRoot
-					.querySelector("game-view")
-					?.shadowRoot.querySelector("level-dialog")
+				host.shadowRoot.querySelector("level-dialog")
 			);
 			if (dialog) dialog.nextSlide();
 		},
 		onPrevSlide: () => {
 			const dialog = /** @type {LevelDialog} */ (
-				app.shadowRoot
-					.querySelector("game-view")
-					?.shadowRoot.querySelector("level-dialog")
+				host.shadowRoot.querySelector("level-dialog")
 			);
 			if (dialog) dialog.prevSlide();
 		},
 		onGetDialogText: () => {
 			const dialog = /** @type {LevelDialog} */ (
-				app.shadowRoot
-					.querySelector("game-view")
-					?.shadowRoot.querySelector("level-dialog")
+				host.shadowRoot.querySelector("level-dialog")
 			);
 			return dialog ? dialog.getCurrentSlideText() : "";
 		},
@@ -43,13 +38,13 @@ export function setupVoice(app) {
 			isRewardCollected: app.hasCollectedItem,
 		}),
 		onMoveToNpc: () => {
-			const state = app.interaction.options.getState();
+			const state = host.interaction.options.getState();
 			const npcPos = state.chapterData?.npc?.position;
 			if (!npcPos) return;
 
-			// Centralized move logic in LegacysEndApp
-			const dist = app.interaction.options.interactionDistance - 2;
-			app.moveTo(npcPos.x - dist, npcPos.y);
+			// Centralized move logic in GameView
+			const dist = host.interaction.options.interactionDistance - 2;
+			host.moveTo(npcPos.x - dist, npcPos.y);
 		},
 		onMoveToExit: () => {
 			const chapterData = app.getChapterData(app.chapterId);
@@ -57,17 +52,17 @@ export function setupVoice(app) {
 			if (!exitZone) return;
 
 			logger.info(`🚪 Moving to exit at (${exitZone.x}, ${exitZone.y})`);
-			app.moveTo(exitZone.x, exitZone.y);
+			host.moveTo(exitZone.x, exitZone.y);
 		},
 		onDebugAction: (action, value) => {
 			if (
-				app.gameController.isEnabled &&
+				host.gameController.isEnabled &&
 				app.gameService &&
 				app.gameService[action]
 			) {
 				app.gameService[action](value);
 			}
 		},
-		isEnabled: () => app.gameController?.isEnabled,
+		isEnabled: () => host.gameController?.isEnabled,
 	});
 }

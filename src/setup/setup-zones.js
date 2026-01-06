@@ -2,10 +2,11 @@ import { GameZoneController } from "../controllers/game-zone-controller.js";
 
 /**
  * Setup GameZoneController
+ * @param {any} host
  * @param {import('../legacys-end-app.js').LegacysEndApp} app
  */
-export function setupZones(app) {
-	app.zones = new GameZoneController(app, {
+export function setupZones(host, app) {
+	host.zones = new GameZoneController(host, {
 		getChapterData: () => app.getChapterData(app.chapterId),
 		hasCollectedItem: () => app.hasCollectedItem,
 		onThemeChange: (theme) => {

@@ -2,10 +2,11 @@ import { InteractionController } from "../controllers/interaction-controller.js"
 
 /**
  * Setup InteractionController
+ * @param {any} host
  * @param {import('../legacys-end-app.js').LegacysEndApp} app
  */
-export function setupInteraction(app) {
-	app.interaction = new InteractionController(app, {
+export function setupInteraction(host, app) {
+	host.interaction = new InteractionController(host, {
 		onShowDialog: () => {
 			app.showDialog = true;
 		},

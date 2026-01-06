@@ -1,27 +1,32 @@
-import { html, LitElement } from "lit";
-import { styles } from "./game-view.css.js";
-import "./victory-screen.js";
-import "../hero-profile.js";
-import "../npc-element.js";
-import "../reward-element.js";
-import "../game-viewport.js";
-import "../level-dialog.js";
-import "../pause-menu.js";
-import "@awesome.me/webawesome/dist/components/card/card.js";
 import "@awesome.me/webawesome/dist/components/button/button.js";
+import "@awesome.me/webawesome/dist/components/card/card.js";
+import { html, LitElement } from "lit";
 import { KeyboardController } from "../../controllers/keyboard-controller.js";
 import { setupCharacterContexts } from "../../setup/setup-character-contexts.js";
 import { setupCollision } from "../../setup/setup-collision.js";
-import { setupGame } from "../../setup/setup-game.js";
+import { setupGameController } from "../../setup/setup-game.js";
 import { setupInteraction } from "../../setup/setup-interaction.js";
 import { setupService } from "../../setup/setup-service.js";
 import { setupVoice } from "../../setup/setup-voice.js";
 import { setupZones } from "../../setup/setup-zones.js";
+import "../game-viewport.js";
+import "../hero-profile.js";
+import "../level-dialog.js";
+import "../npc-element.js";
+import "../pause-menu.js";
+import "../reward-element.js";
+import { styles } from "./game-view.css.js";
+import "./victory-screen.js";
 
 /**
  * @element game-view
  * @property {Object} gameState
  * @property {import('../../legacys-end-app.js').LegacysEndApp} app - Reference to main app for controller setup (temporary, will be removed)
+ * @property {import('../../controllers/collision-controller.js').CollisionController} collision
+ * @property {import('../../controllers/game-zone-controller.js').GameZoneController} zones
+ * @property {import('../../controllers/interaction-controller.js').InteractionController} interaction
+ * @property {import('../../controllers/keyboard-controller.js').KeyboardController} keyboard
+ * @property {import('../../controllers/voice-controller.js').VoiceController} voice
  */
 export class GameView extends LitElement {
 	static properties = {
@@ -34,6 +39,17 @@ export class GameView extends LitElement {
 		this.gameState = {};
 		this.app = null;
 		this._controllersInitialized = false;
+		this._autoMoveRequestId = null;
+		/** @type {import('../../controllers/collision-controller.js').CollisionController} */
+		this.collision = null;
+		/** @type {import('../../controllers/game-zone-controller.js').GameZoneController} */
+		this.zones = null;
+		/** @type {import('../../controllers/interaction-controller.js').InteractionController} */
+		this.interaction = null;
+		/** @type {import('../../controllers/keyboard-controller.js').KeyboardController} */
+		this.keyboard = null;
+		/** @type {import('../../controllers/voice-controller.js').VoiceController} */
+		this.voice = null;
 	}
 
 	connectedCallback() {
@@ -66,17 +82,17 @@ export class GameView extends LitElement {
 		this.#setupKeyboard();
 
 		// Initialize remaining controllers (still using app)
-		setupGame(this.app);
-		setupVoice(this.app);
+		setupGameController(this, this.app);
+		setupVoice(this, this.app);
 
 		// Initialize game mechanics controllers
-		setupZones(this.app);
-		setupCollision(this.app);
-		setupService(this.app);
+		setupZones(this, this.app);
+		setupCollision(this, this.app);
+		setupService(this.app); // ServiceController remains global-ish? Check setup-service.
 
 		// Initialize context and interaction
-		setupCharacterContexts(this.app);
-		setupInteraction(this.app);
+		setupCharacterContexts(this.app); // CharacterContexts might be global?
+		setupInteraction(this, this.app);
 
 		// After controllers are initialized, assign providers and load data
 		if (this.app.serviceController) {
@@ -108,15 +124,117 @@ export class GameView extends LitElement {
 	/**
 	 * Handle keyboard/voice movement input
 	 */
-	handleMove(dx, dy) {
-		this.app.handleMove(dx, dy);
+	handleMove(dx, dy, isAuto = false) {
+		if (!isAuto) {
+			this.stopAutoMove();
+		}
+
+		const currentConfig = this.app.questController?.currentChapter;
+		if (!currentConfig) return;
+
+		const state = this.app.gameState.getState();
+		let { x, y } = state.heroPos;
+
+		x += dx;
+		y += dy;
+
+		// Clamp to boundaries
+		x = Math.max(2, Math.min(98, x));
+		y = Math.max(2, Math.min(98, y));
+
+		// Check Exit Collision
+		if (this.app.questController?.hasExitZone()) {
+			this.collision.checkExitZone(
+				x,
+				y,
+				currentConfig.exitZone,
+				state.hasCollectedItem,
+			);
+		}
+
+		this.app.gameState.setHeroPosition(x, y);
+		this.zones.checkZones(x, y);
 	}
 
 	/**
 	 * Handle interaction (talk to NPC, etc.)
 	 */
 	handleInteract() {
-		this.app.handleInteract();
+		this.interaction.handleInteract();
+	}
+
+	/**
+	 * Auto-move hero to target position
+	 */
+	moveTo(targetX, targetY, step = 0.4) {
+		this.stopAutoMove();
+
+		const move = () => {
+			const state = this.app.gameState.getState();
+			const { x, y } = state.heroPos;
+
+			const dx = targetX - x;
+			const dy = targetY - y;
+			const distance = Math.sqrt(dx * dx + dy * dy);
+
+			if (distance < step) {
+				this.app.gameState.setHeroPosition(targetX, targetY);
+				this.stopAutoMove();
+				return;
+			}
+
+			const moveX = (dx / distance) * step;
+			const moveY = (dy / distance) * step;
+
+			this.handleMove(moveX, moveY, true);
+			this._autoMoveRequestId = requestAnimationFrame(move);
+		};
+
+		this._autoMoveRequestId = requestAnimationFrame(move);
+	}
+
+	/**
+	 * Stop auto-movement
+	 */
+	stopAutoMove() {
+		if (this._autoMoveRequestId) {
+			cancelAnimationFrame(this._autoMoveRequestId);
+			this._autoMoveRequestId = null;
+		}
+	}
+
+	/**
+	 * Trigger level transition (evolution animation + chapter completion)
+	 */
+	triggerLevelTransition() {
+		this.stopAutoMove();
+		if (this.app.questController?.isInQuest()) {
+			this.app.gameState.setEvolving(true);
+			setTimeout(() => {
+				this.app.questController.completeChapter();
+				this.app.gameState.setEvolving(false);
+			}, 500);
+		}
+	}
+
+	/**
+	 * Handle level completion
+	 */
+	handleLevelComplete() {
+		this.app.showDialog = false;
+
+		// If we were showing the next chapter dialog (after reward collection),
+		// advance to the next chapter
+		if (
+			this.app.isRewardCollected &&
+			this.app.questController?.hasNextChapter()
+		) {
+			console.log("📖 Advancing to next chapter after preview");
+			this.triggerLevelTransition();
+		} else {
+			// Otherwise, just mark item as collected (initial dialog completion)
+			this.app.gameState.setCollectedItem(true);
+		}
 	}
 
 	/**
@@ -187,7 +305,7 @@ export class GameView extends LitElement {
 					.config="${dialogConfig}"
 					.level="${quest?.levelId}"
 					.hotSwitchState="${hero?.hotSwitchState}"
-					@complete="${() => this.dispatchEvent(new CustomEvent("complete"))}"
+					@complete="${() => this.handleLevelComplete()}"
 					@close="${() => this.dispatchEvent(new CustomEvent("close-dialog"))}"
 				></level-dialog>
 			`

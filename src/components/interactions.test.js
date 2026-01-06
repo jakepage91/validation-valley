@@ -130,6 +130,15 @@ describe("GameView Integration", () => {
 			hero: { pos: { x: 0, y: 0 } },
 			ui: { showDialog: true },
 		};
+		// Mock app for handleLevelComplete
+		element.app = {
+			showDialog: true,
+			gameState: { setCollectedItem: vi.fn() },
+			isRewardCollected: false,
+			questController: { hasNextChapter: vi.fn(() => false) },
+			gameService: {}, // Add empty gameService to prevent setup failure
+			addController: vi.fn(),
+		};
 		container.appendChild(element);
 		await element.updateComplete;
 
@@ -141,7 +150,9 @@ describe("GameView Integration", () => {
 
 		dialog.dispatchEvent(new CustomEvent("complete"));
 
-		expect(completeSpy).toHaveBeenCalled();
+		// handleLevelComplete sets showDialog to false and calls setCollectedItem
+		expect(element.app.showDialog).toBe(false);
+		expect(element.app.gameState.setCollectedItem).toHaveBeenCalledWith(true);
 	});
 
 	it("should re-dispatch 'close-dialog' event from level-dialog close", async () => {

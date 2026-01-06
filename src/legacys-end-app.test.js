@@ -212,15 +212,8 @@ describe("LegacysEndApp Component", () => {
 		});
 
 		it("should initialize all controllers on creation", () => {
-			// Note: keyboard is now in GameView, not app
-			expect(el.gameController).toBeDefined();
-			expect(el.voice).toBeDefined();
-			expect(el.zones).toBeDefined();
-			expect(el.collision).toBeDefined();
-			expect(el.serviceController).toBeDefined();
-			expect(el.characterContexts).toBeDefined();
-			expect(el.interaction).toBeDefined();
 			expect(el.questController).toBeDefined();
+			expect(el.sessionManager).toBeDefined();
 		});
 
 		it("should configure KeyboardController correctly", () => {

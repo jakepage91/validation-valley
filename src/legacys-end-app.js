@@ -19,6 +19,7 @@ import {
 	NewUserService,
 } from "./services/user-services.js";
 import { setupRoutes } from "./setup/routes.js";
+import { setupGameService } from "./setup/setup-game.js";
 import { setupQuest } from "./setup/setup-quest.js";
 import { setupSessionManager } from "./setup/setup-session-manager.js";
 import { GameStateMapper } from "./utils/game-state-mapper.js";
@@ -106,18 +107,6 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 	serviceController;
 	/** @type {import("./controllers/character-context-controller.js").CharacterContextController} */
 	characterContexts;
-	/** @type {import("./controllers/interaction-controller.js").InteractionController} */
-	interaction;
-	/** @type {import("./controllers/keyboard-controller.js").KeyboardController} */
-	keyboard;
-	/** @type {import("./controllers/game-controller.js").GameController} */
-	gameController;
-	/** @type {import("./controllers/voice-controller.js").VoiceController} */
-	voice;
-	/** @type {import("./controllers/game-zone-controller.js").GameZoneController} */
-	zones;
-	/** @type {import("./controllers/collision-controller.js").CollisionController} */
-	collision;
 
 	// User Data
 	/** @type {Object} */
@@ -181,9 +170,6 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 		// Initialize Quest System
 		this.currentQuest = null;
 		this.isInHub = false;
-
-		// Initialize movement state
-		this._autoMoveRequestId = null;
 
 		// Initialize Router
 		this.router = new Router();
@@ -286,6 +272,9 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 		// Integrate with session manager (app-level state)
 		setupSessionManager(this);
 
+		// Initialize Game Service (Shared)
+		setupGameService(this);
+
 		// Note: Game-specific controllers (keyboard, game, voice, zones, collision,
 		// service, character contexts, interaction) are now initialized in GameView
 	}
@@ -338,104 +327,6 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 	}
 
 	/**
-	 * Handle keyboard interaction (Space bar)
-	 * Called by KeyboardController
-	 */
-	handleInteract() {
-		this.interaction.handleInteract();
-	}
-
-	/**
-	 * Handle keyboard movement
-	 * Called by KeyboardController
-	 */
-	handleMove(dx, dy, isAuto = false) {
-		if (!isAuto) {
-			this.stopAutoMove();
-		}
-
-		const currentConfig = this.questController?.currentChapter;
-		if (!currentConfig) return;
-
-		const state = this.gameState.getState();
-		let { x, y } = state.heroPos;
-
-		x += dx;
-		y += dy;
-
-		// Clamp to boundaries
-		x = Math.max(2, Math.min(98, x));
-		y = Math.max(2, Math.min(98, y));
-
-		// Check Exit Collision
-		if (this.questController?.hasExitZone()) {
-			this.collision.checkExitZone(
-				x,
-				y,
-				currentConfig.exitZone,
-				state.hasCollectedItem,
-			);
-		}
-
-		this.gameState.setHeroPosition(x, y);
-		this.zones.checkZones(x, y);
-	}
-
-	/**
-	 * Auto-move hero to target position
-	 */
-	moveTo(targetX, targetY, step = 0.4) {
-		this.stopAutoMove();
-
-		const move = () => {
-			const state = this.gameState.getState();
-			const { x, y } = state.heroPos;
-
-			const dx = targetX - x;
-			const dy = targetY - y;
-			const distance = Math.sqrt(dx * dx + dy * dy);
-
-			if (distance < step) {
-				this.gameState.setHeroPosition(targetX, targetY);
-				this.stopAutoMove();
-				return;
-			}
-
-			const moveX = (dx / distance) * step;
-			const moveY = (dy / distance) * step;
-
-			this.handleMove(moveX, moveY, true);
-			this._autoMoveRequestId = requestAnimationFrame(move);
-		};
-
-		this._autoMoveRequestId = requestAnimationFrame(move);
-	}
-
-	/**
-	 * Stop auto-movement
-	 */
-	stopAutoMove() {
-		if (this._autoMoveRequestId) {
-			cancelAnimationFrame(this._autoMoveRequestId);
-			this._autoMoveRequestId = null;
-		}
-	}
-
-	/**
-	 * Trigger level transition (evolution animation + chapter completion)
-	 */
-	triggerLevelTransition() {
-		this.stopAutoMove();
-		if (this.questController?.isInQuest()) {
-			this.gameState.setEvolving(true);
-			setTimeout(() => {
-				this.questController.completeChapter();
-				this.gameState.setEvolving(false);
-			}, 500);
-		}
-	}
-
-	/**
 	 * Toggle pause state
 	 */
 	togglePause() {
@@ -459,23 +350,6 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 
 	handleQuitToHub() {
 		this.sessionManager.returnToHub();
-	}
-
-	/**
-	 * Handle level completion
-	 */
-	handleLevelComplete() {
-		this.showDialog = false;
-
-		// If we were showing the next chapter dialog (after reward collection),
-		// advance to the next chapter
-		if (this.isRewardCollected && this.questController?.hasNextChapter()) {
-			console.log("📖 Advancing to next chapter after preview");
-			this.triggerLevelTransition();
-		} else {
-			// Otherwise, just mark item as collected (initial dialog completion)
-			this.gameState.setCollectedItem(true);
-		}
 	}
 
 	/**
@@ -602,7 +476,6 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 				@resume="${this.handleResume}"
 				@restart="${this.handleRestartQuest}"
 				@quit="${this.handleQuitToHub}"
-				@complete="${this.handleLevelComplete}"
 				@close-dialog="${this.handleCloseDialog}"
 				@toggle-hot-switch="${this.handleToggleHotSwitch}"
 				@reward-collected="${this.handleRewardCollected}"

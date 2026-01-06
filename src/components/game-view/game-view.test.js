@@ -43,12 +43,18 @@ describe("GameView Component", () => {
 			// Create mock app
 			mockApp = {
 				addController: vi.fn(),
+				getChapterData: vi.fn(),
 				gameState: {
 					setPaused: vi.fn(),
-					getState: () => ({ ui: { isPaused: false } }),
+					getState: vi.fn(() => ({
+						ui: { isPaused: false },
+						heroPos: { x: 0, y: 0 },
+						hasCollectedItem: false,
+					})),
+					setHeroPosition: vi.fn(),
 				},
-				handleMove: vi.fn(),
-				handleInteract: vi.fn(),
+				handleMove: vi.fn(), // Kept but probably unused
+				handleInteract: vi.fn(), // Kept but probably unused
 				getActiveService: vi.fn(() => null),
 				profileProvider: { setValue: vi.fn() },
 				suitProvider: { setValue: vi.fn() },
@@ -57,6 +63,24 @@ describe("GameView Component", () => {
 				masteryProvider: { setValue: vi.fn() },
 				serviceController: null,
 				characterContexts: null,
+				gameService: {
+					setLevel: vi.fn(),
+					giveItem: vi.fn(),
+					teleport: vi.fn(),
+					getState: vi.fn(),
+					setTheme: vi.fn(),
+					startQuest: vi.fn(),
+					completeQuest: vi.fn(),
+					completeChapter: vi.fn(),
+					returnToHub: vi.fn(),
+					listQuests: vi.fn(() => []),
+					getProgress: vi.fn(),
+					resetProgress: vi.fn(),
+				},
+				questController: {
+					currentChapter: { exitZone: { x: 10, y: 10 } },
+					hasExitZone: vi.fn(() => true),
+				},
 			};
 
 			el = /** @type {GameView} */ (document.createElement("game-view"));
@@ -71,14 +95,19 @@ describe("GameView Component", () => {
 			expect(el.keyboard.options.speed).toBe(2.5);
 		});
 
-		it("should call handleMove when keyboard moves", () => {
+		it("should update hero position when keyboard moves", () => {
 			el.keyboard.options.onMove(1, 0);
-			expect(mockApp.handleMove).toHaveBeenCalledWith(1, 0);
+			// handleMove logic in GameView calculates new position
+			// With start (0,0) + (1,0) = (1,0). Clamped to min 2 => (2, 0)?
+			// Actually boundaries are 2 to 98.
+			// 0 + 1 = 1. Clamped to 2. y=0 clamped to 2.
+			expect(mockApp.gameState.setHeroPosition).toHaveBeenCalledWith(2, 2);
 		});
 
-		it("should call handleInteract when keyboard interacts", () => {
+		it("should call interaction controller when keyboard interacts", () => {
+			const spy = vi.spyOn(el.interaction, "handleInteract");
 			el.keyboard.options.onInteract();
-			expect(mockApp.handleInteract).toHaveBeenCalled();
+			expect(spy).toHaveBeenCalled();
 		});
 
 		it("should toggle pause when keyboard pauses", () => {

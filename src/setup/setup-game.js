@@ -6,7 +6,11 @@ import { logger } from "../services/logger-service.js";
  * Setup GameController with GameService
  * @param {import('../legacys-end-app.js').LegacysEndApp} app
  */
-export function setupGame(app) {
+/**
+ * Setup GameService
+ * @param {import('../legacys-end-app.js').LegacysEndApp} app
+ */
+export function setupGameService(app) {
 	// Create GameService with all game operation callbacks
 	app.gameService = new GameService({
 		setLevel: (chapterId) => {
@@ -72,9 +76,16 @@ export function setupGame(app) {
 			logger.info("🔄 Progress reset");
 		},
 	});
+}
 
+/**
+ * Setup GameController
+ * @param {any} host
+ * @param {import('../legacys-end-app.js').LegacysEndApp} app
+ */
+export function setupGameController(host, app) {
 	// Create GameController with GameService
-	app.gameController = new GameController(app, {
+	host.gameController = new GameController(host, {
 		gameService: app.gameService,
 	});
 }
