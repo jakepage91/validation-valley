@@ -2,7 +2,7 @@
  * @typedef {import('lit').ReactiveController} ReactiveController
  */
 
-const DEFAULT_INTERACTION_DISTANCE = 15;
+import { gameConfig } from "../config/game-configuration.js";
 
 /**
  * @typedef {import('../services/game-state-service.js').HotSwitchState} HotSwitchState
@@ -20,7 +20,7 @@ const DEFAULT_INTERACTION_DISTANCE = 15;
 
 /**
  * @typedef {Object} InteractionOptions
- * @property {number} [interactionDistance] - Max distance to interact (default: 15)
+ * @property {number} [interactionDistance] - Max distance to interact (default: from config)
  * @property {() => void} [onShowDialog] - Callback to open dialog
  * @property {() => void} [onVictory] - Verification callback
  * @property {(msg: string|null) => void} [onLocked] - Callback for locked features
@@ -49,7 +49,7 @@ export class InteractionController {
 		this.host = host;
 		/** @type {InteractionOptions} */
 		this.options = {
-			interactionDistance: DEFAULT_INTERACTION_DISTANCE,
+			interactionDistance: gameConfig.gameplay.interactionDistance,
 			onShowDialog: () => {},
 			onVictory: () => {},
 			onLocked: () => {},
@@ -98,10 +98,10 @@ export class InteractionController {
 		if (!state?.heroPos || !npcPos) return false;
 
 		const distance = this.calculateDistance(state.heroPos, npcPos);
-		return (
-			distance <
-			(this.options.interactionDistance || DEFAULT_INTERACTION_DISTANCE)
-		);
+		const maxDistance =
+			this.options.interactionDistance ||
+			gameConfig.gameplay.interactionDistance;
+		return distance <= maxDistance;
 	}
 
 	/**
