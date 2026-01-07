@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { EVENTS } from "../../constants/events.js";
 import "./game-view.js";
 
 /** @typedef {import("./game-view.js").GameView} GameView */
@@ -103,6 +104,14 @@ describe("GameView Component", () => {
 					currentChapter: { exitZone: { x: 10, y: 10 } },
 					hasExitZone: vi.fn(() => true),
 				},
+				eventBus: {
+					on: vi.fn(),
+					off: vi.fn(),
+					emit: vi.fn(),
+				},
+				commandBus: {
+					execute: vi.fn(),
+				},
 			};
 
 			el = /** @type {GameView} */ (document.createElement("game-view"));
@@ -142,8 +151,11 @@ describe("GameView Component", () => {
 			// Directly call the handler as we are testing GameView's reaction
 			el.handleMoveInput({ dx: 1, dy: 0 });
 
-			// Same boundaries logic: min 2. start 0,0 -> 2,2
-			expect(mockApp.gameState.setHeroPosition).toHaveBeenCalledWith(2, 2);
+			// Verify it executes a MoveHeroCommand via commandBus
+			expect(mockApp.commandBus.execute).toHaveBeenCalled();
+			const command = mockApp.commandBus.execute.mock.calls[0][0];
+			expect(command.name).toBe("MoveHero");
+			expect(command.metadata).toEqual({ dx: 1, dy: 0 });
 		});
 
 		it("should initialize keyboard with correct speed", () => {
@@ -155,8 +167,15 @@ describe("GameView Component", () => {
 			// Regression test for context initialization order
 			// KeyboardController needs interaction controller to execute InteractCommand
 			expect(el.keyboard?.context.interaction).toBeDefined();
-			// Since we mock interaction later, at least ensure the property exists on context
-			// In this test setup, `el.app` is the source of truth
+		});
+
+		it("should emit LEVEL_COMPLETED event on level completion", () => {
+			const spy = vi.spyOn(mockApp.eventBus, "emit");
+
+			// Simulate level completion
+			el.handleLevelComplete();
+
+			expect(spy).toHaveBeenCalledWith(EVENTS.UI.LEVEL_COMPLETED);
 		});
 	});
 });

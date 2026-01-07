@@ -241,33 +241,6 @@ export class GameView extends LitElement {
 					},
 				}),
 			);
-		} else {
-			// Fallback for when command bus is not available
-			const currentConfig = this.app.questController?.currentChapter;
-			if (!currentConfig) return;
-
-			const state = this.app.gameState.getState();
-			let { x, y } = state.heroPos;
-
-			x += dx;
-			y += dy;
-
-			// Clamp to boundaries
-			x = Math.max(2, Math.min(98, x));
-			y = Math.max(2, Math.min(98, y));
-
-			// Check Exit Collision
-			if (this.app.questController?.hasExitZone() && this.collision) {
-				this.collision.checkExitZone(
-					x,
-					y,
-					currentConfig.exitZone,
-					state.hasCollectedItem,
-				);
-			}
-
-			this.app.gameState.setHeroPosition(x, y);
-			this.zones?.checkZones(x, y);
 		}
 	}
 
@@ -283,8 +256,6 @@ export class GameView extends LitElement {
 					interactionController: this.interaction,
 				}),
 			);
-		} else {
-			this.interaction?.handleInteract();
 		}
 	}
 
@@ -343,13 +314,6 @@ export class GameView extends LitElement {
 					questController: this.app.questController,
 				}),
 			);
-		} else if (this.app.questController?.isInQuest()) {
-			// Fallback
-			this.app.gameState.setEvolving(true);
-			setTimeout(() => {
-				this.app.questController.completeChapter();
-				this.app.gameState.setEvolving(false);
-			}, 500);
 		}
 	}
 
@@ -357,20 +321,9 @@ export class GameView extends LitElement {
 	 * Handle level completion
 	 */
 	handleLevelComplete() {
-		this.app?.gameState?.setShowDialog(false);
-
-		// If we were showing the next chapter dialog (after reward collection),
-		// advance to the next chapter
-		if (
-			this.app?.isRewardCollected &&
-			this.app.questController?.hasNextChapter()
-		) {
-			console.log("📖 Advancing to next chapter after preview");
-			this.triggerLevelTransition();
-		} else {
-			// Otherwise, just mark item as collected (initial dialog completion)
-			this.app.gameState.setCollectedItem(true);
-		}
+		// Decoupled logic: GameView only reports the event.
+		// Controller handles state updates and transition logic.
+		this.app.eventBus.emit(EVENTS.UI.LEVEL_COMPLETED);
 	}
 
 	/**
@@ -383,12 +336,6 @@ export class GameView extends LitElement {
 					gameState: this.app.gameState,
 				}),
 			);
-		} else {
-			// Toggle pause state directly in gameState
-			const currentState = this.gameState?.ui?.isPaused ?? false;
-			if (this.app?.gameState) {
-				this.app.gameState.setPaused(!currentState);
-			}
 		}
 	}
 

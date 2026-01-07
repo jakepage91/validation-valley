@@ -2,7 +2,11 @@
  * @typedef {import("lit").ReactiveController} ReactiveController
  * @typedef {import("lit").ReactiveControllerHost} ReactiveControllerHost
  * @typedef {import("../services/game-service.js").GameService} GameService
+ * @typedef {import("../core/game-context.js").IGameContext} IGameContext
  */
+
+import { AdvanceChapterCommand } from "../commands/advance-chapter-command.js";
+import { EVENTS } from "../constants/events.js";
 
 /**
  * @typedef {Object} GameControllerOptions
@@ -13,18 +17,21 @@
 /**
  * GameController - Lit Reactive Controller for game logic
  *
- * Handles debug mode when ?debug is present in URL
- * Uses injected GameService
+ * Handles:
+ * - Debug mode
+ * - Level completion logic (listening to events)
  *
  * @implements {ReactiveController}
  */
 export class GameController {
 	/**
 	 * @param {ReactiveControllerHost} host
+	 * @param {IGameContext} context
 	 * @param {GameControllerOptions} options
 	 */
-	constructor(host, options) {
+	constructor(host, context, options) {
 		this.host = host;
+		this.context = context;
 		this.options = options;
 		this.isEnabled = new URLSearchParams(window.location.search).has("debug");
 
@@ -39,11 +46,59 @@ export class GameController {
 		if (this.isEnabled) {
 			this.enableDebugMode();
 		}
+
+		// Listen for level completion
+		this.context.eventBus.on(
+			EVENTS.UI.LEVEL_COMPLETED,
+			this.handleLevelCompleted,
+		);
 	}
 
 	hostDisconnected() {
-		// No cleanup needed
+		this.context.eventBus.off(
+			EVENTS.UI.LEVEL_COMPLETED,
+			this.handleLevelCompleted,
+		);
 	}
+
+	/**
+	 * Handle level completion event
+	 * Executes logic to advance chapter or complete quest
+	 */
+	handleLevelCompleted = () => {
+		const { gameState, questController, commandBus } = this.context;
+
+		// 1. Hide dialog if open (handled by UI state, but ensures clean slate)
+		gameState.setShowDialog(false);
+
+		// 2. Check if we should advance to next chapter
+		// Logic: If there is a next chapter, and we have collected the reward (or logic implies it), advance.
+		// In previous GameView logic:
+		// if (isRewardCollected && hasNextChapter) -> triggerLevelTransition
+		// else -> setCollectedItem(true)
+
+		// We need to check state.
+		const state = gameState.getState();
+		const hasNext = questController?.hasNextChapter();
+
+		if (state.isRewardCollected && hasNext) {
+			console.log("📖 Advancing to next chapter");
+			// Stop auto-move if any? (Handled by AdvanceChapterCommand presumably or logic)
+
+			if (commandBus) {
+				commandBus.execute(
+					new AdvanceChapterCommand({
+						gameState,
+						questController,
+					}),
+				);
+			}
+		} else {
+			// Just mark item as collected/level complete state
+			console.log("✅ Level Goal Reached (Item Collected)");
+			gameState.setCollectedItem(true);
+		}
+	};
 
 	enableDebugMode() {
 		console.log(`

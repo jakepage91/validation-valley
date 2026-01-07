@@ -206,9 +206,10 @@ describe("GameView Integration", () => {
 
 		dialog?.dispatchEvent(new CustomEvent("complete"));
 
-		// handleLevelComplete calls setShowDialog(false) and calls setCollectedItem
-		expect(element.app.gameState.setShowDialog).toHaveBeenCalledWith(false);
-		expect(element.app.gameState.setCollectedItem).toHaveBeenCalledWith(true);
+		// Decoupled logic: GameView only emits LEVEL_COMPLETED
+		expect(element.app.eventBus.emit).toHaveBeenCalledWith(
+			EVENTS.UI.LEVEL_COMPLETED,
+		);
 	});
 
 	it("should re-dispatch 'close-dialog' event from level-dialog close", async () => {

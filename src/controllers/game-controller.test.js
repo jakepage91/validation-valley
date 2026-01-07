@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { EVENTS } from "../constants/events.js";
 import { GameService } from "../services/game-service.js";
 import { GameController } from "./game-controller.js";
 
@@ -14,6 +15,9 @@ describe("GameController", () => {
 	/** @type {import("vitest").Mock} */
 	let getState;
 
+	/** @type {any} */
+	let context;
+
 	beforeEach(() => {
 		host = {
 			addController: vi.fn(),
@@ -21,16 +25,31 @@ describe("GameController", () => {
 			requestUpdate: vi.fn(),
 			updateComplete: Promise.resolve(true),
 		};
+
+		context = {
+			eventBus: {
+				on: vi.fn(),
+				off: vi.fn(),
+				emit: vi.fn(),
+			},
+			gameState: {
+				setShowDialog: vi.fn(),
+				setCollectedItem: vi.fn(),
+				getState: vi.fn(() => ({ isRewardCollected: false })),
+			},
+			commandBus: {
+				execute: vi.fn(),
+			},
+			questController: {
+				hasNextChapter: vi.fn(),
+			},
+		};
+
 		setLevel = vi.fn();
 		getState = vi.fn().mockReturnValue({ level: "chapter-1" });
 
 		// Mock window.location
-		// Reset URL
 		window.history.replaceState({}, "", "/");
-
-		// Clean up window.game just in case
-		// @ts-expect-error
-		delete window.game;
 	});
 
 	afterEach(() => {
@@ -41,7 +60,7 @@ describe("GameController", () => {
 
 	it("should not enable debug mode by default", () => {
 		gameService = new GameService();
-		controller = new GameController(host, { gameService });
+		controller = new GameController(host, context, { gameService });
 		controller.hostConnected();
 
 		expect(controller.isEnabled).toBe(false);
@@ -52,7 +71,7 @@ describe("GameController", () => {
 	it("should enable debug mode when ?debug is in URL", () => {
 		window.history.replaceState({}, "", "/?debug");
 		gameService = new GameService({ setLevel, getState });
-		controller = new GameController(host, { gameService });
+		controller = new GameController(host, context, { gameService });
 		controller.hostConnected();
 
 		expect(controller.isEnabled).toBe(true);
@@ -61,7 +80,7 @@ describe("GameController", () => {
 	it("should NOT expose window.game even in debug mode", () => {
 		window.history.replaceState({}, "", "/?debug");
 		gameService = new GameService({ setLevel, getState });
-		controller = new GameController(host, { gameService });
+		controller = new GameController(host, context, { gameService });
 		controller.hostConnected();
 
 		// @ts-expect-error
@@ -73,7 +92,7 @@ describe("GameController", () => {
 		const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
 		gameService = new GameService({ getState });
-		controller = new GameController(host, { gameService });
+		controller = new GameController(host, context, { gameService });
 		controller.hostConnected();
 
 		expect(consoleSpy).toHaveBeenCalledWith(
@@ -82,5 +101,27 @@ describe("GameController", () => {
 		expect(getState).toHaveBeenCalled();
 
 		consoleSpy.mockRestore();
+	});
+
+	it("should handle LEVEL_COMPLETED event", () => {
+		gameService = new GameService();
+		controller = new GameController(host, context, { gameService });
+
+		controller.hostConnected();
+
+		// Verify registration
+		expect(context.eventBus.on).toHaveBeenCalledWith(
+			EVENTS.UI.LEVEL_COMPLETED,
+			controller.handleLevelCompleted,
+		);
+
+		// Simulate execution
+		controller.handleLevelCompleted();
+
+		// Should have toggled dialog off
+		expect(context.gameState.setShowDialog).toHaveBeenCalledWith(false);
+
+		// And set collected item (since we mocked hasNextChapter to undefined/false)
+		expect(context.gameState.setCollectedItem).toHaveBeenCalledWith(true);
 	});
 });

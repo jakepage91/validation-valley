@@ -28,6 +28,8 @@ export const EVENTS = {
 		HERO_AUTO_MOVE: "hero-auto-move",
 		/** @type {'hero-move-input'} */
 		HERO_MOVE_INPUT: "hero-move-input",
+		/** @type {'level-completed'} */
+		LEVEL_COMPLETED: "level-completed",
 	},
 	SYSTEM: {
 		/** @type {'data-loaded'} */

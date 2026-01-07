@@ -100,7 +100,7 @@ export function setupGameController(host, context) {
 	// Create GameController with GameService
 	/** @type {GameHost & { gameController: GameController }} */ (
 		host
-	).gameController = new GameController(host, {
+	).gameController = new GameController(host, context, {
 		gameService:
 			/** @type {import('../services/game-service.js').GameService} */ (
 				context.gameService
