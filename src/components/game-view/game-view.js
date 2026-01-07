@@ -175,6 +175,7 @@ export class GameView extends LitElement {
 			router: this.app.router,
 			serviceController: this.app.serviceController,
 			characterContexts: this.app.characterContexts,
+			interaction: this.app.interaction,
 		};
 	}
 
