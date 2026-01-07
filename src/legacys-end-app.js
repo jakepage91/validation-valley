@@ -227,6 +227,7 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 				)
 			) {
 				this.syncSessionState();
+				this.syncState();
 			}
 		});
 
@@ -293,6 +294,7 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 			gameState: this.gameState,
 			progressService: this.progressService,
 			commandBus: this.commandBus,
+			eventBus: this.eventBus,
 			// Router and questController will be set later in setupControllers/app
 			router: null,
 			questController: null,

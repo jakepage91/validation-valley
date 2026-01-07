@@ -27,7 +27,12 @@ export class AdvanceChapterCommand {
 			// Simulate evolution animation duration
 			await new Promise((resolve) => setTimeout(resolve, 500));
 
-			this.questController.completeChapter();
+			if (this.questController.isLastChapter()) {
+				this.questController.completeQuest();
+			} else {
+				this.questController.completeChapter();
+			}
+
 			this.gameState.setEvolving(false);
 		}
 	}

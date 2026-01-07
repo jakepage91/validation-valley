@@ -14,6 +14,8 @@ describe("GameSessionManager", () => {
 	let mockRouter;
 	/** @type {any} */
 	let mockControllers;
+	/** @type {any} */
+	let mockEventBus;
 
 	beforeEach(() => {
 		// Mock GameStateService
@@ -28,11 +30,14 @@ describe("GameSessionManager", () => {
 			setHeroPosition: vi.fn(),
 			setPaused: vi.fn(),
 			setEvolving: vi.fn(),
+			setState: vi.fn(),
+			resetChapterState: vi.fn(),
 		};
 
 		// Mock ProgressService
 		mockProgressService = {
 			isQuestAvailable: vi.fn().mockReturnValue(true),
+			getChapterState: vi.fn().mockReturnValue({}),
 		};
 
 		// Mock QuestController
@@ -68,12 +73,20 @@ describe("GameSessionManager", () => {
 			},
 		};
 
+		// Mock EventBus
+		mockEventBus = {
+			on: vi.fn(),
+			emit: vi.fn(),
+			off: vi.fn(),
+		};
+
 		manager = new GameSessionManager({
 			gameState: mockGameState,
 			progressService: mockProgressService,
 			questController: mockQuestController,
 			router: mockRouter,
 			controllers: mockControllers,
+			eventBus: mockEventBus,
 		});
 	});
 
@@ -86,6 +99,87 @@ describe("GameSessionManager", () => {
 
 		it("should subscribe to game state changes", () => {
 			expect(mockGameState.subscribe).toHaveBeenCalled();
+		});
+	});
+
+	describe("Regression Tests", () => {
+		it("should subscribe to event bus events when setupEventListeners is called (Fix: Hero position/URL not updating)", () => {
+			manager.setupEventListeners();
+			expect(mockEventBus.on).toHaveBeenCalledWith(
+				"quest-started",
+				expect.any(Function),
+			);
+			expect(mockEventBus.on).toHaveBeenCalledWith(
+				"chapter-changed",
+				expect.any(Function),
+			);
+			expect(mockEventBus.on).toHaveBeenCalledWith(
+				"quest-completed",
+				expect.any(Function),
+			);
+			expect(mockEventBus.on).toHaveBeenCalledWith(
+				"return-to-hub",
+				expect.any(Function),
+			);
+		});
+
+		it("should handle quest-completed event by updating game state (Fix: Quest completion UI not showing)", () => {
+			manager.setupEventListeners();
+			const completeCallback = mockEventBus.on.mock.calls.find(
+				(/** @type {any} */ call) => call[0] === "quest-completed",
+			)[1];
+
+			completeCallback({ quest: { name: "Test Quest", reward: {} } });
+
+			expect(mockGameState.setState).toHaveBeenCalledWith({
+				isQuestCompleted: true,
+			});
+		});
+
+		it("should reset hero position on chapter change (Fix: Hero stuck at previous position)", () => {
+			manager.setupEventListeners();
+			manager.currentQuest = /** @type {any} */ ({ id: "test-quest" });
+			const chapterChangeCallback = mockEventBus.on.mock.calls.find(
+				(/** @type {any} */ call) => call[0] === "chapter-changed",
+			)[1];
+
+			const mockChapter = {
+				id: "chapter-2",
+				startPos: { x: 10, y: 10 },
+			};
+
+			chapterChangeCallback({ chapter: mockChapter, index: 1 });
+
+			expect(mockRouter.navigate).toHaveBeenCalled();
+			expect(mockGameState.setHeroPosition).toHaveBeenCalledWith(10, 10);
+		});
+
+		it("should clear completion state when starting quest (Fix: Completion UI showing on restart)", async () => {
+			// Setup initial state as "completed"
+			mockGameState.getState.mockReturnValue({ isQuestCompleted: true });
+
+			await manager.startQuest("test-quest");
+
+			// Verify state reset was called
+			expect(mockGameState.setState).toHaveBeenCalledWith({
+				isQuestCompleted: false,
+				isPaused: false,
+			});
+		});
+
+		it("should clear completion state when returning to hub (Fix: Completion UI showing on re-entry)", () => {
+			mockGameState.getState.mockReturnValue({ isQuestCompleted: true });
+			manager.setupEventListeners();
+			const returnCallback = mockEventBus.on.mock.calls.find(
+				(/** @type {any} */ call) => call[0] === "return-to-hub",
+			)[1];
+
+			returnCallback();
+
+			expect(mockGameState.setState).toHaveBeenCalledWith({
+				isQuestCompleted: false,
+				isPaused: false,
+			});
 		});
 	});
 

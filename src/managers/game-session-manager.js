@@ -1,3 +1,4 @@
+import { EVENTS } from "../constants/events.js";
 import { ROUTES } from "../constants/routes.js";
 import { logger } from "../services/logger-service.js";
 import { CompleteQuestUseCase } from "../use-cases/complete-quest.js";
@@ -32,6 +33,7 @@ export class GameSessionManager extends Observable {
 		 *   progressService: import('../services/progress-service').ProgressService;
 		 *   questController: import('../controllers/quest-controller').QuestController;
 		 *   router: import("../utils/router.js").Router;
+		 *   eventBus: import('../core/event-bus.js').EventBus;
 		 *   controllers: {
 		 *     keyboard: import("../controllers/keyboard-controller.js").KeyboardController;
 		 *     interaction: import("../controllers/interaction-controller.js").InteractionController;
@@ -45,6 +47,7 @@ export class GameSessionManager extends Observable {
 			progressService: /** @type {any} */ (null),
 			questController: /** @type {any} */ (null),
 			router: /** @type {any} */ (null),
+			eventBus: /** @type {any} */ (null),
 			controllers: {
 				keyboard: /** @type {any} */ (null),
 				interaction: /** @type {any} */ (null),
@@ -60,6 +63,7 @@ export class GameSessionManager extends Observable {
 		this.progressService = this.options.progressService;
 		this.questController = this.options.questController;
 		this.router = this.options.router;
+		this.eventBus = this.options.eventBus;
 
 		// Controllers
 		this.keyboard = this.options.controllers.keyboard;
@@ -79,6 +83,119 @@ export class GameSessionManager extends Observable {
 				this.notify({ type: "state-change", state: this.getGameState() });
 			});
 		}
+	}
+
+	/**
+	 * Setup event listeners for global events
+	 */
+	setupEventListeners() {
+		if (!this.eventBus) return;
+
+		this.eventBus.on(EVENTS.QUEST.STARTED, this._handleQuestStart.bind(this));
+		this.eventBus.on(
+			EVENTS.QUEST.CHAPTER_CHANGED,
+			this._handleChapterChange.bind(this),
+		);
+		this.eventBus.on(
+			EVENTS.QUEST.COMPLETED,
+			this._handleQuestComplete.bind(this),
+		);
+		this.eventBus.on(
+			EVENTS.QUEST.RETURN_TO_HUB,
+			this._handleReturnToHub.bind(this),
+		);
+	}
+
+	/**
+	 * Handle quest start event
+	 * @param {Object} payload
+	 * @param {import('../services/quest-registry-service').Quest} payload.quest
+	 */
+	_handleQuestStart({ quest }) {
+		this.isLoading = true;
+		this.currentQuest = quest;
+		this.isInHub = false;
+		logger.info(`🎮 Started quest: ${quest.name}`);
+		this.notify({ type: "loading", isLoading: true });
+		this.isLoading = false;
+		this.notify({ type: "loading", isLoading: false });
+	}
+
+	/**
+	 * Handle chapter change event
+	 * @param {Object} payload
+	 * @param {any} payload.chapter
+	 * @param {number} payload.index
+	 */
+	_handleChapterChange({ chapter, index }) {
+		// Update URL to reflect chapter (without reloading)
+		if (this.currentQuest && this.router) {
+			this.router.navigate(
+				ROUTES.CHAPTER(this.currentQuest.id, chapter.id),
+				false, // Push to history instead of replace
+			);
+		}
+
+		// Ensure we have fresh data and setup the world
+		const chapterData = chapter; // Full data passed from QuestController.getCurrentChapterData()
+		if (chapterData?.startPos) {
+			this.gameState.setHeroPosition(
+				chapterData.startPos.x,
+				chapterData.startPos.y,
+			);
+
+			// Don't automatically set hotSwitchState based on serviceType
+			// Let it remain null unless explicitly set by zones or user interaction
+
+			// If chapter has hot switch, check zones (might override to null if outside zones)
+			if (chapterData.hasHotSwitch && this.zones) {
+				this.zones.checkZones(chapterData.startPos.x, chapterData.startPos.y);
+			}
+		}
+		this.gameState.resetChapterState();
+
+		// Restore state if available
+		const state = /** @type {any} */ (
+			this.progressService.getChapterState(chapter.id)
+		);
+		if (state.hasCollectedItem) {
+			this.gameState.setCollectedItem(true);
+			this.gameState.setRewardCollected(true);
+			logger.info(`🔄 Restored collected item state for chapter ${chapter.id}`);
+		}
+
+		logger.info(
+			`📖 Chapter ${index + 1}/${chapter.total}: ${chapterData?.name || chapter.id}`,
+		);
+
+		this.notify({
+			type: "chapter-change",
+			chapter,
+			index,
+		});
+	}
+
+	/**
+	 * Handle quest complete event
+	 * @param {Object} payload
+	 * @param {import('../services/quest-registry-service').Quest} payload.quest
+	 */
+	_handleQuestComplete({ quest }) {
+		logger.info(`✅ Completed quest: ${quest.name}`);
+		logger.info(`🏆 Earned badge: ${quest.reward?.badge}`);
+		this.gameState.setState({ isQuestCompleted: true });
+		this.notify({
+			type: "quest-complete",
+			quest,
+		});
+	}
+
+	/**
+	 * Handle return to hub event
+	 */
+	_handleReturnToHub() {
+		this.gameState.setState({ isQuestCompleted: false, isPaused: false });
+		this.returnToHub();
 	}
 
 	/**
@@ -165,6 +282,7 @@ export class GameSessionManager extends Observable {
 	 */
 	async startQuest(/** @type {string} */ questId) {
 		this.isLoading = true;
+		this.gameState.setState({ isQuestCompleted: false, isPaused: false });
 		this.notify({ type: "loading", isLoading: true });
 
 		const result = await this._startQuestUseCase.execute(questId);
@@ -188,6 +306,7 @@ export class GameSessionManager extends Observable {
 	 */
 	async continueQuest(/** @type {string} */ questId) {
 		this.isLoading = true;
+		this.gameState.setState({ isQuestCompleted: false, isPaused: false });
 		this.notify({ type: "loading", isLoading: true });
 
 		const result = await this._continueQuestUseCase.execute(questId);
@@ -305,93 +424,5 @@ export class GameSessionManager extends Observable {
 		} finally {
 			this._isReturningToHub = false;
 		}
-	}
-
-	/**
-	 * Get callbacks for QuestController
-	 * These will be passed to QuestController during initialization
-	 */
-	getQuestControllerCallbacks() {
-		return {
-			onQuestStart: (
-				/** @type {import('../services/quest-registry-service').Quest} */ quest,
-			) => {
-				this.isLoading = true;
-				this.currentQuest = quest;
-				this.isInHub = false;
-				logger.info(`🎮 Started quest: ${quest.name}`);
-				this.notify({ type: "loading", isLoading: true });
-				this.isLoading = false;
-				this.notify({ type: "loading", isLoading: false });
-			},
-			onChapterChange: (
-				/** @type {any} */ chapter,
-				/** @type {number} */ index,
-			) => {
-				// Update URL to reflect chapter (without reloading)
-				if (this.currentQuest && this.router) {
-					this.router.navigate(
-						ROUTES.CHAPTER(this.currentQuest.id, chapter.id),
-						false, // Push to history instead of replace
-					);
-				}
-
-				// Ensure we have fresh data and setup the world
-				const chapterData = chapter; // Full data passed from QuestController.getCurrentChapterData()
-				if (chapterData?.startPos) {
-					this.gameState.setHeroPosition(
-						chapterData.startPos.x,
-						chapterData.startPos.y,
-					);
-
-					// Don't automatically set hotSwitchState based on serviceType
-					// Let it remain null unless explicitly set by zones or user interaction
-
-					// If chapter has hot switch, check zones (might override to null if outside zones)
-					if (chapterData.hasHotSwitch && this.zones) {
-						this.zones.checkZones(
-							chapterData.startPos.x,
-							chapterData.startPos.y,
-						);
-					}
-				}
-				this.gameState.resetChapterState();
-
-				// Restore state if available
-				const state = /** @type {any} */ (
-					this.progressService.getChapterState(chapter.id)
-				);
-				if (state.hasCollectedItem) {
-					this.gameState.setCollectedItem(true);
-					this.gameState.setRewardCollected(true);
-					logger.info(
-						`🔄 Restored collected item state for chapter ${chapter.id}`,
-					);
-				}
-
-				logger.info(
-					`📖 Chapter ${index + 1}/${chapter.total}: ${chapterData?.name || chapter.id}`,
-				);
-
-				this.notify({
-					type: "chapter-change",
-					chapter,
-					index,
-				});
-			},
-			onQuestComplete: (
-				/** @type {import('../services/quest-registry-service').Quest} */ quest,
-			) => {
-				logger.info(`✅ Completed quest: ${quest.name}`);
-				logger.info(`🏆 Earned badge: ${quest.reward?.badge}`);
-				this.notify({
-					type: "quest-complete",
-					quest,
-				});
-			},
-			onReturnToHub: () => {
-				this.returnToHub();
-			},
-		};
 	}
 }

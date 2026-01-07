@@ -16,17 +16,6 @@ export function setupQuest(host, context) {
 	}
 	context.questController = new QuestController(host, {
 		progressService: context.progressService,
-		...context.sessionManager.getQuestControllerCallbacks(),
-		// Overlay specific UI reactions that manager hasn't fully migrated yet
-		onQuestStart: (quest) => {
-			context.sessionManager.getQuestControllerCallbacks().onQuestStart(quest);
-			context.gameState.setShowDialog(false);
-		},
-		onQuestComplete: (quest) => {
-			context.sessionManager
-				.getQuestControllerCallbacks()
-				.onQuestComplete(quest);
-			context.gameState.setQuestCompleted(true);
-		},
+		eventBus: /** @type {any} */ (context).eventBus,
 	});
 }

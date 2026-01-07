@@ -122,6 +122,10 @@ export class ProgressService {
 			this.progress.completedChapters = this.progress.completedChapters.filter(
 				(id) => !quest.chapterIds?.includes(id),
 			);
+			// Also clear chapter states (collected items, etc.)
+			quest.chapterIds.forEach((chapterId) => {
+				delete this.progress.chapterStates[chapterId];
+			});
 		} else {
 			// Fallback to prefix matching if quest data not found (legacy behavior)
 			this.progress.completedChapters = this.progress.completedChapters.filter(
@@ -136,7 +140,8 @@ export class ProgressService {
 		);
 
 		if (this.progress.currentQuest === questId) {
-			const quest = this.registry.getQuest(questId);
+			// quest lookup redundant here if we already looked it up above, but keeping structure similar
+			// actually we already have 'quest' variable from above
 			if (quest?.chapterIds && quest.chapterIds.length > 0) {
 				// We don't necessarily set currentChapter here, the controller does.
 				// But we clear the completed ones.

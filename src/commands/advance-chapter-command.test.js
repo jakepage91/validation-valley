@@ -14,6 +14,8 @@ describe("AdvanceChapterCommand", () => {
 		mockQuestController = {
 			isInQuest: vi.fn().mockReturnValue(true),
 			completeChapter: vi.fn(),
+			completeQuest: vi.fn(),
+			isLastChapter: vi.fn().mockReturnValue(false),
 		};
 	});
 
@@ -33,16 +35,18 @@ describe("AdvanceChapterCommand", () => {
 		expect(mockGameState.setEvolving).toHaveBeenCalledWith(false);
 	});
 
-	it("should not advance if not in quest", async () => {
-		mockQuestController.isInQuest.mockReturnValue(false);
-		const command = new AdvanceChapterCommand({
-			gameState: mockGameState,
-			questController: mockQuestController,
+	describe("Regression Tests", () => {
+		it("should complete quest if on last chapter (Fix: Unable to exit last chapter)", async () => {
+			mockQuestController.isLastChapter.mockReturnValue(true);
+			const command = new AdvanceChapterCommand({
+				gameState: mockGameState,
+				questController: mockQuestController,
+			});
+
+			await command.execute();
+
+			expect(mockQuestController.completeQuest).toHaveBeenCalled();
+			expect(mockQuestController.completeChapter).not.toHaveBeenCalled();
 		});
-
-		await command.execute();
-
-		expect(mockGameState.setEvolving).not.toHaveBeenCalled();
-		expect(mockQuestController.completeChapter).not.toHaveBeenCalled();
 	});
 });

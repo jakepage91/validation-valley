@@ -191,6 +191,26 @@ describe("ProgressService", () => {
 			expect(service.progress.currentQuest).toBeNull(); // Reset because it was active
 		});
 
+		it("should clear chapter states when resetting quest", () => {
+			const questId = "q1";
+			mockRegistry.getQuest.mockReturnValue({
+				id: questId,
+				chapterIds: ["c1", "c2"],
+			});
+			service.progress.currentQuest = "q1";
+			service.progress.chapterStates = {
+				c1: { hasCollectedItem: true },
+				c2: { visited: true },
+				c3: { other: true },
+			};
+
+			service.resetQuestProgress(questId);
+
+			expect(service.progress.chapterStates.c1).toBeUndefined();
+			expect(service.progress.chapterStates.c2).toBeUndefined();
+			expect(service.progress.chapterStates.c3).toBeDefined(); // Belonged to another quest
+		});
+
 		it("should safely handle resetting unknown quest", () => {
 			mockRegistry.getQuest.mockReturnValue(null);
 			const stateBefore = JSON.stringify(service.progress);

@@ -2,6 +2,8 @@
  * @typedef {import('lit').ReactiveController} ReactiveController
  */
 
+import { EVENTS } from "../constants/events.js";
+import { eventBus } from "../core/event-bus.js";
 import { logger } from "../services/logger-service.js";
 import { ProgressService } from "../services/progress-service.js";
 import * as DefaultRegistry from "../services/quest-registry-service.js";
@@ -14,11 +16,8 @@ import { EvaluateChapterTransitionUseCase } from "../use-cases/evaluate-chapter-
  * @typedef {Object} QuestControllerOptions
  * @property {import('../services/progress-service.js').ProgressService} [progressService] - Progress tracking service
  * @property {typeof DefaultRegistry} [registry] - Quest registry module
- * @property {(quest: Quest) => void} [onQuestStart] - Callback when quest starts
- * @property {(chapter: Chapter, index: number) => void} [onChapterChange] - Callback when chapter changes
- * @property {(quest: Quest) => void} [onQuestComplete] - Callback when quest completes
- * @property {(quest: Quest) => void} [onQuestComplete] - Callback when quest completes
- * @property {() => void} [onReturnToHub] - Callback when returning to hub
+ * @property {import('../commands/command-bus.js').CommandBus} [commandBus] - Command bus
+ * @property {import('../core/event-bus.js').EventBus} [eventBus] - Event bus
  * @property {EvaluateChapterTransitionUseCase} [evaluateChapterTransition] - Use case
  */
 
@@ -52,17 +51,14 @@ export class QuestController {
 		this.options = {
 			progressService: undefined,
 			registry: DefaultRegistry,
-			onQuestStart: (_quest) => {},
-			onChapterChange: (_chapter, _index) => {},
-			onQuestComplete: (_quest) => {},
-			onReturnToHub: () => {},
 			evaluateChapterTransition: new EvaluateChapterTransitionUseCase(),
 			...options,
 		};
 
-		/** @type {import('../services/progress-service.js').ProgressService} */
 		this.progressService =
 			this.options.progressService || new ProgressService();
+		/** @type {import('../core/event-bus.js').EventBus} */
+		this.eventBus = /** @type {any} */ (options).eventBus || eventBus;
 		/** @type {typeof DefaultRegistry} */
 		this.registry = this.options.registry || DefaultRegistry;
 		/** @type {Quest|null} */
@@ -133,10 +129,13 @@ export class QuestController {
 		const chapterId = quest.chapterIds?.[0] ?? null;
 		this.progressService.setCurrentQuest(questId, chapterId);
 
-		// Notify host
-		this.options.onQuestStart?.(quest);
+		// Emit global event
+		this.eventBus.emit(EVENTS.QUEST.STARTED, { quest });
 		if (this.currentChapter) {
-			this.options.onChapterChange?.(this.currentChapter, 0);
+			this.eventBus.emit(EVENTS.QUEST.CHAPTER_CHANGED, {
+				chapter: this.currentChapter,
+				index: 0,
+			});
 		}
 
 		this.host.requestUpdate();
@@ -173,13 +172,17 @@ export class QuestController {
 
 		this.currentChapter = this.getCurrentChapterData();
 
-		// Notify host
-		this.options.onQuestStart?.(quest); // Notify that quest has "started" (loaded)
+		// Emit global event
+		this.eventBus.emit(EVENTS.QUEST.STARTED, {
+			quest,
+			loaded: true,
+		});
+
 		if (this.currentChapter) {
-			this.options.onChapterChange?.(
-				this.currentChapter,
-				this.currentChapterIndex,
-			);
+			this.eventBus.emit(EVENTS.QUEST.CHAPTER_CHANGED, {
+				chapter: this.currentChapter,
+				index: this.currentChapterIndex,
+			});
 		}
 
 		this.host.requestUpdate();
@@ -206,13 +209,17 @@ export class QuestController {
 
 		// Ensure content is loaded (if currentQuest was set but content missing)
 
-		// Notify host
-		this.options.onQuestStart?.(this.currentQuest);
+		// Emit global event
+		this.eventBus.emit(EVENTS.QUEST.STARTED, {
+			quest: this.currentQuest,
+			resumed: true,
+		});
+
 		if (this.currentChapter) {
-			this.options.onChapterChange?.(
-				this.currentChapter,
-				this.currentChapterIndex,
-			);
+			this.eventBus.emit(EVENTS.QUEST.CHAPTER_CHANGED, {
+				chapter: this.currentChapter,
+				index: this.currentChapterIndex,
+			});
 		}
 
 		this.host.requestUpdate();
@@ -256,10 +263,17 @@ export class QuestController {
 		const chapterId = quest.chapterIds?.[nextChapterIndex] ?? null;
 		this.progressService.setCurrentQuest(questId, chapterId);
 
-		// Notify host
-		this.options.onQuestStart?.(quest);
+		// Emit global event
+		this.eventBus.emit(EVENTS.QUEST.STARTED, {
+			quest,
+			continued: true,
+		});
+
 		if (this.currentChapter) {
-			this.options.onChapterChange?.(this.currentChapter, nextChapterIndex);
+			this.eventBus.emit(EVENTS.QUEST.CHAPTER_CHANGED, {
+				chapter: this.currentChapter,
+				index: nextChapterIndex,
+			});
 		}
 
 		this.host.requestUpdate();
@@ -306,15 +320,18 @@ export class QuestController {
 		const targetChapterId = this.currentQuest.chapterIds?.[index] ?? null;
 		this.progressService.setCurrentQuest(this.currentQuest.id, targetChapterId);
 
-		// Notify host
+		// Emit global event
 		if (this.currentQuest) {
-			this.options.onQuestStart?.(this.currentQuest); // Notify that quest has "started" (loaded)
+			this.eventBus.emit(EVENTS.QUEST.STARTED, {
+				quest: this.currentQuest,
+				jumped: true,
+			});
 		}
 		if (this.currentChapter) {
-			this.options.onChapterChange?.(
-				this.currentChapter,
-				this.currentChapterIndex,
-			);
+			this.eventBus.emit(EVENTS.QUEST.CHAPTER_CHANGED, {
+				chapter: this.currentChapter,
+				index: this.currentChapterIndex,
+			});
 		}
 		this.host.requestUpdate();
 		return true;
@@ -429,11 +446,11 @@ export class QuestController {
 			chapterId || null,
 		);
 
-		// Notify host
-		this.options.onChapterChange?.(
-			/** @type {Chapter} */ (this.currentChapter),
-			this.currentChapterIndex,
-		);
+		// Emit global event
+		this.eventBus.emit(EVENTS.QUEST.CHAPTER_CHANGED, {
+			chapter: /** @type {Chapter} */ (this.currentChapter),
+			index: this.currentChapterIndex,
+		});
 		this.host.requestUpdate();
 	}
 
@@ -449,7 +466,8 @@ export class QuestController {
 		this.progressService.completeQuest(this.currentQuest.id);
 
 		// Notify host - the host is responsible for calling returnToHub after any animations/messages
-		this.options.onQuestComplete?.(this.currentQuest);
+		// Emit global event - consumers responsible for UI
+		this.eventBus.emit(EVENTS.QUEST.COMPLETED, { quest: this.currentQuest });
 	}
 
 	/**
@@ -467,7 +485,8 @@ export class QuestController {
 		);
 
 		// Notify host
-		this.options.onReturnToHub?.();
+		// Emit global event
+		this.eventBus.emit(EVENTS.QUEST.RETURN_TO_HUB);
 		this.host.requestUpdate();
 	}
 

@@ -12,4 +12,6 @@ export function setupSessionManager(context) {
 	if (context.router) {
 		context.sessionManager.router = context.router;
 	}
+	// Initialize event listeners
+	context.sessionManager.setupEventListeners();
 }
