@@ -190,7 +190,10 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 
 		// Initialize Router
 		this.router = new Router();
-		setupRoutes(this.router, this);
+		setupRoutes(
+			this.router,
+			/** @type {any} */ ({ sessionManager: this.sessionManager }),
+		);
 
 		// Initialize Controllers and Managers
 		this.#setupControllers();
