@@ -1,3 +1,4 @@
+import { AutoMoveCommand } from "../commands/auto-move-command.js";
 import { NextDialogSlideCommand } from "../commands/next-dialog-slide-command.js";
 import { PrevDialogSlideCommand } from "../commands/prev-dialog-slide-command.js";
 import { gameConfig } from "../config/game-configuration.js";
@@ -12,7 +13,6 @@ import { logger } from "../services/logger-service.js";
  * @property {(dx: number, dy: number) => void} handleMove
  * @property {() => void} handleInteract
  * @property {() => void} togglePause
- * @property {(x: number, y: number) => void} moveTo
  * @property {ShadowRoot} shadowRoot
  /**
  * @typedef {LitElement & VoiceHost} VoiceElement
@@ -59,7 +59,15 @@ export function setupVoice(host, context) {
 				// Use host.moveTo as it's the component's internal helper for interpolation
 				const interactionDistance =
 					(gameConfig?.gameplay?.interactionDistance || 10) - 2;
-				host.moveTo(npcPos.x - interactionDistance, npcPos.y);
+				if (context.commandBus && context.eventBus) {
+					context.commandBus.execute(
+						new AutoMoveCommand(
+							context.eventBus,
+							npcPos.x - interactionDistance,
+							npcPos.y,
+						),
+					);
+				}
 			},
 			onMoveToExit: () => {
 				const currentChapter = context.questController.currentChapter;
@@ -67,7 +75,11 @@ export function setupVoice(host, context) {
 				if (!exitZone) return;
 
 				logger.info(`🚪 Moving to exit at (${exitZone.x}, ${exitZone.y})`);
-				host.moveTo(exitZone.x, exitZone.y);
+				if (context.commandBus && context.eventBus) {
+					context.commandBus.execute(
+						new AutoMoveCommand(context.eventBus, exitZone.x, exitZone.y),
+					);
+				}
 			},
 			onDebugAction: (action, value) => {
 				// Debug actions are risky to decouple fully yet, but we can use sessionManager or commands

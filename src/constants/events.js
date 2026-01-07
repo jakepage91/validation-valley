@@ -24,6 +24,8 @@ export const EVENTS = {
 		DIALOG_PREV: "dialog-prev",
 		/** @type {'slide-changed'} */
 		SLIDE_CHANGED: "slide-changed",
+		/** @type {'hero-auto-move'} */
+		HERO_AUTO_MOVE: "hero-auto-move",
 	},
 	SYSTEM: {
 		/** @type {'data-loaded'} */

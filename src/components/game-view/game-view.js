@@ -83,6 +83,7 @@ export class GameView extends LitElement {
 		if (this.app?.eventBus) {
 			this.app.eventBus.on(EVENTS.UI.DIALOG_NEXT, this.handleDialogNext);
 			this.app.eventBus.on(EVENTS.UI.DIALOG_PREV, this.handleDialogPrev);
+			this.app.eventBus.on(EVENTS.UI.HERO_AUTO_MOVE, this.handleAutoMove);
 		}
 	}
 
@@ -91,6 +92,7 @@ export class GameView extends LitElement {
 		if (this.app?.eventBus) {
 			this.app.eventBus.off(EVENTS.UI.DIALOG_NEXT, this.handleDialogNext);
 			this.app.eventBus.off(EVENTS.UI.DIALOG_PREV, this.handleDialogPrev);
+			this.app.eventBus.off(EVENTS.UI.HERO_AUTO_MOVE, this.handleAutoMove);
 		}
 	}
 
@@ -407,6 +409,14 @@ export class GameView extends LitElement {
 		if (this.app?.gameState) {
 			this.app.gameState.setCurrentDialogText(e.detail.text);
 		}
+	};
+
+	/**
+	 * @param {{x: number, y: number}} data
+	 */
+	handleAutoMove = (data) => {
+		const { x, y } = data;
+		this.moveTo(x, y);
 	};
 
 	render() {
