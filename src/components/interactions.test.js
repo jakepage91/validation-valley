@@ -31,7 +31,7 @@ describe("LevelDialog Interactions", () => {
 			title: "Test Level",
 			description: "Intro",
 			problemDesc: "Problem",
-			codeSnippets: { start: "code" },
+			codeSnippets: { start: [{ title: "Snippet", code: "const x = 1;" }] },
 		};
 
 		element = new LevelDialog();
@@ -121,6 +121,7 @@ function getMockApp(overrides = {}) {
 			setCollectedItem: vi.fn(),
 			setPaused: vi.fn(),
 			setShowDialog: vi.fn(),
+			setCurrentDialogText: vi.fn(),
 			getState: vi.fn(() => ({
 				themeMode: "light",
 				hotSwitchState: "new",
@@ -135,7 +136,7 @@ function getMockApp(overrides = {}) {
 		},
 		gameService: {},
 		addController: vi.fn(),
-		eventBus: { on: vi.fn(), emit: vi.fn() },
+		eventBus: { on: vi.fn(), emit: vi.fn(), off: vi.fn() },
 		commandBus: { execute: vi.fn() },
 		sessionManager: {},
 		progressService: { updateChapterState: vi.fn() },
