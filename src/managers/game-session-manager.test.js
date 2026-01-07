@@ -1,4 +1,32 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("../constants/events.js", () => ({
+	EVENTS: {
+		QUEST: {
+			STARTED: "quest-started",
+			COMPLETED: "quest-completed",
+			CHAPTER_CHANGED: "chapter-changed",
+			RETURN_TO_HUB: "return-to-hub",
+		},
+		UI: {
+			THEME_CHANGED: "theme-changed",
+			CONTEXT_CHANGED: "context-changed",
+			DIALOG_OPENED: "dialog-opened",
+			INTERACTION_LOCKED: "interaction-locked",
+		},
+	},
+}));
+
+vi.mock("../services/user-services.js", () => ({
+	ServiceType: {
+		LEGACY: "Legacy API",
+		MOCK: "Mock Service",
+		NEW: "New V2 API",
+	},
+}));
+
+import { EVENTS } from "../constants/events.js";
+import { ServiceType } from "../services/user-services.js";
 import { GameSessionManager } from "./game-session-manager.js";
 
 describe("GameSessionManager", () => {
@@ -230,7 +258,43 @@ describe("GameSessionManager", () => {
 
 			lockedCallback({ message: "Locked!" });
 
+			lockedCallback({ message: "Locked!" });
+
 			expect(mockGameState.setLockedMessage).toHaveBeenCalledWith("Locked!");
+		});
+
+		it("should set hotSwitchState to 'mock' when entering a chapter with MOCK service type (Fix: Assay Chamber)", () => {
+			manager.setupEventListeners();
+			const chapterChangeCallback = mockEventBus.on.mock.calls.find(
+				(/** @type {any} */ call) => call[0] === EVENTS.QUEST.CHAPTER_CHANGED,
+			)[1];
+
+			const mockChapter = {
+				id: "assay-chamber",
+				serviceType: ServiceType.MOCK,
+				startPos: { x: 50, y: 50 },
+			};
+
+			chapterChangeCallback({ chapter: mockChapter, index: 2 });
+
+			expect(mockGameState.setHotSwitchState).toHaveBeenCalledWith("mock");
+		});
+
+		it("should clear hotSwitchState when entering a chapter with null service type (Fix: Liberated Battlefield)", () => {
+			manager.setupEventListeners();
+			const chapterChangeCallback = mockEventBus.on.mock.calls.find(
+				(/** @type {any} */ call) => call[0] === EVENTS.QUEST.CHAPTER_CHANGED,
+			)[1];
+
+			const mockChapter = {
+				id: "liberated-battlefield",
+				serviceType: null,
+				startPos: { x: 50, y: 50 },
+			};
+
+			chapterChangeCallback({ chapter: mockChapter, index: 3 });
+
+			expect(mockGameState.setHotSwitchState).toHaveBeenCalledWith(null);
 		});
 	});
 

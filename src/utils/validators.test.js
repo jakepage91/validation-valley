@@ -97,8 +97,8 @@ describe("HotSwitchStateValidator", () => {
 		expect(result.isValid).toBe(true);
 	});
 
-	it("should validate 'test' state", () => {
-		const result = HotSwitchStateValidator.validate("test");
+	it("should validate 'mock' state", () => {
+		const result = HotSwitchStateValidator.validate("mock");
 		expect(result.isValid).toBe(true);
 	});
 

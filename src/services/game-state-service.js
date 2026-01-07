@@ -18,7 +18,7 @@ import {
  */
 
 /**
- * @typedef {'legacy' | 'new' | 'test' | null} HotSwitchState
+ * @typedef {'legacy' | 'new' | 'mock' | null} HotSwitchState
  */
 
 /**

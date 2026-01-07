@@ -1,6 +1,7 @@
 import { EVENTS } from "../constants/events.js";
 import { ROUTES } from "../constants/routes.js";
 import { logger } from "../services/logger-service.js";
+import { ServiceType } from "../services/user-services.js";
 import { CompleteQuestUseCase } from "../use-cases/complete-quest.js";
 import { ContinueQuestUseCase } from "../use-cases/continue-quest.js";
 import { InteractWithNpcUseCase } from "../use-cases/interact-with-npc.js";
@@ -170,6 +171,23 @@ export class GameSessionManager extends Observable {
 			// If chapter has hot switch, check zones (might override to null if outside zones)
 			if (chapterData.hasHotSwitch && this.zones) {
 				this.zones.checkZones(chapterData.startPos.x, chapterData.startPos.y);
+			}
+
+			// Mapping ServiceType to HotSwitchState
+
+			switch (chapterData.serviceType) {
+				case ServiceType.LEGACY:
+					this.gameState.setHotSwitchState("legacy");
+					break;
+				case ServiceType.NEW:
+					this.gameState.setHotSwitchState("new");
+					break;
+				case ServiceType.MOCK:
+					this.gameState.setHotSwitchState("mock");
+					break;
+				default:
+					this.gameState.setHotSwitchState(null);
+					break;
 			}
 		}
 		this.gameState.resetChapterState();

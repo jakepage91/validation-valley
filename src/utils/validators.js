@@ -134,7 +134,7 @@ export const ThemeModeValidator = {
  * Hot Switch State Validator
  */
 export const HotSwitchStateValidator = {
-	VALID_STATES: ["legacy", "new", "test", null],
+	VALID_STATES: ["legacy", "new", "mock", null],
 
 	/**
 	 * Validate hot switch state
