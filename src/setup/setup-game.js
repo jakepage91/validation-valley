@@ -4,7 +4,7 @@ import { logger } from "../services/logger-service.js";
 
 /**
  * Setup GameController with GameService
- * @param {import('../legacys-end-app.js').LegacysEndApp} app
+ * @param {IGameContext} context
  */
 /**
  * @typedef {import('../core/game-context.js').IGameContext} IGameContext

@@ -20,7 +20,8 @@ In standard Lit applications, state is usually managed within components using r
 **Pattern**: Usage of `@lit/context` and a simple Services Object.
 
 **Reasoning**:
-To avoid "Prop Drilling" (passing data through many layers of components), we use Lit Context to provide global instances of Services and State to any component in the tree. Services are instantiated once in `src/setup/services.js` and exposed via `LegacysEndApp`.
+**Meaning**:
+To avoid "Prop Drilling" (passing data through many layers of components), we use Lit Context to provide a standardized `IGameContext` object. This interface contains all available Services, Controllers, and the Event Bus, allowing for clean dependency injection into any component or subsystem.
 
 ### 3. Service-Controller-Component Triad
 **Pattern**: Strict separation of concerns.
@@ -139,6 +140,36 @@ Managers are high-level coordinators that orchestrate logic between multiple ser
 
 ---
 
+## ⚡ Commands (`src/commands/`)
+
+The Command Pattern is used to encapsulate all state-changing game actions. This enables consistent execution, undo/redo capabilities (future), and safe macro recording.
+
+### `CommandBus`
+**Purpose**: Central executor for all commands. Handles logging and execution.
+
+### Key Commands
+*   `MoveHeroCommand`: Handles movement logic and side-effect triggers (checking zones/exits).
+*   `InteractCommand`: Triggers interactions with NPCs.
+*   `AdvanceChapterCommand`: Orchestrates the transition to the next chapter.
+*   `CheckZonesCommand`: Delegates zone checking to the `GameZoneController`.
+*   `PauseGameCommand`: Toggles the pause state.
+
+---
+
+## 🧠 Use Cases (`src/use-cases/`)
+
+Pure domain logic encapsulated in single-responsibility classes. These contain the "business rules" of the game, independent of the UI or specific controllers.
+
+### `EvaluateChapterTransitionUseCase`
+**Purpose**: Determines if the player can advance to the next chapter or if the quest is complete.
+**Used By**: `QuestController`.
+
+### `ProcessGameZoneInteractionUseCase`
+**Purpose**: Analyzes the hero's position to detect Theme Zones (visual changes) or Context Zones (API hot-swapping).
+**Used By**: `GameZoneController`.
+
+---
+
 ## 🎮 Controllers (`src/controllers/`)
 
 Controllers are specialized classes (often using Lit's Reactive Controller pattern) that handle specific functional aspects of the application.
@@ -146,6 +177,7 @@ Controllers are specialized classes (often using Lit's Reactive Controller patte
 ### `QuestController`
 **Purpose**: Manages the specific logic of Quest progression (chapters, prerequisites, completion).
 **Type**: Lit Reactive Controller.
+**Architecture**: Delegates transition logic to `EvaluateChapterTransitionUseCase`.
 **Inputs**:
 *   `QuestControllerOptions`: Callbacks for quest/chapter events and progress service.
 **Outputs**:
@@ -202,6 +234,7 @@ Controllers are specialized classes (often using Lit's Reactive Controller patte
 ### `GameZoneController`
 **Purpose**: Detects special zones within a level based on player position.
 **Type**: Lit Reactive Controller.
+**Architecture**: Delegates zone logic to `ProcessGameZoneInteractionUseCase`.
 **Inputs**:
 *   `checkZones(x, y)`: Player position (0-100%).
 *   `GameZoneOptions`: Callbacks for state changes.

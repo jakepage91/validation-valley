@@ -2,19 +2,54 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# Legacy's End - Developer Resume Game
 
-This contains everything you need to run your app locally.
+A comprehensive RPG-style resume application built with Lit Web Components. It demonstrates modern web development practices including Clean Architecture, reactive state management, and component-driven design.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1RkrqM2jjicKH6nwNzZmoBYBPt77WtC3B
+## 🏗️ Architecture
 
-## Run Locally
+The project has recently undergone major architectural refactoring (Phase 7) to align with **SOLID principles** and **Clean Architecture**.
 
-**Prerequisites:**  Node.js
+### Key Concepts
 
+*   **Dependency Injection**: Core services and controllers are injected via `IGameContext`, decoupling them from the main application shell.
+*   **Command Pattern**: Game actions (Move, Interact, Pause) are encapsulated as Commands in a Command Bus, enabling replayability and macro recording.
+*   **Use Cases**: Complex domain logic (e.g., `EvaluateChapterTransition`, `ProcessGameZoneInteraction`) is extracted into pure, testable Use Cases.
+*   **State Management**: A reactive `GameStateService` serves as the single source of truth, synchronizing UI across components.
+*   **Web Components**: UI is built with Lit (lightweight, standard-based web components).
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### Directory Structure
+
+*   `src/use-cases/`: Pure business logic (e.g., Chapter Transitions, Zone Interactions).
+*   `src/commands/`: Action objects for the Command Bus.
+*   `src/controllers/`: Reactive controllers linking UI to logic.
+*   `src/services/`: Core infrastructure (Progress, Storage, Audio).
+*   `src/components/`: Lit components (Game View, HUD, Dialogs).
+*   `src/setup/`: Dependency injection wiring and initialization.
+
+## 🚀 Run Locally
+
+**Prerequisites:** Node.js
+
+1.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+2.  **Run the app:**
+    ```bash
+    npm run dev
+    ```
+    Currently running at http://localhost:8000 (default)
+
+## 🧪 Testing
+
+The project maintains a high standard of code quality with **548+ tests** passing.
+
+*   **Run all tests:** `npm run test`
+*   **Lint code:** `npm run lint`
+
+## 🛠 Recent Refactors (Phases 6 & 7)
+
+*   **Decoupled Architecture**: `GameView` no longer depends on `LegacysEndApp`.
+*   **Logic Extraction**: Zone detection and quest progression logic moved to Use Cases.
+*   **Bug Fixes**: Resolved Hero Name display and Dialog interaction issues.

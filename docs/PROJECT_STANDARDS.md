@@ -42,6 +42,11 @@ This document outlines the mandatory architectural and coding standards for "Leg
     *   *Example*: `KeyboardController`.
     *   *Rule*: Do not put global state in a Controller.
 
+### Use Cases (Domain Logic)
+*   **Use Cases**: Pure business logic classes.
+    *   *Example*: `EvaluateChapterTransitionUseCase`.
+    *   *Rule*: Must be stateless and independent of UI/Lit. Delegate complex rules here.
+
 ### Dependency Injection
 *   Use **Lit Context** (`@lit/context`) to provide Services to Components.
 *   Do not import and instantiate Services inside components directly (except for the Root App).

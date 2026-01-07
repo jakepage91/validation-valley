@@ -342,10 +342,19 @@ The Aura of Sovereignty (C1)
 - [x] The Orb of Inquiry (Quest 3)
 - [ ] The Chromatic Loom (Quest 2)
 - [ ] State Management (Quest 4)
-- [ ] Gate of Identity (Quest 5)
+- [ ] The Gate of Identity (Quest 5)
 - [ ] The Mirror of Veracity (Quest 6)
 - [ ] The Crimson Altar (Quest 7)
 - [ ] The Scroll of Tongues (Quest 8)
+
+### ✅ Fase 6: Desacoplamiento (Completada)
+- Refactorización de `GameView` para eliminar dependencia de `app`.
+- Implementación de `IGameContext`.
+- Introducción del Command Bus.
+
+### ✅ Fase 7: Extracción de Lógica de Dominio (Completada)
+- Creación de Use Cases (`EvaluateChapterTransition`, `ProcessGameZoneInteraction`).
+- Limpieza de Controladores.
 
 
 ### 🎨 Fase 5: Polish
