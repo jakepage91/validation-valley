@@ -28,11 +28,12 @@ export const styles = [
 
 		.chapter-counter {
 			font-weight: var(--wa-font-weight-bold);
+			color: var(--wa-color-text-quiet);
 		}
 
 		.chapter-total {
 			font-size: var(--wa-font-size-s);
-			color: var(--wa-color-text-quiet);
+			color: var(--wa-color-text-normal);
 		}
   `,
 ];
