@@ -28,6 +28,7 @@ export class GameViewport extends LitElement {
 		isAnimatingReward: { state: true },
 		rewardAnimState: { state: true },
 		isRewardCollected: { type: Boolean },
+		isVoiceActive: { type: Boolean },
 	};
 
 	/**
@@ -62,6 +63,7 @@ export class GameViewport extends LitElement {
 		this.isAnimatingReward = false;
 		this.rewardAnimState = "";
 		this.isRewardCollected = false;
+		this.isVoiceActive = false;
 	}
 
 	/**
@@ -128,7 +130,7 @@ export class GameViewport extends LitElement {
 			></game-hud>
 
 			<div class="game-area" style="background: ${processBackgroundStyle(backgroundStyle)}">
-				<game-controls></game-controls>
+				<game-controls .isVoiceActive="${this.isVoiceActive}"></game-controls>
 				
 				<game-theme-zones
 					?active="${config?.hasThemeZones || false}"

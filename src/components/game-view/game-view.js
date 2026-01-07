@@ -107,7 +107,7 @@ export class GameView extends LitElement {
 		// Initialize remaining controllers using context
 		setupGameService(context);
 		setupGameController(this, context);
-		setupVoice(/** @type {any} */ (this), context);
+		setupVoice(/** @type {any} */(this), context);
 
 		// Initialize game mechanics controllers
 		setupZones(this, context);
@@ -386,39 +386,40 @@ export class GameView extends LitElement {
 			<pause-menu
 				.open="${ui?.isPaused}"
 				@resume="${() => {
-					this.app.gameState.setPaused(false);
-					this.dispatchEvent(new CustomEvent("resume"));
-				}}"
+				this.app.gameState.setPaused(false);
+				this.dispatchEvent(new CustomEvent("resume"));
+			}}"
 				@restart="${() => {
-					this.app.gameState.setPaused(false);
-					this.dispatchEvent(new CustomEvent("restart"));
-				}}"
+				this.app.gameState.setPaused(false);
+				this.dispatchEvent(new CustomEvent("restart"));
+			}}"
 				@quit="${() => {
-					this.app.gameState.setPaused(false);
-					this.dispatchEvent(new CustomEvent("quit"));
-				}}"
+				this.app.gameState.setPaused(false);
+				this.dispatchEvent(new CustomEvent("quit"));
+			}}"
 			></pause-menu>
 
-			${
-				ui?.isQuestCompleted
-					? html`
+			${ui?.isQuestCompleted
+				? html`
 					<victory-screen
 						.quest="${quest?.data /* Need to ensure quest data is available */}" 
 						.onReturn="${() => this.dispatchEvent(new CustomEvent("return-to-hub"))}"
 					></victory-screen>
 				`
-					: html`
-				<main>
+				: html`
+				<main
+					@toggle-voice="${() => this.voice?.toggle()}"
+				>
 					<game-viewport
 						.gameState="${this.gameState}"
+						.isVoiceActive="${this.voice?.enabled || false}"
 					></game-viewport>
 				</main>
 				`
 			}
 
-			${
-				ui?.showDialog && !ui?.isQuestCompleted
-					? html`
+			${ui?.showDialog && !ui?.isQuestCompleted
+				? html`
 				<level-dialog
 					.config="${dialogConfig}"
 					.level="${quest?.levelId}"
@@ -426,7 +427,7 @@ export class GameView extends LitElement {
 					@close="${() => this.dispatchEvent(new CustomEvent("close-dialog"))}"
 				></level-dialog>
 			`
-					: ""
+				: ""
 			}
 		`;
 	}

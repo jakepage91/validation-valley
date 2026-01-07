@@ -75,16 +75,16 @@ export class VoiceController {
 		/** @type {VoiceControllerOptions} */
 
 		this.options = {
-			onMove: (_dx, _dy) => {},
-			onInteract: () => {},
-			onPause: () => {},
-			onNextSlide: () => {},
-			onPrevSlide: () => {},
-			onMoveToNpc: () => {},
-			onMoveToExit: () => {},
+			onMove: (_dx, _dy) => { },
+			onInteract: () => { },
+			onPause: () => { },
+			onNextSlide: () => { },
+			onPrevSlide: () => { },
+			onMoveToNpc: () => { },
+			onMoveToExit: () => { },
 			onGetDialogText: () => "",
 			onGetContext: () => ({ isDialogOpen: false, isRewardCollected: false }),
-			onDebugAction: (_action, _value) => {},
+			onDebugAction: (_action, _value) => { },
 			isEnabled: () => false,
 			language: document.documentElement.lang.startsWith("es")
 				? "es-ES"
@@ -102,6 +102,9 @@ export class VoiceController {
 		this.npcSession = null;
 		/** @type {number} */
 		this.restartAttempts = 0;
+		/** @type {number} */
+		/** @type {boolean} */
+		this.enabled = false;
 		/** @type {number} */
 		this.lastStartTime = 0;
 
@@ -121,14 +124,17 @@ export class VoiceController {
 				if (this.recognition) {
 					logger.debug(`🎤 Voice control active (${this.recognition.lang}).`);
 				}
+				this.host.requestUpdate();
 			};
 
 			this.recognition.onresult = (event) => this.handleResult(event);
 
 			this.recognition.onend = () => {
 				this.isListening = false;
-				// Prevent auto-restart if we are speaking
-				if (this.options.isEnabled?.() && !this.isSpeaking) {
+				this.host.requestUpdate();
+
+				// Prevent auto-restart if disabled or we are speaking
+				if (this.enabled && this.options.isEnabled?.() && !this.isSpeaking) {
 					const duration = Date.now() - this.lastStartTime;
 					// If session lasted less than 2 seconds, assume instability
 					if (duration < 2000) {
@@ -158,6 +164,8 @@ export class VoiceController {
 				console.error("❌ Voice recognition error:", errorEvent.error);
 				if (errorEvent.error === "not-allowed") {
 					this.isListening = false;
+					this.enabled = false; // Disable if permission denied
+					this.host.requestUpdate();
 				}
 			};
 		}
@@ -231,12 +239,13 @@ export class VoiceController {
 			onEnd: () => {
 				this.isSpeaking = false;
 				setTimeout(() => {
-					if (this.options.isEnabled?.() && !this.isSpeaking) this.start();
+					if (this.enabled && this.options.isEnabled?.() && !this.isSpeaking)
+						this.start();
 				}, 500);
 			},
 			onError: () => {
 				this.isSpeaking = false;
-				if (this.options.isEnabled?.()) this.start();
+				if (this.enabled && this.options.isEnabled?.()) this.start();
 			},
 		});
 	}
@@ -268,9 +277,7 @@ export class VoiceController {
 	}
 
 	hostConnected() {
-		if (this.options.isEnabled?.()) {
-			this.start();
-		}
+		// Do not auto-start
 	}
 
 	hostDisconnected() {
@@ -289,6 +296,7 @@ export class VoiceController {
 		if (this.recognition && !this.isListening) {
 			try {
 				this.recognition.start();
+				this.enabled = true;
 			} catch (_e) {
 				// Already started
 			}
@@ -300,6 +308,17 @@ export class VoiceController {
 			this.recognition.stop();
 			this.isListening = false;
 		}
+	}
+
+	toggle() {
+		if (this.enabled) {
+			this.enabled = false;
+			this.stop();
+		} else {
+			this.enabled = true;
+			this.start();
+		}
+		this.host.requestUpdate();
 	}
 
 	/**
@@ -361,7 +380,7 @@ export class VoiceController {
 	 */
 	executeAction(action, value, lang = null) {
 		const language = lang || this.options.language || "en-US";
-		executeVoiceAction(action, value, /** @type {any} */ (this), language);
+		executeVoiceAction(action, value, /** @type {any} */(this), language);
 	}
 
 	celebrateChapter() {
@@ -370,15 +389,15 @@ export class VoiceController {
 
 		const phrases = isEn
 			? [
-					"Chapter complete! The Monolith weakens. Onward!",
-					"System update successful! Let's keep going!",
-					"Victory! We've reclaimed another sector of the Sovereignty!",
-				]
+				"Chapter complete! The Monolith weakens. Onward!",
+				"System update successful! Let's keep going!",
+				"Victory! We've reclaimed another sector of the Sovereignty!",
+			]
 			: [
-					"¡Capítulo completado! ¡El Monolito se debilita! ¡Sigamos!",
-					"¡Actualización del sistema completada! ¡Hacia el siguiente sector!",
-					"¡Victoria! ¡Hemos recuperado otro sector de la Soberanía!",
-				];
+				"¡Capítulo completado! ¡El Monolito se debilita! ¡Sigamos!",
+				"¡Actualización del sistema completada! ¡Hacia el siguiente sector!",
+				"¡Victoria! ¡Hemos recuperado otro sector de la Soberanía!",
+			];
 
 		const phrase = phrases[Math.floor(Math.random() * phrases.length)];
 		this.speak(phrase, lang);
