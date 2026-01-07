@@ -29,6 +29,8 @@ import {
  * @property {HotSwitchState} hotSwitchState - The active API context
  * @property {boolean} isPaused - Global pause state of the game
  * @property {boolean} isEvolving - Whether the level transition animation is playing
+ * @property {boolean} showDialog - Whether the level dialog is open
+ * @property {boolean} isQuestCompleted - Whether the quest completion dialog is shown
  * @property {string|null} lockedMessage - Message to display when trying to perform a locked action
  * @property {ThemeMode} themeMode - Current visual theme
  */
@@ -60,6 +62,8 @@ export class GameStateService extends Observable {
 			hotSwitchState: null,
 			isPaused: false,
 			isEvolving: false,
+			showDialog: false,
+			isQuestCompleted: false,
 			lockedMessage: null,
 			themeMode: "light",
 		};
@@ -142,11 +146,27 @@ export class GameStateService extends Observable {
 	}
 
 	/**
-	 * Set the "Evolving" state, which triggers level transition animations.
-	 * @param {boolean} evolving - True during transition
+	 * Set the evolve state.
+	 * @param {boolean} evolving
 	 */
 	setEvolving(evolving) {
 		this.setState({ isEvolving: evolving });
+	}
+
+	/**
+	 * Set show dialog state.
+	 * @param {boolean} show
+	 */
+	setShowDialog(show) {
+		this.setState({ showDialog: show });
+	}
+
+	/**
+	 * Set quest completed state.
+	 * @param {boolean} completed
+	 */
+	setQuestCompleted(completed) {
+		this.setState({ isQuestCompleted: completed });
 	}
 
 	/**

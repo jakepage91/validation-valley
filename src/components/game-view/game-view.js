@@ -1,13 +1,19 @@
 import "@awesome.me/webawesome/dist/components/button/button.js";
 import "@awesome.me/webawesome/dist/components/card/card.js";
 import { html, LitElement } from "lit";
+import { AdvanceChapterCommand } from "../../commands/advance-chapter-command.js";
+import { CheckExitZoneCommand } from "../../commands/check-exit-zone-command.js";
+import { CheckZonesCommand } from "../../commands/check-zones-command.js";
 import { InteractCommand } from "../../commands/interact-command.js";
 import { MoveHeroCommand } from "../../commands/move-hero-command.js";
 import { PauseGameCommand } from "../../commands/pause-game-command.js";
 import { KeyboardController } from "../../controllers/keyboard-controller.js";
 import { setupCharacterContexts } from "../../setup/setup-character-contexts.js";
 import { setupCollision } from "../../setup/setup-collision.js";
-import { setupGameController } from "../../setup/setup-game.js";
+import {
+	setupGameController,
+	setupGameService,
+} from "../../setup/setup-game.js";
 import { setupInteraction } from "../../setup/setup-interaction.js";
 import { setupService } from "../../setup/setup-service.js";
 import { setupVoice } from "../../setup/setup-voice.js";
@@ -93,21 +99,31 @@ export class GameView extends LitElement {
 	 * Setup game controllers
 	 */
 	#setupControllers() {
-		// Initialize keyboard controller (now internal to GameView)
-		this.#setupKeyboard();
+		const context = this.#getGameContext();
 
-		// Initialize remaining controllers (still using app)
-		setupGameController(this, this.app);
-		setupVoice(/** @type {any} */ (this), this.app);
+		// Initialize keyboard controller (now internal to GameView)
+		this.#setupKeyboard(context);
+
+		// Initialize remaining controllers using context
+		setupGameService(context);
+		setupGameController(this, context);
+		setupVoice(/** @type {any} */ (this), context);
 
 		// Initialize game mechanics controllers
-		setupZones(this, this.app);
-		setupCollision(this, this.app);
-		setupService(this.app); // ServiceController remains global-ish? Check setup-service.
+		setupZones(this, context);
+		setupCollision(this, context);
+		setupService(this, context);
 
 		// Initialize context and interaction
-		setupCharacterContexts(this.app); // CharacterContexts might be global?
-		setupInteraction(this, this.app);
+		setupCharacterContexts(this, context);
+		setupInteraction(this, context);
+
+		// Sync core controllers back to app for state mapping and provider updates
+		this.app.interaction = this.interaction;
+		this.app.collision = this.collision;
+		this.app.zones = this.zones;
+		this.app.serviceController = context.serviceController;
+		this.app.characterContexts = context.characterContexts;
 
 		// After controllers are initialized, assign providers and load data
 		if (this.app.serviceController) {
@@ -125,12 +141,32 @@ export class GameView extends LitElement {
 	}
 
 	/**
-	 * Setup keyboard controller (internal to GameView)
+	 * Create game context for dependency injection
+	 * @returns {import('../../core/game-context.js').IGameContext}
 	 */
-	#setupKeyboard() {
+	#getGameContext() {
+		return {
+			eventBus: this.app.eventBus,
+			gameState: this.app.gameState,
+			commandBus: this.app.commandBus,
+			sessionManager: this.app.sessionManager,
+			questController: this.app.questController,
+			progressService: this.app.progressService,
+			gameService: this.app.gameService,
+			router: this.app.router,
+			serviceController: this.app.serviceController,
+			characterContexts: this.app.characterContexts,
+		};
+	}
+
+	/**
+	 * Setup keyboard controller (internal to GameView)
+	 * @param {import('../../core/game-context.js').IGameContext} context
+	 */
+	#setupKeyboard(context) {
 		this.keyboard = new KeyboardController(this, {
 			speed: 2.5,
-			commandBus: this.app?.commandBus,
+			commandBus: context.commandBus,
 			onMove: (dx, dy) => this.handleMove(dx, dy),
 			onInteract: () => this.handleInteract(),
 			onPause: () => this.togglePause(),
@@ -155,21 +191,32 @@ export class GameView extends LitElement {
 					dx,
 					dy,
 					onMove: () => {
-						// Post-move logic (zones, collision)
 						const state = this.app.gameState.getState();
 						const { x, y } = state.heroPos;
-						const currentConfig = this.app.questController?.currentChapter;
+						const currentChapter = this.app.questController?.currentChapter;
 
-						if (this.app.questController?.hasExitZone() && this.collision) {
-							this.collision.checkExitZone(
-								x,
-								y,
-								currentConfig?.exitZone,
-								state.hasCollectedItem,
+						// Run side effects via commands
+						if (this.collision) {
+							this.app.commandBus.execute(
+								new CheckExitZoneCommand({
+									collisionController: this.collision,
+									x,
+									y,
+									exitZone: currentChapter?.exitZone,
+									hasCollectedItem: state.hasCollectedItem,
+								}),
 							);
 						}
 
-						this.zones?.checkZones(x, y);
+						if (this.zones) {
+							this.app.commandBus.execute(
+								new CheckZonesCommand({
+									gameZoneController: this.zones,
+									x,
+									y,
+								}),
+							);
+						}
 					},
 				}),
 			);
@@ -207,6 +254,8 @@ export class GameView extends LitElement {
 	 * Handle interaction (talk to NPC, etc.)
 	 */
 	handleInteract() {
+		if (this.gameState?.ui?.showDialog) return;
+
 		if (this.app?.commandBus && this.interaction) {
 			this.app.commandBus.execute(
 				new InteractCommand({
@@ -266,7 +315,15 @@ export class GameView extends LitElement {
 	 */
 	triggerLevelTransition() {
 		this.stopAutoMove();
-		if (this.app.questController?.isInQuest()) {
+		if (this.app?.commandBus) {
+			this.app.commandBus.execute(
+				new AdvanceChapterCommand({
+					gameState: this.app.gameState,
+					questController: this.app.questController,
+				}),
+			);
+		} else if (this.app.questController?.isInQuest()) {
+			// Fallback
 			this.app.gameState.setEvolving(true);
 			setTimeout(() => {
 				this.app.questController.completeChapter();
@@ -279,12 +336,12 @@ export class GameView extends LitElement {
 	 * Handle level completion
 	 */
 	handleLevelComplete() {
-		this.app.showDialog = false;
+		this.app?.gameState?.setShowDialog(false);
 
 		// If we were showing the next chapter dialog (after reward collection),
 		// advance to the next chapter
 		if (
-			this.app.isRewardCollected &&
+			this.app?.isRewardCollected &&
 			this.app.questController?.hasNextChapter()
 		) {
 			console.log("📖 Advancing to next chapter after preview");

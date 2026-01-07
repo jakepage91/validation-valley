@@ -7,39 +7,46 @@ import { logger } from "../services/logger-service.js";
  * @param {import('../legacys-end-app.js').LegacysEndApp} app
  */
 /**
- * Setup GameService
- * @param {import('../legacys-end-app.js').LegacysEndApp} app
+ * @typedef {import('../core/game-context.js').IGameContext} IGameContext
  */
-export function setupGameService(app) {
+
+/**
+ * Setup GameService
+ * @param {IGameContext} context
+ */
+export function setupGameService(context) {
 	// Create GameService with all game operation callbacks
-	app.gameService = new GameService({
+	const gameService = new GameService({
 		setLevel: (chapterId) => {
-			const data = app.getChapterData(chapterId);
-			if (data) {
-				// Use manager for consistent state and navigation
-				app.sessionManager.loadChapter(app.currentQuest?.id || "", chapterId);
-			}
+			// Leverage sessionManager.loadChapter which handles validation
+			context.sessionManager.loadChapter(
+				context.questController.currentQuest?.id || "",
+				chapterId,
+			);
 		},
 		giveItem: () => {
-			app.gameState.setCollectedItem(true);
+			context.gameState.setCollectedItem(true);
 			logger.info(`✨ Item collected!`);
 		},
 		teleport: (x, y) => {
-			app.gameState.setHeroPosition(x, y);
+			context.gameState.setHeroPosition(x, y);
 			logger.info(`📍 Teleported to(${x}, ${y})`);
 		},
-		getState: () => ({
-			level: app.chapterId,
-			hasCollectedItem: app.hasCollectedItem,
-			position: app.heroPos,
-			themeMode: app.themeMode,
-			hotSwitchState: app.hotSwitchState,
-			userData: app.userData,
-		}),
+		getState: () => {
+			const state = context.gameState.getState();
+			return {
+				level: context.questController.currentChapter?.id || "",
+				hasCollectedItem: state.hasCollectedItem,
+				position: state.heroPos,
+				themeMode: state.themeMode,
+				hotSwitchState: state.hotSwitchState,
+				userData: /** @type {any} */ (context).userData,
+			};
+		},
 		setTheme: (mode) => {
 			if (mode === "light" || mode === "dark") {
-				app.gameState.setThemeMode(mode);
-				app.applyTheme();
+				context.gameState.setThemeMode(mode);
+				context.eventBus.emit("theme-changed", { theme: mode });
 				logger.info(`🎨 Theme set to: ${mode} `);
 			} else {
 				logger.error(`❌ Invalid theme: ${mode}. Use 'light' or 'dark'`);
@@ -47,50 +54,56 @@ export function setupGameService(app) {
 		},
 		// Quest commands
 		startQuest: (questId) => {
-			app.sessionManager.startQuest(questId);
+			context.sessionManager.startQuest(questId);
 		},
 		completeQuest: () => {
-			app.sessionManager.completeQuest();
+			context.sessionManager.completeQuest();
 		},
 		completeChapter: () => {
-			app.sessionManager.completeChapter();
+			context.sessionManager.completeChapter();
 		},
 		returnToHub: () => {
-			app.sessionManager.returnToHub();
+			context.sessionManager.returnToHub();
 		},
 		listQuests: () => {
-			const available = app.questController.getAvailableQuests();
+			const available = context.questController.getAvailableQuests();
 			logger.info("📋 Available Quests:");
 			available.forEach((q) => {
-				const progress = app.questController.getQuestProgress(q.id);
-				const completed = app.questController.isQuestCompleted(q.id);
+				const progress = context.questController.getQuestProgress(q.id);
+				const completed = context.questController.isQuestCompleted(q.id);
 				logger.info(`  ${completed ? "✅" : "⏳"} ${q.name} (${progress}%)`);
 			});
 			return available;
 		},
 		getProgress: () => {
-			return app.progressService.getProgress();
+			return context.progressService.getProgress();
 		},
 		resetProgress: () => {
-			app.progressService.resetProgress();
+			context.progressService.resetProgress();
 			logger.info("🔄 Progress reset");
 		},
 	});
+
+	context.gameService = gameService;
 }
 
 /**
- * @typedef {import('lit').LitElement & { gameService: import('../services/game-service.js').GameService }} GameApp
+ * @typedef {import('lit').LitElement} GameHost
  */
+
 /**
  * Setup GameController
- * @param {import('lit').LitElement} host
- * @param {GameApp} app
+ * @param {GameHost} host
+ * @param {IGameContext} context
  */
-export function setupGameController(host, app) {
+export function setupGameController(host, context) {
 	// Create GameController with GameService
-	/** @type {import('lit').LitElement & { gameController: GameController }} */ (
+	/** @type {GameHost & { gameController: GameController }} */ (
 		host
 	).gameController = new GameController(host, {
-		gameService: app.gameService,
+		gameService:
+			/** @type {import('../services/game-service.js').GameService} */ (
+				context.gameService
+			),
 	});
 }

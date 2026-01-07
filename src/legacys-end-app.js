@@ -19,6 +19,7 @@ import {
 import { ReturnToHubCommand } from "./commands/return-to-hub-command.js";
 import { StartQuestCommand } from "./commands/start-quest-command.js";
 import { ToggleHotSwitchCommand } from "./commands/toggle-hot-switch-command.js";
+import { eventBus as centralEventBus } from "./core/event-bus.js";
 import { GameStateService } from "./services/game-state-service.js";
 import { logger } from "./services/logger-service.js";
 import { ProgressService } from "./services/progress-service.js";
@@ -108,6 +109,8 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 	sessionManager = /** @type {any} */ (null);
 	/** @type {import("./commands/command-bus.js").CommandBus} */
 	commandBus = /** @type {any} */ (null);
+	/** @type {import('./core/event-bus.js').EventBus} */
+	eventBus = centralEventBus;
 
 	// Router
 	/** @type {import("./utils/router.js").Router} */
@@ -224,6 +227,14 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 			}
 		});
 
+		// Listen for data loaded event (decoupled architecture)
+		this.eventBus.on("data-loaded", (/** @type {any} */ data) => {
+			this.userData = data;
+			this.userLoading = false;
+			this.userError = null;
+			this.requestUpdate();
+		});
+
 		// Initial sync
 		this.syncSessionState();
 
@@ -287,17 +298,41 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 	}
 
 	#setupControllers() {
+		const context = this.#getGameContext();
+
 		// Initialize quest controller (app-level navigation)
-		setupQuest(this);
+		setupQuest(this, context);
+		this.questController = /** @type {any} */ (context.questController);
 
 		// Integrate with session manager (app-level state)
-		setupSessionManager(this);
+		setupSessionManager(context);
 
 		// Initialize Game Service (Shared)
-		setupGameService(this);
+		setupGameService(context);
+		this.gameService = /** @type {any} */ (context.gameService);
 
-		// Note: Game-specific controllers (keyboard, game, voice, zones, collision,
-		// service, character contexts, interaction) are now initialized in GameView
+		// Sync manager back if needed
+		this.sessionManager = context.sessionManager;
+	}
+
+	/**
+	 * Create game context for dependency injection
+	 * @returns {import('./core/game-context.js').IGameContext}
+	 */
+	#getGameContext() {
+		return {
+			eventBus: this.eventBus,
+			gameState: this.gameState,
+			commandBus: this.commandBus,
+			sessionManager: this.sessionManager,
+			questController: this.questController,
+			progressService: this.progressService,
+			gameService: this.gameService,
+			router: this.router,
+			serviceController: this.serviceController,
+			characterContexts: this.characterContexts,
+			services: this.services,
+		};
 	}
 
 	applyTheme() {
@@ -332,6 +367,8 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 		this.isEvolving = state.isEvolving;
 		this.lockedMessage = state.lockedMessage;
 		this.themeMode = state.themeMode;
+		this.showDialog = state.showDialog;
+		this.showQuestCompleteDialog = state.isQuestCompleted;
 	}
 
 	syncSessionState() {
@@ -385,7 +422,7 @@ export class LegacysEndApp extends ContextMixin(LitElement) {
 	 * Handle dialog close
 	 */
 	handleCloseDialog() {
-		this.showDialog = false;
+		this.gameState.setShowDialog(false);
 		this.hasSeenIntro = true;
 	}
 

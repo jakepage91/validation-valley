@@ -1,12 +1,15 @@
 /**
- * Setup SessionManager integration
- * @param {import('../legacys-end-app.js').LegacysEndApp} app
+ * @typedef {import('../core/game-context.js').IGameContext} IGameContext
  */
-export function setupSessionManager(app) {
-	// Initialize GameSessionManager with quest navigation dependencies
-	app.sessionManager.questController = app.questController;
-	app.sessionManager.router = app.router;
 
-	// Note: Controller references (keyboard, interaction, collision, zones, voice)
-	// are now managed in GameView and will be set when GameView initializes
+/**
+ * Setup SessionManager integration
+ * @param {IGameContext} context
+ */
+export function setupSessionManager(context) {
+	// Initialize GameSessionManager with quest navigation dependencies
+	context.sessionManager.questController = context.questController;
+	if (context.router) {
+		context.sessionManager.router = context.router;
+	}
 }

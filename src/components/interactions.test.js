@@ -111,6 +111,44 @@ describe("LevelDialog Interactions", () => {
 	});
 });
 
+/**
+ * Creates a complete mock app that satisfies the IGameContext interface.
+ */
+function getMockApp(overrides = {}) {
+	return {
+		showDialog: true,
+		gameState: {
+			setCollectedItem: vi.fn(),
+			setPaused: vi.fn(),
+			setShowDialog: vi.fn(),
+			getState: vi.fn(() => ({
+				themeMode: "light",
+				hotSwitchState: "new",
+				hasCollectedItem: false,
+				heroPos: { x: 0, y: 0 },
+			})),
+		},
+		isRewardCollected: false,
+		questController: {
+			currentChapter: { id: "1" },
+			hasNextChapter: vi.fn(() => false),
+		},
+		gameService: {},
+		addController: vi.fn(),
+		eventBus: { on: vi.fn(), emit: vi.fn() },
+		commandBus: { execute: vi.fn() },
+		sessionManager: {},
+		progressService: { updateChapterState: vi.fn() },
+		serviceController: {
+			getActiveService: vi.fn(),
+			loadUserData: vi.fn(),
+			options: {},
+		},
+		characterContexts: { options: {} },
+		...overrides,
+	};
+}
+
 describe("GameView Integration", () => {
 	let element;
 	/** @type {any} */
@@ -152,15 +190,9 @@ describe("GameView Integration", () => {
 				isCloseToTarget: false,
 			},
 		});
+
 		// Mock app for handleLevelComplete
-		element.app = {
-			showDialog: true,
-			gameState: { setCollectedItem: vi.fn() },
-			isRewardCollected: false,
-			questController: { hasNextChapter: vi.fn(() => false) },
-			gameService: {}, // Add empty gameService to prevent setup failure
-			addController: vi.fn(),
-		};
+		element.app = getMockApp();
 		container.appendChild(element);
 		await element.updateComplete;
 
@@ -172,8 +204,8 @@ describe("GameView Integration", () => {
 
 		dialog?.dispatchEvent(new CustomEvent("complete"));
 
-		// handleLevelComplete sets showDialog to false and calls setCollectedItem
-		expect(element.app.showDialog).toBe(false);
+		// handleLevelComplete calls setShowDialog(false) and calls setCollectedItem
+		expect(element.app.gameState.setShowDialog).toHaveBeenCalledWith(false);
 		expect(element.app.gameState.setCollectedItem).toHaveBeenCalledWith(true);
 	});
 
@@ -201,6 +233,8 @@ describe("GameView Integration", () => {
 				isCloseToTarget: false,
 			},
 		});
+		// Mock app for close-dialog
+		element.app = getMockApp();
 		container.appendChild(element);
 		await element.updateComplete;
 
@@ -213,5 +247,27 @@ describe("GameView Integration", () => {
 		dialog?.dispatchEvent(new CustomEvent("close"));
 
 		expect(closeSpy).toHaveBeenCalled();
+	});
+
+	it("should ignore global interaction when dialog is open", async () => {
+		element = new GameView();
+		element.gameState = /** @type {any} */ ({
+			ui: { showDialog: true },
+		});
+		element.app = getMockApp();
+		container.appendChild(element);
+		await element.updateComplete;
+
+		// Override interaction after setupControllers has run
+		element.interaction = /** @type {any} */ ({ handleInteract: vi.fn() });
+
+		element.handleInteract();
+
+		expect(element.app.commandBus.execute).not.toHaveBeenCalled();
+		expect(
+			/** @type {import('vitest').Mock} */ (
+				/** @type {any} */ (element.interaction).handleInteract
+			),
+		).not.toHaveBeenCalled();
 	});
 });

@@ -1,21 +1,27 @@
 import { ServiceController } from "../controllers/service-controller.js";
 
 /**
- * Setup ServiceController
- * @param {import('../legacys-end-app.js').LegacysEndApp} app
+ * @typedef {import('lit').LitElement} ServiceHost
+ * @typedef {import('../core/game-context.js').IGameContext} IGameContext
  */
-export function setupService(app) {
-	app.serviceController = new ServiceController(app, {
-		services:
-			/** @type {Record<string, import('../services/user-services.js').IUserService>} */ (
-				app.services
-			),
-		getActiveService: () => app.getActiveService(),
+
+/**
+ * Setup ServiceController
+ * @param {ServiceHost} host
+ * @param {IGameContext} context
+ */
+export function setupService(host, context) {
+	/** @type {ServiceHost & { serviceController: ServiceController }} */ (
+		host
+	).serviceController = new ServiceController(host, {
+		services: context.services || {},
+		getActiveService: () => context.serviceController?.getActiveService(),
 		onDataLoaded: (userData) => {
-			app.userData = userData;
+			context.eventBus.emit("data-loaded", userData);
 		},
 		onError: (error) => {
-			app.userError = error;
+			context.eventBus.emit("error", { error });
 		},
 	});
+	context.serviceController = /** @type {any} */ (host).serviceController;
 }

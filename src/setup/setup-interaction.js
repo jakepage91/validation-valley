@@ -1,57 +1,52 @@
 import { InteractionController } from "../controllers/interaction-controller.js";
 
 /**
- * @typedef {Object} InteractionAppHost
- * @property {boolean} showDialog
- * @property {string} chapterId
- * @property {boolean} hasCollectedItem
- * @property {import('../services/game-state-service.js').HotSwitchState} hotSwitchState
- * @property {{x: number, y: number}} heroPos
- * @property {import('../services/game-state-service.js').GameStateService} gameState
- * @property {import('../controllers/quest-controller.js').QuestController} questController
- * @property {import('../services/progress-service.js').ProgressService} progressService
- * @property {import('../managers/game-session-manager.js').GameSessionManager} sessionManager
- * @property {(id: string) => any} getChapterData
- * @typedef {import('lit').LitElement & InteractionAppHost} InteractionApp
+ * @typedef {import('lit').LitElement} InteractionHost
+ * @typedef {import('../core/game-context.js').IGameContext} IGameContext
  */
 
 /**
  * Setup InteractionController
- * @param {import('lit').LitElement} host
- * @param {InteractionApp} app
+ * @param {InteractionHost} host
+ * @param {IGameContext} context
  */
-export function setupInteraction(host, app) {
-	/** @type {import('lit').LitElement & { interaction: InteractionController }} */ (
+export function setupInteraction(host, context) {
+	/** @type {InteractionHost & { interaction: InteractionController }} */ (
 		host
 	).interaction = new InteractionController(host, {
 		onShowDialog: () => {
-			app.showDialog = true;
+			// Trigger dialog via event bus or global state
+			context.gameState.setShowDialog(true);
 		},
 		onVictory: () => {
-			app.gameState.setCollectedItem(true);
-			/** @typedef {{id: string}} QuestChapter */
-			const currentChapter = /** @type {QuestChapter} */ (
-				app.questController.currentChapter
-			);
+			context.gameState.setCollectedItem(true);
+			const currentChapter = context.questController.currentChapter;
 			if (currentChapter) {
-				app.progressService.updateChapterState(currentChapter.id, {
+				context.progressService.updateChapterState(currentChapter.id, {
 					collectedItem: true,
 				});
 			}
 		},
 		onLocked: (message) => {
-			app.gameState.setLockedMessage(message);
+			context.gameState.setLockedMessage(message);
 		},
-		getState: () => ({
-			level: app.chapterId,
-			chapterData: app.getChapterData(app.chapterId),
-			heroPos: app.heroPos,
-			hotSwitchState: app.hotSwitchState,
-			hasCollectedItem: app.hasCollectedItem,
-		}),
-		getNpcPosition: () => app.getChapterData(app.chapterId)?.npc?.position,
-		...(app.sessionManager?._interactWithNpcUseCase
-			? { interactWithNpcUseCase: app.sessionManager._interactWithNpcUseCase }
+		getState: () => {
+			const state = context.gameState.getState();
+			const currentChapter = context.questController.currentChapter;
+			return {
+				level: currentChapter?.id || "",
+				chapterData: /** @type {any} */ (currentChapter),
+				heroPos: state.heroPos,
+				hotSwitchState: state.hotSwitchState || "legacy",
+				hasCollectedItem: state.hasCollectedItem,
+			};
+		},
+		getNpcPosition: () => context.questController.currentChapter?.npc?.position,
+		...(context.sessionManager?._interactWithNpcUseCase
+			? {
+					interactWithNpcUseCase:
+						context.sessionManager._interactWithNpcUseCase,
+				}
 			: {}),
 	});
 }

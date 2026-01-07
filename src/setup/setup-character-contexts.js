@@ -1,27 +1,37 @@
 import { CharacterContextController } from "../controllers/character-context-controller.js";
 
 /**
- * Setup CharacterContextController
- * @param {import('../legacys-end-app.js').LegacysEndApp} app
+ * @typedef {import('../core/game-context.js').IGameContext} IGameContext
  */
-export function setupCharacterContexts(app) {
-	app.characterContexts = new CharacterContextController(app, {
-		suitProvider: undefined, // Will be set in connectedCallback
-		gearProvider: undefined,
-		powerProvider: undefined,
-		masteryProvider: undefined,
-		getState: () => ({
-			level: app.chapterId || "", // Ensure string
-			chapterData: app.getChapterData(app.chapterId || ""),
-			themeMode: app.themeMode,
-			hotSwitchState: /** @type {string|undefined} */ (
-				app.hotSwitchState || undefined
-			),
-			hasCollectedItem: app.hasCollectedItem,
-			userData: /** @type {import("../services/user-services.js").UserData} */ (
-				app.userData
-			),
-			activeService: app.getActiveService(),
-		}),
-	});
+
+/**
+ * Setup CharacterContextController
+ * @param {import('lit').LitElement} host
+ * @param {IGameContext} context
+ */
+export function setupCharacterContexts(host, context) {
+	context.characterContexts = new CharacterContextController(
+		/** @type {import('lit').ReactiveControllerHost} */ (host),
+		{
+			suitProvider: undefined, // Will be set in connectedCallback
+			gearProvider: undefined,
+			powerProvider: undefined,
+			masteryProvider: undefined,
+			getState: () => {
+				const state = context.gameState.getState();
+				const currentChapter = context.questController.currentChapter;
+				return {
+					level: currentChapter?.id || "",
+					chapterData: /** @type {any} */ (currentChapter),
+					themeMode: state.themeMode,
+					hotSwitchState: /** @type {string|undefined} */ (
+						state.hotSwitchState || undefined
+					),
+					hasCollectedItem: state.hasCollectedItem,
+					userData: /** @type {any} */ (context).userData, // Still some loose ends
+					activeService: context.serviceController?.getActiveService(),
+				};
+			},
+		},
+	);
 }
