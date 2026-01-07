@@ -5,10 +5,6 @@ import { VoiceController } from "../controllers/voice-controller.js";
 import { logger } from "../services/logger-service.js";
 
 /**
- * @typedef {import('../components/level-dialog.js').LevelDialog} LevelDialog
- */
-
-/**
  * @typedef {import('lit').LitElement} LitElement
  * @typedef {Object} VoiceHost
  * @property {import('../controllers/game-controller.js').GameController} gameController
@@ -49,10 +45,7 @@ export function setupVoice(host, context) {
 				}
 			},
 			onGetDialogText: () => {
-				const dialog = /** @type {LevelDialog} */ (
-					host.shadowRoot.querySelector("level-dialog")
-				);
-				return dialog ? dialog.getCurrentSlideText() : "";
+				return context.gameState.getState().currentDialogText || "";
 			},
 			onGetContext: () => ({
 				isDialogOpen: context.gameState.getState().showDialog,

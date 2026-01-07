@@ -4,6 +4,7 @@ import "@awesome.me/webawesome/dist/components/icon/icon.js";
 import { html, LitElement } from "lit";
 import { map } from "lit/directives/map.js";
 import "syntax-highlight-element";
+import { EVENTS } from "../constants/events.js";
 import { processImagePath } from "../utils/process-assets.js";
 import { styles } from "./level-dialog.css.js";
 
@@ -53,6 +54,19 @@ export class LevelDialog extends LitElement {
 	 * @param {Map<string, any>} changedProperties - The properties that have changed
 	 */
 	updated(changedProperties) {
+		if (
+			changedProperties.has("slideIndex") ||
+			changedProperties.has("config")
+		) {
+			this.dispatchEvent(
+				new CustomEvent(EVENTS.UI.SLIDE_CHANGED, {
+					detail: { text: this.getCurrentSlideText() },
+					bubbles: true,
+					composed: true,
+				}),
+			);
+		}
+
 		if (changedProperties.has("slideIndex")) {
 			const slides = this.getSlides();
 			if (slides[this.slideIndex] === "confirmation") {

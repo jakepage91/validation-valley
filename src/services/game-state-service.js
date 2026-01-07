@@ -33,6 +33,7 @@ import {
  * @property {boolean} isQuestCompleted - Whether the quest completion dialog is shown
  * @property {string|null} lockedMessage - Message to display when trying to perform a locked action
  * @property {ThemeMode} themeMode - Current visual theme
+ * @property {string} currentDialogText - The text of the currently active dialog slide
  */
 
 /**
@@ -66,6 +67,7 @@ export class GameStateService extends Observable {
 			isQuestCompleted: false,
 			lockedMessage: null,
 			themeMode: "light",
+			currentDialogText: "",
 		};
 	}
 
@@ -202,6 +204,15 @@ export class GameStateService extends Observable {
 			isRewardCollected: false,
 			lockedMessage: null,
 			isEvolving: false,
+			currentDialogText: "",
 		});
+	}
+
+	/**
+	 * Set the text of the currently active dialog slide.
+	 * @param {string} text - The dialog text
+	 */
+	setCurrentDialogText(text) {
+		this.setState({ currentDialogText: text || "" });
 	}
 }

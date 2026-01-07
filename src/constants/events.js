@@ -22,6 +22,8 @@ export const EVENTS = {
 		DIALOG_NEXT: "dialog-next",
 		/** @type {'dialog-prev'} */
 		DIALOG_PREV: "dialog-prev",
+		/** @type {'slide-changed'} */
+		SLIDE_CHANGED: "slide-changed",
 	},
 	SYSTEM: {
 		/** @type {'data-loaded'} */

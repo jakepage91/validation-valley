@@ -400,6 +400,15 @@ export class GameView extends LitElement {
 		if (dialog) dialog.prevSlide();
 	};
 
+	/**
+	 * @param {CustomEvent} e
+	 */
+	handleSlideChanged = (e) => {
+		if (this.app?.gameState) {
+			this.app.gameState.setCurrentDialogText(e.detail.text);
+		}
+	};
+
 	render() {
 		const { config, ui, quest } = this.gameState || {};
 
@@ -456,6 +465,7 @@ export class GameView extends LitElement {
 					.level="${quest?.levelId}"
 					@complete="${() => this.handleLevelComplete()}"
 					@close="${() => this.dispatchEvent(new CustomEvent("close-dialog"))}"
+					@slide-changed="${this.handleSlideChanged}"
 				></level-dialog>
 			`
 					: ""
