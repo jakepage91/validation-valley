@@ -150,5 +150,13 @@ describe("GameView Component", () => {
 			expect(el.keyboard).toBeDefined();
 			expect(el.keyboard?.options.speed).toBe(2.5);
 		});
+
+		it("should have interaction controller available in keyboard context", () => {
+			// Regression test for context initialization order
+			// KeyboardController needs interaction controller to execute InteractCommand
+			expect(el.keyboard?.context.interaction).toBeDefined();
+			// Since we mock interaction later, at least ensure the property exists on context
+			// In this test setup, `el.app` is the source of truth
+		});
 	});
 });
