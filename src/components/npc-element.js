@@ -1,5 +1,9 @@
 import { html, LitElement } from "lit";
-import { processImagePath } from "../utils/process-assets.js";
+import { ifDefined } from "lit/directives/if-defined.js";
+import {
+	processImagePath,
+	processImageSrcset,
+} from "../utils/process-assets.js";
 import "@awesome.me/webawesome/dist/components/icon/icon.js";
 import "@awesome.me/webawesome/dist/components/tag/tag.js";
 import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
@@ -63,7 +67,14 @@ export class NpcElement extends LitElement {
 		${
 			this.image
 				? html`
-            <img src="${processImagePath(this.image)}" id="npc-tooltip" class="npc-img" alt="${this.name}" />
+            <img 
+							src="${ifDefined(processImagePath(this.image))}" 
+							srcset="${ifDefined(processImageSrcset(this.image))}"
+							sizes="15vw"
+							id="npc-tooltip" 
+							class="npc-img" 
+							alt="${this.name}" 
+						/>
             `
 				: html`
             <wa-icon name="${this.icon}" id="npc-tooltip"  style="font-size: var(--wa-font-size-2xl); color: ${this.isClose ? "var(--wa-color-primary-500)" : "var(--wa-color-neutral-200)"}; transition: color 0.3s;"></wa-icon>

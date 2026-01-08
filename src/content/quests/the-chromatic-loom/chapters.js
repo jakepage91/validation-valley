@@ -60,8 +60,7 @@ export const THE_CHROMATIC_LOOM_CHAPTERS = {
 			height: 20,
 			label: "Hall of Definition",
 		},
-		backgroundStyle:
-			"url('/assets/fortress-of-design/background.png') center / cover no-repeat",
+		backgroundStyle: "url('/assets/fortress-of-design/background.png')",
 		npc: {
 			name: "Style Guardian",
 			icon: "shield",

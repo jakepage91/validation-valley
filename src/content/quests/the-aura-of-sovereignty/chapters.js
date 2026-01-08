@@ -21,7 +21,7 @@ export const THE_AURA_OF_SOVEREIGNTY_CHAPTERS = {
 		problemTitle: "Before: Style Bleeding",
 		problemDesc: "Global styles destroy component appearance.",
 		solutionTitle: "After: Shadow Encapsulation",
-		backgroundStyle: `url('/assets/swamp-of-scope/background.png') center / cover no-repeat`,
+		backgroundStyle: `url('/assets/swamp-of-scope/background.png')`,
 		npc: {
 			name: "The Rainwalker",
 			image: "/assets/swamp-of-scope/npc.png",
@@ -179,7 +179,7 @@ customElements.define('product-item', ProductItem);`,
 			height: 20,
 			label: "The Shadow Threshold",
 		},
-		backgroundStyle: `url('/assets/hall-of-fragments/background.png') center / cover no-repeat`,
+		backgroundStyle: `url('/assets/hall-of-fragments/background.png')`,
 		npc: {
 			name: "Fragments' Oracle",
 			icon: "user",

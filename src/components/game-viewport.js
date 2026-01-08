@@ -2,9 +2,14 @@ import "@awesome.me/webawesome/dist/components/card/card.js";
 import "@awesome.me/webawesome/dist/components/details/details.js";
 import { html, LitElement } from "lit";
 import { classMap } from "lit/directives/class-map.js";
+import { ifDefined } from "lit/directives/if-defined.js";
 import { gameConfig } from "../config/game-configuration.js"; // New import
 import "../constants/game-config.js"; // Legacy - being phased out
-import { processBackgroundStyle } from "../utils/process-assets.js";
+import {
+	extractAssetPath,
+	processImagePath,
+	processImageSrcset,
+} from "../utils/process-assets.js";
 import "./game-hud.js";
 import { styles } from "./game-viewport.css.js";
 import "./hero-profile.js";
@@ -119,7 +124,8 @@ export class GameViewport extends LitElement {
 		if (!this.gameState || !this.gameState.config) return html``;
 
 		const { config, quest, levelState, hero } = this.gameState;
-		const backgroundStyle = config.backgroundStyle || "#374151";
+		const backgroundStyle = config.backgroundStyle || "";
+		const backgroundPath = extractAssetPath(backgroundStyle);
 
 		return html`
 			<game-hud 
@@ -129,7 +135,20 @@ export class GameViewport extends LitElement {
 				.questTitle="${quest?.data?.name || ""}"
 			></game-hud>
 
-			<div class="game-area" style="background: ${processBackgroundStyle(backgroundStyle)}">
+			<div class="game-area">
+				${
+					backgroundPath
+						? html`
+					<img 
+						src="${ifDefined(processImagePath(backgroundPath))}"
+						srcset="${ifDefined(processImageSrcset(backgroundPath))}"
+						sizes="min(100vw, calc(100vh - 96px))"
+						class="game-area-bg"
+						alt="Background"
+					/>
+				`
+						: ""
+				}
 				<game-controls .isVoiceActive="${this.isVoiceActive}"></game-controls>
 				
 				<game-theme-zones

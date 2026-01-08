@@ -2,10 +2,14 @@ import "@awesome.me/webawesome/dist/components/tag/tag.js";
 import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
 import { ContextConsumer } from "@lit/context";
 import { html, LitElement } from "lit";
+import { ifDefined } from "lit/directives/if-defined.js";
 import { characterContext } from "../contexts/character-context.js";
 import { profileContext } from "../contexts/profile-context.js";
 import { themeContext } from "../contexts/theme-context.js";
-import { processImagePath } from "../utils/process-assets.js";
+import {
+	processImagePath,
+	processImageSrcset,
+} from "../utils/process-assets.js";
 import { styles } from "./hero-profile.css.js";
 
 /**
@@ -118,25 +122,43 @@ export class HeroProfile extends LitElement {
         ${
 					this.suitData?.image || this.imageSrc
 						? html`
-            <img src="${processImagePath(this.suitData?.image || this.imageSrc)}" class="character-img" alt="Alarion" />
+            <img 
+							src="${ifDefined(processImagePath(this.suitData?.image || this.imageSrc))}" 
+							srcset="${ifDefined(processImageSrcset(this.suitData?.image || this.imageSrc))}"
+							sizes="15vw"
+							class="character-img" 
+							alt="Alarion" 
+						/>
         `
 						: ""
 				}
-
+ 
 		<!-- Gear Image -->
 		${
 			this.gearData?.image
 				? html`
-			<img src="${processImagePath(this.gearData.image)}" class="gear-img" alt="Gear" />
+			<img 
+				src="${ifDefined(processImagePath(this.gearData.image))}" 
+				srcset="${ifDefined(processImageSrcset(this.gearData.image))}"
+				sizes="15vw"
+				class="gear-img" 
+				alt="Gear" 
+			/>
 		`
 				: ""
 		}
-
+ 
 		<!-- Weapon Image -->
 		${
 			this.powerData?.image
 				? html`
-			<img src="${processImagePath(this.powerData.image)}" class="weapon-img" alt="Weapon" />
+			<img 
+				src="${ifDefined(processImagePath(this.powerData.image))}" 
+				srcset="${ifDefined(processImageSrcset(this.powerData.image))}"
+				sizes="15vw"
+				class="weapon-img" 
+				alt="Weapon" 
+			/>
 		`
 				: ""
 		}

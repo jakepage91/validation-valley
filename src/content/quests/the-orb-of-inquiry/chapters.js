@@ -55,7 +55,7 @@ export const THE_ORB_OF_INQUIRY_CHAPTERS = {
 			height: 20,
 			label: "Temple of Inversion",
 		},
-		backgroundStyle: `url('/assets/hall-of-definition/background.png') center / cover no-repeat`,
+		backgroundStyle: `url('/assets/hall-of-definition/background.png')`,
 		npc: {
 			name: "Architect",
 			icon: "pen-tool",
@@ -147,7 +147,7 @@ export class ProductProviderLegacy extends LitElement {
 			height: 10,
 			label: "The Jeweler's Workshop",
 		},
-		backgroundStyle: `url('/assets/temple-of-inversion/background.png') center / cover no-repeat`,
+		backgroundStyle: `url('/assets/temple-of-inversion/background.png')`,
 		npc: {
 			name: "Purveyor",
 			icon: "shopping-bag",
@@ -235,7 +235,7 @@ export class ProductItem extends LitElement {
 		serviceType: /** @type {any} */ (null),
 		startPos: { x: 50, y: 10 },
 		exitZone: { x: 50, y: 95, width: 20, height: 10, label: "Training Room" },
-		backgroundStyle: `url('/assets/the-jewelers-workshop/background.png') center / cover no-repeat`,
+		backgroundStyle: `url('/assets/the-jewelers-workshop/background.png')`,
 		npc: {
 			name: "The Master Jeweler",
 			icon: "link",
@@ -326,7 +326,7 @@ export class ProductProviderMock extends LitElement {
 			height: 10,
 			label: "Liberated Battlefield",
 		},
-		backgroundStyle: `url('/assets/assay-chamber/background.png') center / cover no-repeat`,
+		backgroundStyle: `url('/assets/assay-chamber/background.png')`,
 		npc: {
 			name: "Grand Appraiser",
 			icon: "crosshair",
@@ -386,8 +386,8 @@ export class ProductProviderMock extends LitElement {
 		serviceType: /** @type {any} */ (null),
 		startPos: { x: 95, y: 30 },
 		exitZone: { x: 50, y: 10, width: 20, height: 10, label: "Victory" },
-		postDialogBackgroundStyle: `url('/assets/liberated-battlefield/background_end.png') center / cover no-repeat`,
-		backgroundStyle: `url('/assets/liberated-battlefield/background.png') center / cover no-repeat`,
+		postDialogBackgroundStyle: `url('/assets/liberated-battlefield/background_end.png')`,
+		backgroundStyle: `url('/assets/liberated-battlefield/background.png')`,
 		npc: {
 			name: "Oracle",
 			icon: "eye",

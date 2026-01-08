@@ -41,9 +41,18 @@ export const styles = [
 			/* Center the square */
 			margin: 0 auto;
 			transition: background 1s ease-in-out;
-			background-size: cover;
-			background-position: center;
-			background-repeat: no-repeat;
+		}
+
+		.game-area-bg {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			z-index: 0;
+			pointer-events: none;
+			transition: opacity 1s ease-in-out;
 		}
 
 		/* Zone Overlays */

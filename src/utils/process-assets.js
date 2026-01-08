@@ -1,37 +1,34 @@
-import { getAssetPath } from "./asset-path.js";
+import { getResponsiveUrl, getSrcset } from "./responsive-assets.js";
 
 /**
- * Process a background style string to use correct asset paths.
- * Replaces /assets/ paths with the correct base URL.
- *
- * @param {string} backgroundStyle - The background style string (e.g., "url('/assets/image.png') center / cover no-repeat")
- * @returns {string} The processed background style with correct paths
+ * Extracts the asset path from a CSS url() string.
+ * @param {string} urlString - The URL string e.g. "url('/assets/image.png')"
+ * @returns {string|undefined} The extracted path
  */
-export function processBackgroundStyle(backgroundStyle) {
-	if (!backgroundStyle) return backgroundStyle;
-
-	// Replace all /assets/ paths with the correct base URL
-	const baseUrl = import.meta.env.BASE_URL;
-	return backgroundStyle.replace(
-		/url\(['"]?(\/assets\/[^'")\s]+)['"]?\)/g,
-		(_match, path) => {
-			// If path already starts with the base URL, return as-is
-			if (path.startsWith(baseUrl)) {
-				return `url('${path}')`;
-			}
-			const cleanPath = path.startsWith("/") ? path.slice(1) : path;
-			return `url('${baseUrl}${cleanPath}')`;
-		},
-	);
+export function extractAssetPath(urlString) {
+	if (!urlString) return undefined;
+	const match = urlString.match(/url\(['"]?(\/assets\/[^'")\s]+)['"]?\)/);
+	return match ? match[1] : undefined;
 }
 
 /**
  * Process an image path to use correct asset path.
  *
  * @param {string} imagePath - The image path (e.g., "/assets/image.png")
- * @returns {string} The processed image path
+ * @returns {string|undefined} The processed image path
  */
 export function processImagePath(imagePath) {
-	if (!imagePath) return imagePath;
-	return getAssetPath(imagePath);
+	if (!imagePath) return undefined;
+	return getResponsiveUrl(imagePath);
+}
+
+/**
+ * Get the srcset for an image path.
+ *
+ * @param {string} imagePath - The image path
+ * @returns {string|undefined} The generated srcset
+ */
+export function processImageSrcset(imagePath) {
+	if (!imagePath) return undefined;
+	return getSrcset(imagePath);
 }

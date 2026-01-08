@@ -2,10 +2,14 @@ import "@awesome.me/webawesome/dist/components/button/button.js";
 import "@awesome.me/webawesome/dist/components/dialog/dialog.js";
 import "@awesome.me/webawesome/dist/components/icon/icon.js";
 import { html, LitElement } from "lit";
+import { ifDefined } from "lit/directives/if-defined.js";
 import { map } from "lit/directives/map.js";
 import "syntax-highlight-element";
 import { EVENTS } from "../constants/events.js";
-import { processImagePath } from "../utils/process-assets.js";
+import {
+	processImagePath,
+	processImageSrcset,
+} from "../utils/process-assets.js";
 import { styles } from "./level-dialog.css.js";
 
 /**
@@ -263,7 +267,13 @@ export class LevelDialog extends LitElement {
 												this.config.reward
 													? html`
                         <div class="reward-preview">
-                          <img src="${processImagePath(this.config.reward.image)}" alt="${this.config.reward.name}" class="reward-img" />
+                          <img 
+														src="${ifDefined(processImagePath(this.config.reward.image))}" 
+														srcset="${ifDefined(processImageSrcset(this.config.reward.image))}"
+														sizes="(max-width: 600px) 200px, 400px"
+														alt="${this.config.reward.name}" 
+														class="reward-img" 
+													/>
                           <div class="reward-info">
                             <h6 class="reward-name">${this.config.reward.name}</h6>
                             <p class="reward-desc">Acquired! This item has been added to your inventory.</p>

@@ -1,5 +1,9 @@
 import { html, LitElement } from "lit";
-import { processImagePath } from "../utils/process-assets.js";
+import { ifDefined } from "lit/directives/if-defined.js";
+import {
+	processImagePath,
+	processImageSrcset,
+} from "../utils/process-assets.js";
 import "@awesome.me/webawesome/dist/components/icon/icon.js";
 import { styles } from "./reward-element.css.js";
 
@@ -40,7 +44,13 @@ export class RewardElement extends LitElement {
         ${
 					hasImage
 						? html`
-          <img src="${processImagePath(this.image)}" class="reward-img" alt="Reward" />
+          <img
+						src="${ifDefined(processImagePath(this.image))}"
+						srcset="${ifDefined(processImageSrcset(this.image))}"
+						sizes="(max-width: 600px) 256px, 512px"
+						class="reward-img"
+						alt="Reward"
+					/>
         `
 						: html`
           <wa-icon name="${this.icon}" style="font-size: var(--wa-font-size-l); color: #facc15;"></wa-icon>
