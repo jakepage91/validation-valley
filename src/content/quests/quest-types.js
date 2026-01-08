@@ -38,8 +38,8 @@ export const Difficulty = {
 /**
  * @typedef {Object} RenderableConfig
  * @property {string} [name]
- * @property {string} [icon]
- * @property {string} image
+ * @property {string} image - The display image (required)
+ * @property {string} [icon] - Optional icon (deprecated for rewards)
  */
 
 /**

@@ -69,7 +69,6 @@ export const THE_CHROMATIC_LOOM_CHAPTERS = {
 		},
 		reward: {
 			name: "Trunk",
-			icon: "box",
 			image: "/assets/fortress-of-design/reward.png",
 			position: { x: 56, y: 50 },
 		},

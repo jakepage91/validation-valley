@@ -217,7 +217,6 @@ export class GameViewport extends LitElement {
 		return html`
 			<reward-element
 				.image="${config?.reward?.image || ""}"
-				.icon="${config?.reward?.icon || "star"}"
 				.x="${x}"
 				.y="${y}"
 				class=${classMap({ [this.rewardAnimState]: this.isAnimatingReward })}

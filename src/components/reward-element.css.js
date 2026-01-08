@@ -16,13 +16,6 @@ export const styles = css`
       align-items: center;
       justify-content: center;
       border-radius: 9999px;
-      background-color: #4b5563;
-      border: 2px solid #1f2937;
-      box-shadow: var(--wa-shadow-medium);
-      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-
-    .reward-box.has-image {
       background-color: transparent;
       border-color: transparent;
       box-shadow: none;

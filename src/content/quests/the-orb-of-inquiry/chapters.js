@@ -64,7 +64,6 @@ export const THE_ORB_OF_INQUIRY_CHAPTERS = {
 		},
 		reward: {
 			name: "Codex",
-			icon: "book",
 			image: "/assets/hall-of-definition/reward.png",
 			position: { x: 50, y: 20 },
 		},
@@ -156,7 +155,6 @@ export class ProductProviderLegacy extends LitElement {
 		},
 		reward: {
 			name: "Crystal",
-			icon: "gem",
 			image: "/assets/temple-of-inversion/reward.png",
 			position: { x: 26, y: 40 },
 		},
@@ -244,7 +242,6 @@ export class ProductItem extends LitElement {
 		},
 		reward: {
 			name: "Necklace",
-			icon: "link-2",
 			image: "/assets/the-jewelers-workshop/reward.png",
 			position: { x: 50, y: 55 },
 		},
@@ -335,7 +332,6 @@ export class ProductProviderMock extends LitElement {
 		},
 		reward: {
 			name: "Amber Gem",
-			icon: "sun",
 			image: "/assets/assay-chamber/reward.png",
 			position: { x: 69, y: 52 },
 		},
@@ -396,7 +392,6 @@ export class ProductProviderMock extends LitElement {
 		},
 		reward: {
 			name: "Key",
-			icon: "key",
 			image: "/assets/liberated-battlefield/reward.png",
 			position: { x: 50, y: 47 },
 		},

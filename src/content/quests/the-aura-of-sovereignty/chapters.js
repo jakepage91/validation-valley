@@ -188,7 +188,6 @@ customElements.define('product-item', ProductItem);`,
 		},
 		reward: {
 			name: "Garments",
-			icon: "shirt",
 			image: "/assets/hall-of-fragments/reward.png",
 			position: { x: 60, y: 45 },
 		},
