@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { EVENTS } from "../constants/events.js";
 import { CollisionController } from "./collision-controller.js";
 
 describe("CollisionController", () => {
@@ -6,8 +7,8 @@ describe("CollisionController", () => {
 	let host;
 	/** @type {CollisionController} */
 	let controller;
-	/** @type {import("vitest").Mock} */
-	let onExitCollision;
+	/** @type {any} */
+	let context;
 
 	beforeEach(() => {
 		host = {
@@ -16,16 +17,56 @@ describe("CollisionController", () => {
 			requestUpdate: vi.fn(),
 			updateComplete: Promise.resolve(true),
 		};
-		onExitCollision = vi.fn();
 
-		controller = new CollisionController(host, {
-			onExitCollision,
+		context = {
+			eventBus: {
+				on: vi.fn(),
+				off: vi.fn(),
+				emit: vi.fn(),
+			},
+			questController: {
+				currentChapter: {
+					exitZone: { x: 50, y: 50, width: 10, height: 10 },
+				},
+			},
+		};
+
+		controller = new CollisionController(host, context, {
 			heroSize: 2.5,
 		});
 	});
 
 	it("should initialize and add controller to host", () => {
 		expect(host.addController).toHaveBeenCalledWith(controller);
+	});
+
+	it("should subscribe to HERO_MOVED on hostConnected", () => {
+		controller.hostConnected();
+		expect(context.eventBus.on).toHaveBeenCalledWith(
+			EVENTS.UI.HERO_MOVED,
+			controller.handleHeroMoved,
+		);
+	});
+
+	it("should unsubscribe from HERO_MOVED on hostDisconnected", () => {
+		controller.hostDisconnected();
+		expect(context.eventBus.off).toHaveBeenCalledWith(
+			EVENTS.UI.HERO_MOVED,
+			controller.handleHeroMoved,
+		);
+	});
+
+	describe("handleHeroMoved", () => {
+		it("should check exit zone when hero moves", () => {
+			const spy = vi.spyOn(controller, "checkExitZone");
+			controller.handleHeroMoved({ x: 50, y: 50, hasCollectedItem: true });
+			expect(spy).toHaveBeenCalledWith(
+				50,
+				50,
+				context.questController.currentChapter.exitZone,
+				true,
+			);
+		});
 	});
 
 	describe("checkAABB", () => {
@@ -58,7 +99,7 @@ describe("CollisionController", () => {
 
 		it("should return false if item is not collected", () => {
 			expect(controller.checkExitZone(50, 50, exitZone, false)).toBe(false);
-			expect(onExitCollision).not.toHaveBeenCalled();
+			expect(context.eventBus.emit).not.toHaveBeenCalled();
 		});
 
 		it("should return false if exitZone is null", () => {
@@ -72,7 +113,9 @@ describe("CollisionController", () => {
 			const result = controller.checkExitZone(50, 50, exitZone, true);
 
 			expect(result).toBe(true);
-			expect(onExitCollision).toHaveBeenCalled();
+			expect(context.eventBus.emit).toHaveBeenCalledWith(
+				EVENTS.UI.EXIT_ZONE_REACHED,
+			);
 		});
 
 		it("should not detect collision if strictly outside", () => {
@@ -80,7 +123,7 @@ describe("CollisionController", () => {
 			const result = controller.checkExitZone(70, 70, exitZone, true);
 
 			expect(result).toBe(false);
-			expect(onExitCollision).not.toHaveBeenCalled();
+			expect(context.eventBus.emit).not.toHaveBeenCalled();
 		});
 	});
 });

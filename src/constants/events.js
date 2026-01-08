@@ -30,6 +30,10 @@ export const EVENTS = {
 		HERO_MOVE_INPUT: "hero-move-input",
 		/** @type {'level-completed'} */
 		LEVEL_COMPLETED: "level-completed",
+		/** @type {'hero-moved'} */
+		HERO_MOVED: "hero-moved",
+		/** @type {'exit-zone-reached'} */
+		EXIT_ZONE_REACHED: "exit-zone-reached",
 	},
 	SYSTEM: {
 		/** @type {'data-loaded'} */

@@ -12,9 +12,5 @@ import { GameZoneController } from "../controllers/game-zone-controller.js";
  */
 export function setupZones(host, context) {
 	/** @type {ZoneHost & { zones: GameZoneController }} */ (host).zones =
-		new GameZoneController(host, {
-			eventBus: context.eventBus,
-			getChapterData: () => context.questController.currentChapter,
-			hasCollectedItem: () => context.gameState.getState().hasCollectedItem,
-		});
+		new GameZoneController(host, context);
 }

@@ -1,5 +1,6 @@
 import { EVENTS } from "../constants/events.js";
 import { ProcessGameZoneInteractionUseCase } from "../use-cases/process-game-zone-interaction.js";
+
 /**
  * @typedef {import("lit").ReactiveController} ReactiveController
  * @typedef {import("lit").ReactiveControllerHost} ReactiveControllerHost
@@ -7,13 +8,11 @@ import { ProcessGameZoneInteractionUseCase } from "../use-cases/process-game-zon
  * @typedef {import("../services/game-state-service.js").HotSwitchState} HotSwitchState
  * @typedef {import("../content/quests/quest-types.js").LevelConfig} LevelConfig
  * @typedef {import("../core/event-bus.js").EventBus} EventBus
+ * @typedef {import("../core/game-context.js").IGameContext} IGameContext
  */
 
 /**
  * @typedef {Object} GameZoneOptions
- * @property {EventBus} [eventBus] - Event bus for emitting events
- * @property {function(): LevelConfig|null} [getChapterData] - Callback to get current chapter config
- * @property {function(): boolean} [hasCollectedItem] - Callback to check if item is collected
  * @property {ProcessGameZoneInteractionUseCase} [processGameZoneInteraction] - Use case
  */
 
@@ -29,15 +28,14 @@ import { ProcessGameZoneInteractionUseCase } from "../use-cases/process-game-zon
 export class GameZoneController {
 	/**
 	 * @param {ReactiveControllerHost} host
+	 * @param {IGameContext} context
 	 * @param {GameZoneOptions} [options]
 	 */
-	constructor(host, options = {}) {
+	constructor(host, context, options = {}) {
 		this.host = host;
+		this.context = context;
 		/** @type {Required<GameZoneOptions>} */
 		this.options = {
-			eventBus: /** @type {any} */ (null),
-			getChapterData: () => null,
-			hasCollectedItem: () => false,
 			processGameZoneInteraction: new ProcessGameZoneInteractionUseCase(),
 			...options,
 		};
@@ -46,42 +44,50 @@ export class GameZoneController {
 	}
 
 	/**
-	 * Lifecycle method called when host connects to DOM
+	 * Lifecycle method called when host connects to the DOM
 	 */
 	hostConnected() {
-		// No setup needed for this controller
+		this.context.eventBus.on(EVENTS.UI.HERO_MOVED, this.handleHeroMoved);
 	}
 
 	/**
 	 * Lifecycle method called when host disconnects from DOM
 	 */
 	hostDisconnected() {
-		// No cleanup needed for this controller
+		this.context.eventBus.off(EVENTS.UI.HERO_MOVED, this.handleHeroMoved);
 	}
+
+	/**
+	 * @param {{x: number, y: number, hasCollectedItem: boolean}} data
+	 */
+	handleHeroMoved = ({ x, y, hasCollectedItem }) => {
+		this.checkZones(x, y, hasCollectedItem);
+	};
 
 	/**
 	 * Check if character is in a specific zone and trigger callbacks
 	 * @param {number} x - Character X position (0-100)
 	 * @param {number} y - Character Y position (0-100)
+	 * @param {boolean} [hasCollectedItem]
 	 */
-	checkZones(x, y) {
-		const chapter = this.options.getChapterData();
+	checkZones(x, y, hasCollectedItem = false) {
+		const chapter = this.context.questController?.currentChapter;
 		if (!chapter) return;
 
 		const results = this.options.processGameZoneInteraction.execute({
 			x,
 			y,
 			chapter,
-			hasCollectedItem: this.options.hasCollectedItem(),
+			hasCollectedItem,
 		});
 
 		results.forEach((result) => {
-			if (result.type === "THEME_CHANGE" && this.options.eventBus) {
-				this.options.eventBus.emit(EVENTS.UI.THEME_CHANGED, {
+			if (result.type === "THEME_CHANGE" && this.context.eventBus) {
+				this.context.eventBus.emit(EVENTS.UI.THEME_CHANGED, {
 					theme: result.payload,
 				});
-			} else if (result.type === "CONTEXT_CHANGE" && this.options.eventBus) {
-				this.options.eventBus.emit(EVENTS.UI.CONTEXT_CHANGED, {
+			} else if (result.type === "CONTEXT_CHANGE" && this.context.eventBus) {
+				this.context.eventBus.emit(EVENTS.UI.CONTEXT_CHANGED, {
 					context: result.payload,
 				});
 			}

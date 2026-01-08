@@ -1,3 +1,5 @@
+import { EVENTS } from "../constants/events.js";
+
 /**
  * MoveHeroCommand
  *
@@ -8,12 +10,14 @@ export class MoveHeroCommand {
 	/**
 	 * @param {Object} params
 	 * @param {import('../services/game-state-service.js').GameStateService} params.gameState
+	 * @param {import('../core/event-bus.js').EventBus} [params.eventBus]
 	 * @param {number} params.dx - Delta X (change in X position)
 	 * @param {number} params.dy - Delta Y (change in Y position)
 	 * @param {() => void} [params.onMove] - Optional callback after move
 	 */
-	constructor({ gameState, dx, dy, onMove }) {
+	constructor({ gameState, dx, dy, onMove, eventBus }) {
 		this.gameState = gameState;
+		this.eventBus = eventBus;
 		this.dx = dx;
 		this.dy = dy;
 		this.onMove = onMove;
@@ -47,6 +51,8 @@ export class MoveHeroCommand {
 
 		// Trigger callback if provided
 		this.onMove?.();
+
+		this._emitMoveEvent();
 	}
 
 	/**
@@ -58,6 +64,19 @@ export class MoveHeroCommand {
 
 			// Trigger callback if provided
 			this.onMove?.();
+
+			this._emitMoveEvent();
+		}
+	}
+
+	_emitMoveEvent() {
+		if (this.eventBus) {
+			const state = this.gameState.getState();
+			this.eventBus.emit(EVENTS.UI.HERO_MOVED, {
+				x: state.heroPos.x,
+				y: state.heroPos.y,
+				hasCollectedItem: state.hasCollectedItem,
+			});
 		}
 	}
 }

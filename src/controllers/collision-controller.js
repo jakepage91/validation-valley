@@ -1,6 +1,9 @@
+import { EVENTS } from "../constants/events.js";
+
 /**
  * @typedef {import("lit").ReactiveController} ReactiveController
  * @typedef {import("lit").ReactiveControllerHost} ReactiveControllerHost
+ * @typedef {import("../core/game-context.js").IGameContext} IGameContext
  */
 
 /**
@@ -14,7 +17,6 @@
 /**
  * @typedef {Object} CollisionOptions
  * @property {number} [heroSize=2.5] - Half-size of hero hitbox
- * @property {function(): void} [onExitCollision] - Callback when hitting exit zone
  */
 
 /**
@@ -29,14 +31,15 @@
 export class CollisionController {
 	/**
 	 * @param {ReactiveControllerHost} host
+	 * @param {IGameContext} context
 	 * @param {CollisionOptions} [options]
 	 */
-	constructor(host, options = {}) {
+	constructor(host, context, options = {}) {
 		this.host = host;
+		this.context = context;
 		/** @type {Required<CollisionOptions>} */
 		this.options = {
 			heroSize: 2.5, // Half-size of hero hitbox
-			onExitCollision: () => {},
 			...options,
 		};
 
@@ -47,8 +50,22 @@ export class CollisionController {
 	 * Called when the host is connected to the DOM
 	 */
 	hostConnected() {
-		// Initial setup if needed
+		this.context.eventBus.on(EVENTS.UI.HERO_MOVED, this.handleHeroMoved);
 	}
+
+	hostDisconnected() {
+		this.context.eventBus.off(EVENTS.UI.HERO_MOVED, this.handleHeroMoved);
+	}
+
+	/**
+	 * @param {{x: number, y: number, hasCollectedItem: boolean}} data
+	 */
+	handleHeroMoved = ({ x, y, hasCollectedItem }) => {
+		const currentChapter = this.context.questController?.currentChapter;
+		if (currentChapter?.exitZone) {
+			this.checkExitZone(x, y, currentChapter.exitZone, hasCollectedItem);
+		}
+	};
 
 	/**
 	 * Check if hero collides with exit zone
@@ -82,7 +99,7 @@ export class CollisionController {
 			hLeft < eRight && hRight > eLeft && hTop < eBottom && hBottom > eTop;
 
 		if (collided) {
-			this.options.onExitCollision();
+			this.context.eventBus.emit(EVENTS.UI.EXIT_ZONE_REACHED);
 		}
 
 		return collided;

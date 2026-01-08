@@ -2,8 +2,6 @@ import "@awesome.me/webawesome/dist/components/button/button.js";
 import "@awesome.me/webawesome/dist/components/card/card.js";
 import { html, LitElement } from "lit";
 import { AdvanceChapterCommand } from "../../commands/advance-chapter-command.js";
-import { CheckExitZoneCommand } from "../../commands/check-exit-zone-command.js";
-import { CheckZonesCommand } from "../../commands/check-zones-command.js";
 import { InteractCommand } from "../../commands/interact-command.js";
 import { MoveHeroCommand } from "../../commands/move-hero-command.js";
 import { PauseGameCommand } from "../../commands/pause-game-command.js";
@@ -209,36 +207,9 @@ export class GameView extends LitElement {
 			this.app.commandBus.execute(
 				new MoveHeroCommand({
 					gameState: this.app.gameState,
+					eventBus: this.app.eventBus,
 					dx,
 					dy,
-					onMove: () => {
-						const state = this.app.gameState.getState();
-						const { x, y } = state.heroPos;
-						const currentChapter = this.app.questController?.currentChapter;
-
-						// Run side effects via commands
-						if (this.collision) {
-							this.app.commandBus.execute(
-								new CheckExitZoneCommand({
-									collisionController: this.collision,
-									x,
-									y,
-									exitZone: currentChapter?.exitZone,
-									hasCollectedItem: state.hasCollectedItem,
-								}),
-							);
-						}
-
-						if (this.zones) {
-							this.app.commandBus.execute(
-								new CheckZonesCommand({
-									gameZoneController: this.zones,
-									x,
-									y,
-								}),
-							);
-						}
-					},
 				}),
 			);
 		}

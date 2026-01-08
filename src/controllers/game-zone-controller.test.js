@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { EVENTS } from "../constants/events.js";
 import { GAME_CONFIG } from "../constants/game-config.js";
 import { GameZoneController } from "./game-zone-controller.js";
 
@@ -7,14 +8,8 @@ describe("GameZoneController", () => {
 	let host;
 	/** @type {GameZoneController} */
 	let controller;
-
-	// Mocks
 	/** @type {any} */
-	let eventBus;
-	/** @type {any} */
-	let getChapterData;
-	/** @type {any} */
-	let hasCollectedItem;
+	let context;
 
 	beforeEach(() => {
 		host = {
@@ -23,91 +18,93 @@ describe("GameZoneController", () => {
 			requestUpdate: vi.fn(),
 			updateComplete: Promise.resolve(true),
 		};
-		eventBus = {
-			emit: vi.fn(),
+
+		context = {
+			eventBus: {
+				on: vi.fn(),
+				off: vi.fn(),
+				emit: vi.fn(),
+			},
+			questController: {
+				currentChapter: {},
+			},
+			gameState: {
+				getState: vi.fn(() => ({ hasCollectedItem: false })),
+			},
 		};
-		getChapterData = vi.fn();
-		hasCollectedItem = vi.fn();
 	});
 
 	it("should initialize correctly", () => {
-		controller = new GameZoneController(host);
+		controller = new GameZoneController(host, context);
 		expect(host.addController).toHaveBeenCalledWith(controller);
+	});
+
+	it("should subscribe to HERO_MOVED on hostConnected", () => {
+		controller = new GameZoneController(host, context);
+		controller.hostConnected();
+		expect(context.eventBus.on).toHaveBeenCalledWith(
+			EVENTS.UI.HERO_MOVED,
+			/** @type {any} */ (controller).handleHeroMoved,
+		);
 	});
 
 	describe("Theme Zones", () => {
 		it("should trigger theme change when item is collected and zones are active", () => {
-			getChapterData.mockReturnValue({ hasThemeZones: true });
-			hasCollectedItem.mockReturnValue(true);
+			context.questController.currentChapter = { hasThemeZones: true };
 
-			controller = new GameZoneController(host, {
-				getChapterData,
-				hasCollectedItem,
-				eventBus,
-			});
+			controller = new GameZoneController(host, context);
 
 			// Above limit -> Light
 			controller.checkZones(
 				50,
 				GAME_CONFIG.VIEWPORT.ZONES.THEME.DARK_HEIGHT + 10,
+				true,
 			);
-			expect(eventBus.emit).toHaveBeenCalledWith("theme-changed", {
+			expect(context.eventBus.emit).toHaveBeenCalledWith("theme-changed", {
 				theme: "light",
 			});
-			eventBus.emit.mockClear();
+			context.eventBus.emit.mockClear();
 
 			// Below limit -> Dark
 			controller.checkZones(
 				50,
 				GAME_CONFIG.VIEWPORT.ZONES.THEME.DARK_HEIGHT - 10,
+				true,
 			);
-			expect(eventBus.emit).toHaveBeenCalledWith("theme-changed", {
+			expect(context.eventBus.emit).toHaveBeenCalledWith("theme-changed", {
 				theme: "dark",
 			});
 		});
 
 		it("should NOT trigger theme change if item is NOT collected", () => {
-			getChapterData.mockReturnValue({ hasThemeZones: true });
-			hasCollectedItem.mockReturnValue(false);
+			context.questController.currentChapter = { hasThemeZones: true };
 
-			controller = new GameZoneController(host, {
-				getChapterData,
-				hasCollectedItem,
-				eventBus,
-			});
+			controller = new GameZoneController(host, context);
 
-			controller.checkZones(50, 10); // Should be dark
-			expect(eventBus.emit).not.toHaveBeenCalled();
+			controller.checkZones(50, 10, false); // Should be dark but item not collected
+			expect(context.eventBus.emit).not.toHaveBeenCalled();
 		});
 
 		it("should NOT trigger theme change if chapter has no zones", () => {
-			getChapterData.mockReturnValue({ hasThemeZones: false });
-			hasCollectedItem.mockReturnValue(true);
+			context.questController.currentChapter = { hasThemeZones: false };
 
-			controller = new GameZoneController(host, {
-				getChapterData,
-				hasCollectedItem,
-				eventBus,
-			});
+			controller = new GameZoneController(host, context);
 
-			controller.checkZones(50, 10);
-			expect(eventBus.emit).not.toHaveBeenCalled();
+			controller.checkZones(50, 10, true);
+			expect(context.eventBus.emit).not.toHaveBeenCalled();
 		});
 	});
 
 	describe("Context Zones (Hot Switch)", () => {
 		beforeEach(() => {
-			getChapterData.mockReturnValue({ hasHotSwitch: true });
-			controller = new GameZoneController(host, {
-				getChapterData,
-				eventBus,
-			});
+			context.questController.currentChapter = { hasHotSwitch: true };
+			controller = new GameZoneController(host, context);
 		});
 
 		it("should detect legacy zone", () => {
 			// Legacy Zone: x[50-100], y[40-100]
 			controller.checkZones(75, 75);
-			expect(eventBus.emit).toHaveBeenCalledWith("context-changed", {
+			expect(context.eventBus.emit).toHaveBeenCalledWith("context-changed", {
 				context: "legacy",
 			});
 		});
@@ -115,7 +112,7 @@ describe("GameZoneController", () => {
 		it("should detect new zone", () => {
 			// New Zone: x[0-50), y[40-100]
 			controller.checkZones(25, 75);
-			expect(eventBus.emit).toHaveBeenCalledWith("context-changed", {
+			expect(context.eventBus.emit).toHaveBeenCalledWith("context-changed", {
 				context: "new",
 			});
 		});
@@ -123,7 +120,7 @@ describe("GameZoneController", () => {
 		it("should detect neutral zone", () => {
 			// Neutral: y < 40
 			controller.checkZones(50, 10);
-			expect(eventBus.emit).toHaveBeenCalledWith("context-changed", {
+			expect(context.eventBus.emit).toHaveBeenCalledWith("context-changed", {
 				context: null,
 			});
 		});

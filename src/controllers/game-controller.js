@@ -52,6 +52,11 @@ export class GameController {
 			EVENTS.UI.LEVEL_COMPLETED,
 			this.handleLevelCompleted,
 		);
+		// Listen for exit zone
+		this.context.eventBus.on(
+			EVENTS.UI.EXIT_ZONE_REACHED,
+			this.handleExitZoneReached,
+		);
 	}
 
 	hostDisconnected() {
@@ -59,7 +64,23 @@ export class GameController {
 			EVENTS.UI.LEVEL_COMPLETED,
 			this.handleLevelCompleted,
 		);
+		this.context.eventBus.off(
+			EVENTS.UI.EXIT_ZONE_REACHED,
+			this.handleExitZoneReached,
+		);
 	}
+
+	handleExitZoneReached = () => {
+		const { gameState, questController, commandBus } = this.context;
+		if (commandBus) {
+			commandBus.execute(
+				new AdvanceChapterCommand({
+					gameState,
+					questController,
+				}),
+			);
+		}
+	};
 
 	/**
 	 * Handle level completion event

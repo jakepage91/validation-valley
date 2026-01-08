@@ -152,4 +152,43 @@ describe("MoveHeroCommand", () => {
 
 		expect(onMove).toHaveBeenCalled();
 	});
+
+	it("should emit HERO_MOVED event on execute", () => {
+		const eventBus = { emit: vi.fn() };
+		command = new MoveHeroCommand({
+			gameState: mockGameState,
+			dx: 5,
+			dy: 0,
+			eventBus: /** @type {any} */ (eventBus),
+		});
+
+		command.execute();
+
+		expect(eventBus.emit).toHaveBeenCalledWith("hero-moved", {
+			x: 50, // Mock returns 50 even after setHeroPosition
+			y: 50,
+			hasCollectedItem: undefined,
+		});
+	});
+
+	it("should emit HERO_MOVED event on undo", () => {
+		const eventBus = { emit: vi.fn() };
+		command = new MoveHeroCommand({
+			gameState: mockGameState,
+			dx: 5,
+			dy: 0,
+			eventBus: /** @type {any} */ (eventBus),
+		});
+
+		command.execute();
+		eventBus.emit.mockClear();
+
+		command.undo();
+
+		expect(eventBus.emit).toHaveBeenCalledWith("hero-moved", {
+			x: 50,
+			y: 50,
+			hasCollectedItem: undefined,
+		});
+	});
 });
