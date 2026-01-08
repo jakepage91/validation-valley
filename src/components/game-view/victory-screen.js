@@ -1,5 +1,6 @@
 import "@awesome.me/webawesome/dist/components/button/button.js";
 import { html, LitElement } from "lit";
+import { ifDefined } from "lit/directives/if-defined.js";
 import { processImagePath } from "../../utils/process-assets.js";
 import { styles } from "./victory-screen.css.js";
 
@@ -50,7 +51,7 @@ export class VictoryScreen extends LitElement {
 					${collectedRewards.map(
 						(reward) => html`
 						<div class="reward-item">
-							<img src="${processImagePath(reward.image)}" alt="${reward.name}" class="reward-img" />
+							<img src="${ifDefined(processImagePath(reward.image))}" alt="${reward.name}" class="reward-img" />
 							<span class="reward-name">${reward.name}</span>
 						</div>
 					`,

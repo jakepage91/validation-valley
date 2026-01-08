@@ -1,6 +1,6 @@
 /**
  * @typedef {Object} LoggerOptions
- * @property {('debug'|'info'|'warn'|'error'|'silent')} [level='info'] - Initial log level
+ * @property {('debug'|'info'|'warn'|'error'|'silent')} [level='warn'] - Initial log level
  * @property {boolean} [force=false] - If true, overrides environment default levels
  * @property {string} [env] - Override environment (default: import.meta.env.MODE)
  */
@@ -14,8 +14,7 @@ export class LoggerService {
 	 * @param {LoggerOptions} [options] - Configuration options
 	 */
 	constructor(options = {}) {
-		/** @type {string} Current active log level */
-		this.level = options.level || "info"; // debug, info, warn, error
+		this.env = options.env || import.meta.env?.MODE || "development";
 
 		/** @type {Object.<string, number>} key-value map for log level priorities */
 		this.levels = {
@@ -26,12 +25,9 @@ export class LoggerService {
 			silent: 4,
 		};
 
-		this.env = options.env || import.meta.env?.MODE || "development";
-
-		// Default to strict logging in test/production unless overridden
-		if (this.env === "test" && !options.force) {
-			this.level = "warn";
-		}
+		/** @type {string} Current active log level */
+		this.level =
+			options.level || (this.env === "development" ? "info" : "warn");
 	}
 
 	/**
