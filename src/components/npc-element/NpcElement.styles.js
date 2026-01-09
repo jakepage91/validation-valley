@@ -1,6 +1,6 @@
 import { css } from "lit";
 
-export const styles = css`
+export const npcElementStyles = css`
     :host {
       position: absolute;
       transform: translate(-50%, -50%);

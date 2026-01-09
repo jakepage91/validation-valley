@@ -1,13 +1,13 @@
+import "@awesome.me/webawesome/dist/components/icon/icon.js";
+import "@awesome.me/webawesome/dist/components/tag/tag.js";
+import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
 import { html, LitElement } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
 import {
 	processImagePath,
 	processImageSrcset,
-} from "../utils/process-assets.js";
-import "@awesome.me/webawesome/dist/components/icon/icon.js";
-import "@awesome.me/webawesome/dist/components/tag/tag.js";
-import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
-import { styles } from "./npc-element.css.js";
+} from "../../utils/process-assets.js";
+import { npcElementStyles } from "./NpcElement.styles.js";
 
 /**
  * @element npc-element
@@ -34,7 +34,7 @@ export class NpcElement extends LitElement {
 		isRewardCollected: { type: Boolean },
 	};
 
-	static styles = styles;
+	static styles = npcElementStyles;
 
 	constructor() {
 		super();
@@ -91,5 +91,3 @@ export class NpcElement extends LitElement {
     `;
 	}
 }
-
-customElements.define("npc-element", NpcElement);

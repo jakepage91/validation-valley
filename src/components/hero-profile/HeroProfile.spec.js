@@ -1,10 +1,12 @@
 import { ContextProvider } from "@lit/context";
+import axe from "axe-core";
 import { html, render } from "lit";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { profileContext } from "../contexts/profile-context.js";
+
+import { profileContext } from "../../contexts/profile-context.js";
 import "./hero-profile.js";
 
-describe("HeroProfile Regression", () => {
+describe("HeroProfile", () => {
 	/** @type {HTMLElement} */
 	let container;
 
@@ -46,7 +48,7 @@ describe("HeroProfile Regression", () => {
 		});
 
 		render(html`<hero-profile></hero-profile>`, providerContainer);
-		const element = /** @type {import("./hero-profile.js").HeroProfile} */ (
+		const element = /** @type {import("./HeroProfile.js").HeroProfile} */ (
 			providerContainer.querySelector("hero-profile")
 		);
 		await element.updateComplete;
@@ -73,7 +75,7 @@ describe("HeroProfile Regression", () => {
 		});
 
 		render(html`<hero-profile></hero-profile>`, providerContainer);
-		const element = /** @type {import("./hero-profile.js").HeroProfile} */ (
+		const element = /** @type {import("./HeroProfile.js").HeroProfile} */ (
 			providerContainer.querySelector("hero-profile")
 		);
 		await element.updateComplete;
@@ -82,5 +84,32 @@ describe("HeroProfile Regression", () => {
 			element.shadowRoot?.querySelector(".loading")
 		);
 		expect(loadingSpan.textContent?.trim()).toBe("...");
+	});
+
+	it("should have no accessibility violations", async () => {
+		const profileData = {
+			name: "Test Hero",
+			role: "Acolyte",
+			loading: false,
+			error: null,
+		};
+
+		render(html`<div id="provider-container"></div>`, container);
+		const providerContainer = /** @type {HTMLElement} */ (
+			container.querySelector("#provider-container")
+		);
+		new ContextProvider(providerContainer, {
+			context: profileContext,
+			initialValue: profileData,
+		});
+
+		render(html`<hero-profile></hero-profile>`, providerContainer);
+		const element = /** @type {import("./HeroProfile.js").HeroProfile} */ (
+			providerContainer.querySelector("hero-profile")
+		);
+		await element.updateComplete;
+
+		const results = await axe.run(element);
+		expect(results.violations).toEqual([]);
 	});
 });

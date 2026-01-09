@@ -1,6 +1,6 @@
 import { css } from "lit";
 
-export const styles = css`
+export const pauseMenuStyles = css`
 		:host {
 			display: block;
 		}
@@ -15,10 +15,9 @@ export const styles = css`
 		wa-dialog::part(title) {
 			font-family: var(--wa-font-family-heading);
 			font-size: var(--wa-font-size-m);
-			color: #fbbf24;
+			color: #ffffff;
 			text-align: center;
 			width: 100%;
-			text-shadow: var(--wa-shadow-small);
 		}
 
 		/* Hide the close button since we have explicit actions */

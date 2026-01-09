@@ -3,22 +3,21 @@ import "@awesome.me/webawesome/dist/components/details/details.js";
 import { html, LitElement } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { ifDefined } from "lit/directives/if-defined.js";
-import { gameConfig } from "../config/game-configuration.js"; // New import
-import "../constants/game-config.js"; // Legacy - being phased out
+import { gameConfig } from "../../config/game-configuration.js";
 import {
 	extractAssetPath,
 	processImagePath,
 	processImageSrcset,
-} from "../utils/process-assets.js";
-import "./game-hud.js";
-import { styles } from "./game-viewport.css.js";
-import "./hero-profile.js";
-import "./npc-element.js";
-import "./reward-element.js";
-import "./viewport-elements/game-context-zones.js";
-import "./viewport-elements/game-controls.js";
-import "./viewport-elements/game-exit-zone.js";
-import "./viewport-elements/game-theme-zones.js";
+} from "../../utils/process-assets.js";
+import "../game-hud.js";
+import { gameViewportStyles } from "./GameViewport.styles.js";
+import "../hero-profile/hero-profile.js";
+import "../npc-element/npc-element.js";
+import "../reward-element/reward-element.js";
+import "../viewport-elements/game-context-zones.js";
+import "../viewport-elements/game-controls.js";
+import "../viewport-elements/game-exit-zone.js";
+import "../viewport-elements/game-theme-zones.js";
 
 /**
  * @element game-viewport
@@ -37,8 +36,8 @@ export class GameViewport extends LitElement {
 	};
 
 	/**
-	 * @typedef {import('../content/quests/quest-types.js').LevelConfig} LevelConfig
-	 * @typedef {import('../services/quest-registry-service.js').Quest} Quest
+	 * @typedef {import('../../content/quests/quest-types.js').LevelConfig} LevelConfig
+	 * @typedef {import('../../services/quest-registry-service.js').Quest} Quest
 	 *
 	 * @typedef {Object} GameSessionState
 	 * @property {LevelConfig} [config]
@@ -60,6 +59,8 @@ export class GameViewport extends LitElement {
 	/**
 	 * @typedef {{ data: Quest, chapterNumber?: number, totalChapters?: number }} ViewQuest
 	 */
+
+	static styles = gameViewportStyles;
 
 	constructor() {
 		super();
@@ -251,8 +252,4 @@ export class GameViewport extends LitElement {
 			></hero-profile>
 		`;
 	}
-
-	static styles = styles;
 }
-
-customElements.define("game-viewport", GameViewport);

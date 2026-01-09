@@ -17,14 +17,14 @@ import { setupInteraction } from "../../setup/setup-interaction.js";
 import { setupService } from "../../setup/setup-service.js";
 import { setupVoice } from "../../setup/setup-voice.js";
 import { setupZones } from "../../setup/setup-zones.js";
-import "../game-viewport.js";
-import "../hero-profile.js";
-import "../level-dialog.js";
-import "../npc-element.js";
-import "../pause-menu.js";
-import "../reward-element.js";
+import "../game-viewport/game-viewport.js";
+import "../hero-profile/hero-profile.js";
+import "../level-dialog/level-dialog.js";
+import "../npc-element/npc-element.js";
+import "../pause-menu/pause-menu.js";
+import "../reward-element/reward-element.js";
 import { styles } from "./game-view.css.js";
-import "./victory-screen.js";
+import "../victory-screen/victory-screen.js";
 
 /**
  * @typedef {import('../../utils/game-state-mapper.js').GameState} GameState
@@ -311,16 +311,18 @@ export class GameView extends LitElement {
 	}
 
 	handleDialogNext = () => {
-		const dialog = /** @type {import('../level-dialog.js').LevelDialog} */ (
-			this.shadowRoot?.querySelector("level-dialog")
-		);
+		const dialog =
+			/** @type {import('../level-dialog/level-dialog.js').LevelDialog} */ (
+				this.shadowRoot?.querySelector("level-dialog")
+			);
 		if (dialog) dialog.nextSlide();
 	};
 
 	handleDialogPrev = () => {
-		const dialog = /** @type {import('../level-dialog.js').LevelDialog} */ (
-			this.shadowRoot?.querySelector("level-dialog")
-		);
+		const dialog =
+			/** @type {import('../level-dialog/level-dialog.js').LevelDialog} */ (
+				this.shadowRoot?.querySelector("level-dialog")
+			);
 		if (dialog) dialog.prevSlide();
 	};
 

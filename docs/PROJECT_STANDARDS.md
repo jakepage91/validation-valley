@@ -29,6 +29,16 @@ This document outlines the mandatory architectural and coding standards for "Leg
     *   **Project Coverage**: Must not drop by more than **1%**.
 *   **Tooling**: Use `vitest` for unit tests. Run `npm run test:coverage` to verify locally.
 *   **Environment**: Tests must not rely on global side-effects. Use dependency injection (e.g., passing `env` or `options` in constructors) to test different configurations.
+*   **Component Testing**:
+    *   Must use **Vitest Browser Mode** (Chromium).
+    *   Must include **Accessibility Tests** using `axe-core`.
+    *   Example:
+        ```javascript
+        it("should have no accessibility violations", async () => {
+            const results = await axe.run(element);
+            expect(results.violations).toEqual([]);
+        });
+        ```
 
 ---
 
@@ -66,6 +76,15 @@ This document outlines the mandatory architectural and coding standards for "Leg
 ---
 
 ## 5. Components
+
+### File Architecture (4-File Pattern)
+Every component must follow this strict structure in its own directory:
+1.  **Logic** (`MyComponent.js`): Pure Lit component logic.
+2.  **Styles** (`MyComponent.styles.js`): CSS exports.
+3.  **Definition** (`my-component.js`): `customElements.define` and re-exports.
+4.  **Test** (`MyComponent.spec.js`): Vitest browser tests + A11y.
+
+### Implementation Rules
 
 *   **Private/Internal State**: Use Lit's `@state()` decorator.
 *   **Public API**: Use `@property()`.

@@ -1,46 +1,63 @@
 import "@awesome.me/webawesome/dist/components/tag/tag.js";
-import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
+
 import { ContextConsumer } from "@lit/context";
 import { html, LitElement } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
-import { characterContext } from "../contexts/character-context.js";
-import { profileContext } from "../contexts/profile-context.js";
-import { themeContext } from "../contexts/theme-context.js";
+import { characterContext } from "../../contexts/character-context.js";
+import { profileContext } from "../../contexts/profile-context.js";
+import { themeContext } from "../../contexts/theme-context.js";
 import {
 	processImagePath,
 	processImageSrcset,
-} from "../utils/process-assets.js";
-import { styles } from "./hero-profile.css.js";
+} from "../../utils/process-assets.js";
+import { heroProfileStyles } from "./HeroProfile.styles.js";
 
 /**
+ * Main hero profile component.
+ * Displays the hero's image, gear, weapon, and nameplate.
+ * Connects to profile, theme, and character contexts.
+ *
  * @element hero-profile
- * @property {string} imageSrc
- * @property {Object} profileData
- * @property {Object} themeData
- * @property {Object} suitData
- * @property {Object} gearData
- * @property {Object} powerData
- * @property {Object} masteryData
- * @property {string} tooltipText
- * @property {string} hotSwitchState
+ * @property {string} imageSrc - Base image source for the hero.
+ * @property {string} tooltipText - Optional tooltip text.
+ * @property {string} hotSwitchState - State for API injection visualization (legacy, mock, new).
  */
 export class HeroProfile extends LitElement {
 	static properties = {
+		/**
+		 * Base image source for the hero.
+		 */
 		imageSrc: { type: String },
+
+		/**
+		 * Profile data from profileContext.
+		 * @internal
+		 */
 		profileData: { state: true },
+
+		/**
+		 * Theme data from themeContext.
+		 * @internal
+		 */
 		themeData: { state: true },
+
+		/**
+		 * Suit data from characterContext.
+		 * @internal
+		 */
 		suitData: { state: true },
-		gearData: { state: true },
-		powerData: { state: true },
-		masteryData: { state: true },
-		tooltipText: { type: String },
+
+		/**
+		 * State for API injection visualization (legacy, mock, new).
+		 */
 		hotSwitchState: { type: String },
 	};
+
+	static styles = heroProfileStyles;
 
 	constructor() {
 		super();
 		this.imageSrc = "";
-		this.tooltipText = "";
 		this.hotSwitchState = "";
 
 		// Initialize context consumers
@@ -63,11 +80,8 @@ export class HeroProfile extends LitElement {
 			callback: (value) => {
 				// Destructure character data into component properties
 				// Fallback to empty objects to prevent undefined errors
-				const { suit = {}, gear = {}, power = {}, mastery = {} } = value || {};
+				const { suit = {} } = value || {};
 				this.suitData = suit;
-				this.gearData = gear;
-				this.powerData = power;
-				this.masteryData = mastery;
 			},
 			subscribe: true,
 		});
@@ -97,8 +111,6 @@ export class HeroProfile extends LitElement {
 		}
 	}
 
-	static styles = styles;
-
 	render() {
 		const {
 			name,
@@ -109,15 +121,6 @@ export class HeroProfile extends LitElement {
 		} = this.profileData || {};
 
 		return html`
-        <!-- Optional Tooltip -->
-        ${
-					this.tooltipText
-						? html`
-          <div class="hero-tooltip">${this.tooltipText}</div>
-        `
-						: ""
-				}
-
         <!-- Character Image -->
         ${
 					this.suitData?.image || this.imageSrc
@@ -132,51 +135,17 @@ export class HeroProfile extends LitElement {
         `
 						: ""
 				}
- 
-		<!-- Gear Image -->
-		${
-			this.gearData?.image
-				? html`
-			<img 
-				src="${ifDefined(processImagePath(this.gearData.image))}" 
-				srcset="${ifDefined(processImageSrcset(this.gearData.image))}"
-				sizes="15vw"
-				class="gear-img" 
-				alt="Gear" 
-			/>
-		`
-				: ""
-		}
- 
-		<!-- Weapon Image -->
-		${
-			this.powerData?.image
-				? html`
-			<img 
-				src="${ifDefined(processImagePath(this.powerData.image))}" 
-				srcset="${ifDefined(processImageSrcset(this.powerData.image))}"
-				sizes="15vw"
-				class="weapon-img" 
-				alt="Weapon" 
-			/>
-		`
-				: ""
-		}
 
         <!-- Nameplate (Bottom) -->
-        <div class="nameplate">
-          ${
-						loading
-							? html`<span class="loading">...</span>`
-							: error
-								? html`<span class="error">${error}</span>`
-								: html`
+        ${
+					loading
+						? html`<span class="loading">...</span>`
+						: error
+							? html`<span class="error">${error}</span>`
+							: html`
                   <wa-tag variant="neutral" size="small" pill class="name-tag">${name || "Alarion"}</wa-tag>
                 `
-					}
-        </div>
+				}
     `;
 	}
 }
-
-customElements.define("hero-profile", HeroProfile);

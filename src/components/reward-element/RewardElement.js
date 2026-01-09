@@ -3,15 +3,14 @@ import { ifDefined } from "lit/directives/if-defined.js";
 import {
 	processImagePath,
 	processImageSrcset,
-} from "../utils/process-assets.js";
-import { styles } from "./reward-element.css.js";
+} from "../../utils/process-assets.js";
+import { rewardElementStyles } from "./RewardElement.styles.js";
 
 /**
  * @element reward-element
- * @property {String} image
- * @property {String} icon
- * @property {Number} x
- * @property {Number} y
+ * @property {string} image
+ * @property {number} x
+ * @property {number} y
  */
 export class RewardElement extends LitElement {
 	static properties = {
@@ -20,14 +19,14 @@ export class RewardElement extends LitElement {
 		y: { type: Number },
 	};
 
+	static styles = rewardElementStyles;
+
 	constructor() {
 		super();
 		this.image = "";
 		this.x = 0;
 		this.y = 0;
 	}
-
-	static styles = styles;
 
 	render() {
 		// Apply position to host
@@ -47,5 +46,3 @@ export class RewardElement extends LitElement {
     `;
 	}
 }
-
-customElements.define("reward-element", RewardElement);

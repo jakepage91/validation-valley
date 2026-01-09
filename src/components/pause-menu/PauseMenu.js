@@ -2,12 +2,21 @@ import "@awesome.me/webawesome/dist/components/button/button.js";
 import "@awesome.me/webawesome/dist/components/dialog/dialog.js";
 import "@awesome.me/webawesome/dist/components/icon/icon.js";
 import { html, LitElement } from "lit";
-import { styles } from "./pause-menu.css.js";
+import { pauseMenuStyles } from "./PauseMenu.styles.js";
 
+/**
+ * @element pause-menu
+ * @property {boolean} open
+ * @event resume - Dispatched when resuming the game
+ * @event restart - Dispatched when restarting the quest
+ * @event quit - Dispatched when returning to hub
+ */
 export class PauseMenu extends LitElement {
 	static properties = {
 		open: { type: Boolean },
 	};
+
+	static styles = pauseMenuStyles;
 
 	constructor() {
 		super();
@@ -70,8 +79,4 @@ export class PauseMenu extends LitElement {
 			new CustomEvent("quit", { bubbles: true, composed: true }),
 		);
 	}
-
-	static styles = styles;
 }
-
-customElements.define("pause-menu", PauseMenu);

@@ -29,6 +29,7 @@
 		"syntax-highlight-element": "^1.2.0"
 	},
 	"devDependencies": {
+		"@axe-core/playwright": "^4.11.0",
 		"@biomejs/biome": "^2.0.8",
 		"@commitlint/cli": "^20.2.0",
 		"@commitlint/config-conventional": "^20.2.0",
@@ -38,6 +39,7 @@
 		"@vitest/browser": "^4.0.15",
 		"@vitest/browser-playwright": "^4.0.15",
 		"@vitest/coverage-v8": "^4.0.15",
+		"axe-core": "^4.11.1",
 		"husky": "^9.1.7",
 		"lint-staged": "^16.2.7",
 		"lit-analyzer": "^2.0.3",

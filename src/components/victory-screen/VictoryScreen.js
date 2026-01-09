@@ -2,18 +2,25 @@ import "@awesome.me/webawesome/dist/components/button/button.js";
 import { html, LitElement } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { processImagePath } from "../../utils/process-assets.js";
-import { styles } from "./victory-screen.css.js";
+import { victoryScreenStyles } from "./VictoryScreen.styles.js";
 
 /**
  * @typedef {import("../../services/quest-registry-service.js").Quest} Quest
  * @typedef {import("../../content/quests/quest-types.js").RewardConfig} RewardConfig
  */
 
+/**
+ * @element victory-screen
+ * @property {Quest} quest
+ * @property {Function} onReturn
+ */
 export class VictoryScreen extends LitElement {
 	static properties = {
 		quest: { type: Object },
 		onReturn: { type: Function },
 	};
+
+	static styles = victoryScreenStyles;
 
 	constructor() {
 		super();
@@ -44,7 +51,7 @@ export class VictoryScreen extends LitElement {
 				<h1 class="victory-title">QUEST COMPLETE!</h1>
 				<p class="victory-text"><small>
 					Congratulations, hero! You have successfully completed the quest:
-					<span style="color: ${this.quest.color || "white"};">${this.quest.name}</span>.
+					<span style="color: ${this.quest.color || "black"};">${this.quest.name}</span>.
 				</small></p>
 
 				<div class="rewards-container">
@@ -69,8 +76,4 @@ export class VictoryScreen extends LitElement {
 			</div>
 		`;
 	}
-
-	static styles = styles;
 }
-
-customElements.define("victory-screen", VictoryScreen);

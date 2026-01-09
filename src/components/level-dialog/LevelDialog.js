@@ -5,12 +5,12 @@ import { html, LitElement } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { map } from "lit/directives/map.js";
 import "syntax-highlight-element";
-import { EVENTS } from "../constants/events.js";
+import { EVENTS } from "../../constants/events.js";
 import {
 	processImagePath,
 	processImageSrcset,
-} from "../utils/process-assets.js";
-import { styles } from "./level-dialog.css.js";
+} from "../../utils/process-assets.js";
+import { levelDialogStyles } from "./LevelDialog.styles.js";
 
 /**
  * Escapes HTML to prevent XSS attacks
@@ -25,15 +25,24 @@ function escapeHtml(html) {
 }
 
 /**
- * @typedef {import('../content/quests/quest-types.js').LevelConfig} LevelConfig
+ * @typedef {import('../../content/quests/quest-types.js').LevelConfig} LevelConfig
+ * @typedef {import('../../content/quests/quest-types.js').CodeSnippet} CodeSnippet
  */
 
+/**
+ * @element level-dialog
+ * @property {LevelConfig} config
+ * @property {string} level
+ * @property {number} slideIndex
+ */
 export class LevelDialog extends LitElement {
 	static properties = {
 		config: { type: Object },
 		level: { type: String },
 		slideIndex: { state: true },
 	};
+
+	static styles = levelDialogStyles;
 
 	constructor() {
 		super();
@@ -185,12 +194,6 @@ export class LevelDialog extends LitElement {
 			new CustomEvent("close", { bubbles: true, composed: true }),
 		);
 	}
-
-	static styles = styles;
-
-	/**
-	 * @typedef {import('../content/quests/quest-types.js').CodeSnippet} CodeSnippet
-	 */
 
 	/**
 	 * Renders a code snippet
@@ -358,5 +361,3 @@ export class LevelDialog extends LitElement {
     `;
 	}
 }
-
-customElements.define("level-dialog", LevelDialog);
