@@ -292,15 +292,15 @@ export class QuestController {
 		}
 
 		// Fetch full chapter data from quest definition
-		const { stats: _stats, ...restChapterData } = this.currentQuest.chapters
-			? this.currentQuest.chapters[chapterId]
-			: {};
+		const rawChapterData = this.currentQuest.chapters?.[chapterId];
 
-		if (!restChapterData) {
+		if (!rawChapterData) {
 			logger.warn(`Chapter data not found for ID: ${chapterId}`);
 			// @ts-expect-error
 			return { id: chapterId }; // Fallback
 		}
+
+		const { stats: _stats, ...restChapterData } = rawChapterData;
 
 		return /** @type {Chapter} */ ({
 			...restChapterData,

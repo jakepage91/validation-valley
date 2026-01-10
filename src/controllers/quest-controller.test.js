@@ -522,4 +522,87 @@ describe("QuestController", () => {
 			expect(controller.hasNextChapter()).toBe(false);
 		});
 	});
+
+	describe("jumpToChapter Validation", () => {
+		it("should fail to jump if no active quest", () => {
+			controller.currentQuest = null;
+			const result = controller.jumpToChapter("chapter-2");
+			expect(result).toBe(false);
+		});
+
+		it("should fail to jump if chapter does not exist", () => {
+			controller.currentQuest = mockQuest;
+			const result = controller.jumpToChapter("non-existent-chapter");
+			expect(result).toBe(false);
+		});
+
+		it("should fail to jump if previous chapters are not completed", () => {
+			controller.currentQuest = mockQuest;
+			// Mock: chapter-1 is NOT completed
+			vi.mocked(controller.progressService.isChapterCompleted).mockReturnValue(
+				false,
+			);
+
+			// Try to jump to chapter-3 (index 2)
+			const result = controller.jumpToChapter("chapter-3");
+
+			expect(result).toBe(false);
+			expect(
+				controller.progressService.isChapterCompleted,
+			).toHaveBeenCalledWith("chapter-1");
+		});
+
+		it("should succeed jumping if previous chapters are completed", () => {
+			controller.currentQuest = mockQuest;
+			// Mock: chapters are completed
+			vi.mocked(controller.progressService.isChapterCompleted).mockReturnValue(
+				true,
+			);
+
+			const result = controller.jumpToChapter("chapter-3");
+
+			expect(result).toBe(true);
+			expect(controller.currentChapterIndex).toBe(2);
+			expect(controller.currentChapter?.id).toBe("chapter-3");
+		});
+	});
+
+	describe("Data Retrieval Edge Cases", () => {
+		it("should return null data if no current quest", () => {
+			controller.currentQuest = null;
+			expect(controller.getCurrentChapterData()).toBeNull();
+		});
+
+		it("should return null data if chapter ID is undefined", () => {
+			controller.currentQuest = { ...mockQuest, chapterIds: [] };
+			controller.currentChapterIndex = 0;
+			expect(controller.getCurrentChapterData()).toBeNull();
+		});
+
+		it("should return fallback data if chapter definition is missing", () => {
+			controller.currentQuest = {
+				...mockQuest,
+				chapters: {}, // Empty chapters
+			};
+			controller.currentChapterIndex = 0; // points to "chapter-1" in IDs
+
+			const data = controller.getCurrentChapterData();
+
+			expect(data).toHaveProperty("id", "chapter-1");
+		});
+
+		it("should not advance if already at last chapter", () => {
+			controller.currentQuest = mockQuest;
+			controller.currentChapterIndex = 2; // Last one
+
+			const emitSpy = vi.spyOn(controller.eventBus, "emit");
+			controller.nextChapter();
+
+			expect(controller.currentChapterIndex).toBe(2);
+			expect(emitSpy).not.toHaveBeenCalledWith(
+				EVENTS.QUEST.CHAPTER_CHANGED,
+				expect.any(Object),
+			);
+		});
+	});
 });

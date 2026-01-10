@@ -198,4 +198,34 @@ describe("VoiceSynthesisService", () => {
 			expect(service.getSpeakingStatus()).toBe(true);
 		});
 	});
+	describe("Edge Cases", () => {
+		it("should fallback to second available voice for NPC if possible", () => {
+			// Setup multiple voices matching search but NOT in preferred list
+			service.voices = /** @type {any} */ ([
+				{ name: "Unknown Voice 1", lang: "en-US" },
+				{ name: "Unknown Voice 2", lang: "en-US" },
+			]);
+
+			const voice = service.getBestVoice("en-US", "npc");
+
+			// According to logic: if (role === "npc" && langVoices.length > 1) return langVoices[1];
+			expect(voice?.name).toBe("Unknown Voice 2");
+		});
+
+		it("should handle speech synthesis unavailability gracefully", () => {
+			service.synthesis = /** @type {any} */ (null);
+			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {}); // Mock logger if it uses console, actually it uses logger-service mock but we can spy on logger behavior if we imported logger spy?
+			// Wait, logger is imported from "./logger-service.js".
+			// But the test doesn't mock logger explicitly?
+			// Ah, the file says `import { logger } from "./logger-service.js";` but tests don't mock it?
+			// Checking top of file... lines 1-3. No mock for logger-service. logic uses `vi.spyOn`.
+			// The implementation uses `logger.warn` or `logger.error`.
+			// If logger-service is real, it might log to console.
+
+			service.speak("Test", { lang: "en-US" });
+
+			// Should return early and not crash
+			expect(speechSynthesisMock.speak).not.toHaveBeenCalled();
+		});
+	});
 });
