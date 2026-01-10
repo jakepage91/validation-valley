@@ -31,6 +31,8 @@ function getMockApp(overrides = {}) {
 			})),
 			setHeroPosition: vi.fn(),
 			setCurrentDialogText: vi.fn(),
+			setShowDialog: vi.fn(),
+			setCollectedItem: vi.fn(),
 		},
 		handleMove: vi.fn(),
 		handleInteract: vi.fn(),
@@ -62,12 +64,35 @@ function getMockApp(overrides = {}) {
 			getCurrentChapterNumber: vi.fn(() => 1),
 			getTotalChapters: vi.fn(() => 3),
 			isLastChapter: vi.fn(() => false),
+			hasNextChapter: vi.fn(() => true),
 		},
-		eventBus: {
-			on: vi.fn(),
-			off: vi.fn(),
-			emit: vi.fn(),
-		},
+		eventBus: (() => {
+			const handlers = new Map();
+			return {
+				on: vi.fn((event, handler) => {
+					if (!handlers.has(event)) {
+						handlers.set(event, []);
+					}
+					handlers.get(event).push(handler);
+				}),
+				off: vi.fn((event, handler) => {
+					if (handlers.has(event)) {
+						const eventHandlers = handlers.get(event);
+						const index = eventHandlers.indexOf(handler);
+						if (index > -1) {
+							eventHandlers.splice(index, 1);
+						}
+					}
+				}),
+				emit: vi.fn((event, data) => {
+					if (handlers.has(event)) {
+						for (const handler of handlers.get(event)) {
+							handler(data);
+						}
+					}
+				}),
+			};
+		})(),
 		commandBus: {
 			execute: vi.fn(),
 		},
@@ -176,8 +201,8 @@ describe("GameView Component", () => {
 		});
 
 		it("should handle HERO_MOVE_INPUT event", () => {
-			// Directly call the handler as we are testing GameView's reaction
-			el.handleMoveInput({ dx: 1, dy: 0 });
+			// Emit event through event bus
+			mockApp.eventBus.emit(EVENTS.UI.HERO_MOVE_INPUT, { dx: 1, dy: 0 });
 
 			// Verify it executes a MoveHeroCommand via commandBus
 			expect(mockApp.commandBus.execute).toHaveBeenCalled();

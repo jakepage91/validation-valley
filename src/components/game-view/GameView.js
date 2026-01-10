@@ -53,8 +53,17 @@ import { styles } from "./game-view.css.js";
  */
 
 /**
+ * GameView - Main game orchestrator component
+ *
+ * Responsible for:
+ * - Setting up and coordinating game controllers (collision, zones, interaction, keyboard, voice)
+ * - Managing game state through signals
+ * - Handling player input and movement
+ * - Rendering game viewport, dialogs, and UI overlays
+ * - Coordinating game flow (pause, level transitions, completion)
+ *
  * @element game-view
- * @property {GameState} gameState
+ * @property {GameState} gameState - Current game state
  * @property {import('../legacys-end-app/LegacysEndApp.js').LegacysEndApp} app - Reference to Main App for controller setup
  */
 export class GameView extends SignalWatcher(LitElement) {
@@ -97,25 +106,36 @@ export class GameView extends SignalWatcher(LitElement) {
 
 		// Subscribe to global events via eventBus
 		if (this.app?.eventBus) {
-			this.app.eventBus.on(EVENTS.UI.DIALOG_NEXT, this.handleDialogNext);
-			this.app.eventBus.on(EVENTS.UI.DIALOG_PREV, this.handleDialogPrev);
-			this.app.eventBus.on(EVENTS.UI.HERO_AUTO_MOVE, this.handleAutoMove);
-			this.app.eventBus.on(EVENTS.UI.HERO_MOVE_INPUT, this.handleMoveInput);
+			this.app.eventBus.on(EVENTS.UI.DIALOG_NEXT, () =>
+				this.#handleDialogNext(),
+			);
+			this.app.eventBus.on(EVENTS.UI.DIALOG_PREV, () =>
+				this.#handleDialogPrev(),
+			);
+			this.app.eventBus.on(
+				EVENTS.UI.HERO_AUTO_MOVE,
+				(/** @type {any} */ data) => this.#handleAutoMove(data),
+			);
+			this.app.eventBus.on(
+				EVENTS.UI.HERO_MOVE_INPUT,
+				(/** @type {any} */ data) => this.#handleMoveInput(data),
+			);
 		}
 	}
 
 	disconnectedCallback() {
 		super.disconnectedCallback();
 		if (this.app?.eventBus) {
-			this.app.eventBus.off(EVENTS.UI.DIALOG_NEXT, this.handleDialogNext);
-			this.app.eventBus.off(EVENTS.UI.DIALOG_PREV, this.handleDialogPrev);
-			this.app.eventBus.off(EVENTS.UI.HERO_AUTO_MOVE, this.handleAutoMove);
-			this.app.eventBus.off(EVENTS.UI.HERO_MOVE_INPUT, this.handleMoveInput);
+			this.app.eventBus.off(EVENTS.UI.DIALOG_NEXT, this.#handleDialogNext);
+			this.app.eventBus.off(EVENTS.UI.DIALOG_PREV, this.#handleDialogPrev);
+			this.app.eventBus.off(EVENTS.UI.HERO_AUTO_MOVE, this.#handleAutoMove);
+			this.app.eventBus.off(EVENTS.UI.HERO_MOVE_INPUT, this.#handleMoveInput);
 		}
 		this.stopAutoMove();
 	}
 
 	/**
+	 * Updates component when properties change
 	 * @param {import('lit').PropertyValues} changedProperties
 	 */
 	updated(changedProperties) {
@@ -137,34 +157,60 @@ export class GameView extends SignalWatcher(LitElement) {
 	#setupControllers() {
 		const context = this.#getGameContext();
 
-		// Initialize fundamental game mechanics
+		this.#setupGameMechanics(context);
+		this.#setupInputHandlers(context);
+		this.#setupGameFlow(context);
+		this.#syncControllersToApp(context);
+		this.#syncProvidersToControllers();
+	}
+
+	/**
+	 * Setup fundamental game mechanics controllers
+	 * @param {import('../../core/game-context.js').IGameContext} context
+	 */
+	#setupGameMechanics(context) {
 		setupZones(this, context);
 		setupCollision(this, context);
 		setupService(this, context);
 		setupCharacterContexts(this, context);
-
-		// Interaction depends on components being ready
 		setupInteraction(this, context);
+	}
 
-		// Sync controller references back to app (maintaining legacy compatibility)
+	/**
+	 * Setup input handling controllers
+	 * @param {import('../../core/game-context.js').IGameContext} context
+	 */
+	#setupInputHandlers(context) {
+		this.#setupKeyboard(context);
+		setupVoice(/** @type {any} */ (this), context);
+	}
+
+	/**
+	 * Setup high-level game flow controllers
+	 * @param {import('../../core/game-context.js').IGameContext} context
+	 */
+	#setupGameFlow(context) {
+		setupGameService(context);
+		setupGameController(this, context);
+	}
+
+	/**
+	 * Sync controller references back to app for legacy compatibility
+	 * @param {import('../../core/game-context.js').IGameContext} context
+	 */
+	#syncControllersToApp(context) {
 		this.app.interaction = this.interaction;
 		this.app.collision = this.collision;
 		this.app.zones = this.zones;
 		this.app.serviceController = context.serviceController;
 		this.app.characterContexts = context.characterContexts;
-
-		// Correct context reference for downstream controllers
 		context.interaction = this.app.interaction;
+	}
 
-		// Setup Input processing
-		this.#setupKeyboard(context);
-		setupVoice(/** @type {any} */ (this), context);
-
-		// Setup higher-level game flow
-		setupGameService(context);
-		setupGameController(this, context);
-
-		// Synchronize providers for service controllers
+	/**
+	 * Sync providers to service controllers
+	 */
+	#syncProvidersToControllers() {
 		if (this.app.serviceController) {
 			this.app.serviceController.options.profileProvider =
 				this.app.profileProvider;
@@ -181,6 +227,7 @@ export class GameView extends SignalWatcher(LitElement) {
 	}
 
 	/**
+	 * Creates game context from app services
 	 * @returns {import('../../core/game-context.js').IGameContext}
 	 */
 	#getGameContext() {
@@ -200,6 +247,7 @@ export class GameView extends SignalWatcher(LitElement) {
 	}
 
 	/**
+	 * Setup keyboard controller
 	 * @param {import('../../core/game-context.js').IGameContext} context
 	 */
 	#setupKeyboard(context) {
@@ -209,9 +257,10 @@ export class GameView extends SignalWatcher(LitElement) {
 	}
 
 	/**
-	 * @param {number} dx
-	 * @param {number} dy
-	 * @param {boolean} [isAuto]
+	 * Handles hero movement
+	 * @param {number} dx - Delta X movement
+	 * @param {number} dy - Delta Y movement
+	 * @param {boolean} [isAuto] - Whether this is auto-movement
 	 */
 	handleMove(dx, dy, isAuto = false) {
 		if (!isAuto) {
@@ -230,6 +279,9 @@ export class GameView extends SignalWatcher(LitElement) {
 		}
 	}
 
+	/**
+	 * Handles interaction with game objects
+	 */
 	handleInteract() {
 		const stateService = this.app?.gameState;
 		const showDialog = stateService?.showDialog?.get();
@@ -245,9 +297,10 @@ export class GameView extends SignalWatcher(LitElement) {
 	}
 
 	/**
-	 * @param {number} targetX
-	 * @param {number} targetY
-	 * @param {number} [step]
+	 * Moves hero to target position with smooth animation
+	 * @param {number} targetX - Target X position
+	 * @param {number} targetY - Target Y position
+	 * @param {number} [step] - Movement step size
 	 */
 	moveTo(targetX, targetY, step = 0.4) {
 		this.stopAutoMove();
@@ -276,6 +329,9 @@ export class GameView extends SignalWatcher(LitElement) {
 		this._autoMoveRequestId = requestAnimationFrame(move);
 	}
 
+	/**
+	 * Stops auto-movement animation
+	 */
 	stopAutoMove() {
 		if (this._autoMoveRequestId) {
 			cancelAnimationFrame(this._autoMoveRequestId);
@@ -283,6 +339,9 @@ export class GameView extends SignalWatcher(LitElement) {
 		}
 	}
 
+	/**
+	 * Triggers level transition to next chapter
+	 */
 	triggerLevelTransition() {
 		this.stopAutoMove();
 		if (this.app?.commandBus) {
@@ -295,10 +354,16 @@ export class GameView extends SignalWatcher(LitElement) {
 		}
 	}
 
+	/**
+	 * Handles level completion
+	 */
 	handleLevelComplete() {
 		this.app.eventBus.emit(EVENTS.UI.LEVEL_COMPLETED);
 	}
 
+	/**
+	 * Toggles game pause state
+	 */
 	togglePause() {
 		if (this.app?.commandBus) {
 			this.app.commandBus.execute(
@@ -309,46 +374,55 @@ export class GameView extends SignalWatcher(LitElement) {
 		}
 	}
 
-	handleDialogNext = () => {
+	/**
+	 * Handles dialog next navigation
+	 */
+	#handleDialogNext() {
 		const dialog =
 			/** @type {import('../level-dialog/level-dialog.js').LevelDialog} */ (
 				this.shadowRoot?.querySelector("level-dialog")
 			);
 		if (dialog) dialog.nextSlide();
-	};
+	}
 
-	handleDialogPrev = () => {
+	/**
+	 * Handles dialog previous navigation
+	 */
+	#handleDialogPrev() {
 		const dialog =
 			/** @type {import('../level-dialog/level-dialog.js').LevelDialog} */ (
 				this.shadowRoot?.querySelector("level-dialog")
 			);
 		if (dialog) dialog.prevSlide();
-	};
+	}
 
 	/**
-	 * @param {CustomEvent} e
+	 * Handles slide change events from level dialog
+	 * @param {CustomEvent} e - Slide changed event
 	 */
-	handleSlideChanged = (e) => {
+	#handleSlideChanged(e) {
 		if (this.app?.gameState) {
 			this.app.gameState.setCurrentDialogText(e.detail.text);
 		}
-	};
+	}
 
 	/**
-	 * @param {{x: number, y: number}} data
+	 * Handles auto-move events
+	 * @param {{x: number, y: number}} data - Target position
 	 */
-	handleAutoMove = (data) => {
+	#handleAutoMove(data) {
 		const { x, y } = data;
 		this.moveTo(x, y);
-	};
+	}
 
 	/**
-	 * @param {{dx: number, dy: number}} data
+	 * Handles move input events
+	 * @param {{dx: number, dy: number}} data - Movement delta
 	 */
-	handleMoveInput = (data) => {
+	#handleMoveInput(data) {
 		const { dx, dy } = data;
 		this.handleMove(dx, dy);
-	};
+	}
 
 	render() {
 		const { config, quest } = this.gameState || {};
@@ -398,7 +472,7 @@ export class GameView extends SignalWatcher(LitElement) {
 						.isVoiceActive="${this.voice?.enabled || false}"
 					></game-viewport>
 				</main>
-				`
+			`
 			}
 
 			${
@@ -409,7 +483,7 @@ export class GameView extends SignalWatcher(LitElement) {
 					.level="${quest?.levelId || ""}"
 					@complete="${() => this.handleLevelComplete()}"
 					@close="${() => this.dispatchEvent(new CustomEvent("close-dialog"))}"
-					@slide-changed="${this.handleSlideChanged}"
+					@slide-changed="${(/** @type {any} */ e) => this.#handleSlideChanged(e)}"
 				></level-dialog>
 			`
 					: ""
