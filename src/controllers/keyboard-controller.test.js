@@ -107,8 +107,6 @@ describe("KeyboardController", () => {
 	});
 
 	it("should handle undo with Ctrl+Z", () => {
-		// Need to ensure platform independence or assume 'ctrlKey' for test
-		// e.key is 'z', ctrlKey is true.
 		const event = {
 			key: "z",
 			ctrlKey: true,
@@ -119,5 +117,94 @@ describe("KeyboardController", () => {
 
 		expect(event.preventDefault).toHaveBeenCalled();
 		expect(context.commandBus.undo).toHaveBeenCalled();
+	});
+
+	it("should handle redo with Ctrl+Shift+Z", () => {
+		const event = {
+			key: "z",
+			ctrlKey: true,
+			shiftKey: true,
+			toLowerCase: () => "z",
+			preventDefault: vi.fn(),
+		};
+		eventMap.keydown(event);
+
+		expect(event.preventDefault).toHaveBeenCalled();
+		expect(context.commandBus.redo).toHaveBeenCalled();
+	});
+
+	it("should handle redo with Ctrl+Y", () => {
+		const event = {
+			key: "y",
+			ctrlKey: true,
+			toLowerCase: () => "y",
+			preventDefault: vi.fn(),
+		};
+		eventMap.keydown(event);
+
+		expect(event.preventDefault).toHaveBeenCalled();
+		expect(context.commandBus.redo).toHaveBeenCalled();
+	});
+
+	it("should handle Mac Meta key for undo (Cmd+Z)", () => {
+		const event = {
+			key: "z",
+			metaKey: true, // Cmd key on Mac
+			toLowerCase: () => "z",
+			preventDefault: vi.fn(),
+		};
+		eventMap.keydown(event);
+
+		expect(event.preventDefault).toHaveBeenCalled();
+		expect(context.commandBus.undo).toHaveBeenCalled();
+	});
+
+	it("should use custom speed from options", () => {
+		const customController = new KeyboardController(host, context, {
+			speed: 5.0,
+		});
+		customController.hostConnected();
+
+		// WASD 'd' (Right)
+		const event = { key: "d", preventDefault: vi.fn() };
+		eventMap.keydown(event);
+
+		expect(context.eventBus.emit).toHaveBeenCalledWith(
+			EVENTS.UI.HERO_MOVE_INPUT,
+			{ dx: 5.0, dy: 0 },
+		);
+	});
+
+	it("should remove event listener on disconnect", () => {
+		controller.hostDisconnected();
+		expect(window.removeEventListener).toHaveBeenCalledWith(
+			"keydown",
+			expect.any(Function),
+		);
+		// Verify functionality is actually gone
+		// (We manually registered callback via mock, but in real DOM it would be gone)
+		// For this test we assume removeEventListener being called is sufficient
+	});
+
+	it("should be robust if services are missing (e.g., commandBus)", () => {
+		// Create controller with missing commandBus
+		const partialContext = {
+			eventBus: context.eventBus,
+			// commandBus missing
+		};
+
+		// @ts-expect-error
+		const robustController = new KeyboardController(host, partialContext, {});
+		robustController.hostConnected();
+
+		const event = {
+			key: "z",
+			ctrlKey: true,
+			toLowerCase: () => "z",
+			preventDefault: vi.fn(),
+		};
+
+		// Should not throw when attempting undo
+		expect(() => eventMap.keydown(event)).not.toThrow();
 	});
 });

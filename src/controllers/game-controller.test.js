@@ -103,25 +103,81 @@ describe("GameController", () => {
 		consoleSpy.mockRestore();
 	});
 
-	it("should handle LEVEL_COMPLETED event", () => {
+	it("should throw if gameService is missing in options", () => {
+		expect(() => {
+			new GameController(host, context, /** @type {any} */ ({}));
+		}).toThrow("GameController requires a gameService option");
+	});
+
+	it("should remove event listeners on disconnect", () => {
 		gameService = new GameService();
 		controller = new GameController(host, context, { gameService });
-
 		controller.hostConnected();
 
-		// Verify registration
-		expect(context.eventBus.on).toHaveBeenCalledWith(
+		controller.hostDisconnected();
+
+		expect(context.eventBus.off).toHaveBeenCalledWith(
 			EVENTS.UI.LEVEL_COMPLETED,
 			controller.handleLevelCompleted,
 		);
+		expect(context.eventBus.off).toHaveBeenCalledWith(
+			EVENTS.UI.EXIT_ZONE_REACHED,
+			controller.handleExitZoneReached,
+		);
+	});
 
-		// Simulate execution
-		controller.handleLevelCompleted();
+	it("should handle EXIT_ZONE_REACHED event by executing AdvanceChapterCommand", () => {
+		gameService = new GameService();
+		controller = new GameController(host, context, { gameService });
+		controller.hostConnected();
 
-		// Should have toggled dialog off
-		expect(context.gameState.setShowDialog).toHaveBeenCalledWith(false);
+		controller.handleExitZoneReached();
 
-		// And set collected item (since we mocked hasNextChapter to undefined/false)
-		expect(context.gameState.setCollectedItem).toHaveBeenCalledWith(true);
+		expect(context.commandBus.execute).toHaveBeenCalled();
+		const command = context.commandBus.execute.mock.calls[0][0];
+		expect(command.constructor.name).toBe("AdvanceChapterCommand");
+	});
+
+	describe("handleLevelCompleted", () => {
+		beforeEach(() => {
+			gameService = new GameService();
+			controller = new GameController(host, context, { gameService });
+			controller.hostConnected();
+		});
+
+		it("should mark item as collected if NOT yet collected", () => {
+			// Mock state: Reward NOT collected
+			context.gameState.getState.mockReturnValue({ isRewardCollected: false });
+			context.questController.hasNextChapter.mockReturnValue(true);
+
+			controller.handleLevelCompleted();
+
+			expect(context.gameState.setCollectedItem).toHaveBeenCalledWith(true);
+			expect(context.commandBus.execute).not.toHaveBeenCalled();
+		});
+
+		it("should advance chapter if reward IS collected AND has next chapter", () => {
+			// Mock state: Reward COLLECTED + Has Next Chapter
+			context.gameState.getState.mockReturnValue({ isRewardCollected: true });
+			context.questController.hasNextChapter.mockReturnValue(true);
+
+			controller.handleLevelCompleted();
+
+			expect(context.commandBus.execute).toHaveBeenCalled();
+			const command = context.commandBus.execute.mock.calls[0][0];
+			expect(command.constructor.name).toBe("AdvanceChapterCommand");
+		});
+
+		it("should mark item as collected if reward collected but NO next chapter (Fallback/Last Level)", () => {
+			// Mock state: Reward COLLECTED + NO Next Chapter
+			context.gameState.getState.mockReturnValue({ isRewardCollected: true });
+			context.questController.hasNextChapter.mockReturnValue(false);
+
+			controller.handleLevelCompleted();
+
+			// Should fall through to "just mark collected" path which logs "Level Goal Reached"
+			expect(context.gameState.setCollectedItem).toHaveBeenCalledWith(true);
+			expect(context.commandBus.execute).not.toHaveBeenCalled();
+		});
 	});
 });
