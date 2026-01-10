@@ -333,72 +333,52 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 		this.gameState.setPaused(!isPaused);
 	}
 
-	handleResume() {
+	#handleResume() {
 		this.gameState.setPaused(false);
 	}
 
-	handleRestartQuest() {
+	#handleRestartQuest() {
 		if (this.currentQuest) {
 			this.sessionManager.startQuest(this.currentQuest.id);
 		}
 	}
 
-	handleQuitToHub() {
-		if (this.commandBus) {
-			this.commandBus.execute(
-				new ReturnToHubCommand({
-					returnToHubUseCase: this.sessionManager._returnToHubUseCase,
-				}),
-			);
-		} else {
-			this.sessionManager.returnToHub();
-		}
+	#handleQuitToHub() {
+		this.#returnToHub();
 	}
 
-	handleCloseDialog() {
+	#handleCloseDialog() {
 		this.gameState.setShowDialog(false);
 		this.hasSeenIntro = true;
 	}
 
-	handleToggleHotSwitch() {
-		if (this.commandBus) {
-			this.commandBus.execute(
-				new ToggleHotSwitchCommand({ gameState: this.gameState }),
-			);
-		} else {
-			const currentState = this.gameState.hotSwitchState.get();
-			const newState = currentState === "legacy" ? "new" : "legacy";
-			this.gameState.setHotSwitchState(newState);
-			logger.info("🔄 Hot Switch toggled to:", newState);
-		}
+	#handleToggleHotSwitch() {
+		this.#executeCommand(
+			new ToggleHotSwitchCommand({ gameState: this.gameState }),
+			() => {
+				const currentState = this.gameState.hotSwitchState.get();
+				const newState = currentState === "legacy" ? "new" : "legacy";
+				this.gameState.setHotSwitchState(newState);
+				logger.info("🔄 Hot Switch toggled to:", newState);
+			},
+		);
 	}
 
-	handleRewardCollected() {
+	#handleRewardCollected() {
 		logger.info("🎉 LegacysEndApp received reward-collected event");
-		if (this.commandBus) {
-			this.commandBus.execute(
-				new CollectRewardCommand({ gameState: this.gameState }),
-			);
-		} else {
-			this.gameState.setRewardCollected(true);
-		}
+		this.#executeCommand(
+			new CollectRewardCommand({ gameState: this.gameState }),
+			() => this.gameState.setRewardCollected(true),
+		);
 		this.requestUpdate();
 	}
 
-	handleReturnToHub() {
+	#handleReturnToHub() {
 		this.showQuestCompleteDialog = false;
-		if (this.commandBus) {
-			this.commandBus.execute(
-				new ReturnToHubCommand({
-					returnToHubUseCase: this.sessionManager._returnToHubUseCase,
-				}),
-			);
-		} else {
-			this.questController.returnToHub();
-		}
+		this.#returnToHub();
 	}
 
-	handleResetProgress() {
+	#handleResetProgress() {
 		this.gameService.resetProgress();
 	}
 
@@ -443,14 +423,14 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 			<quest-hub
 				.quests="${this.getEnrichedQuests()}"
 				.comingSoonQuests="${getComingSoonQuests()}"
-				@quest-select="${(/** @type {CustomEvent} */ e) => this.handleQuestSelect(e.detail.questId)}"
-				@quest-continue="${(/** @type {CustomEvent} */ e) => this.handleContinueQuest(e.detail.questId)}"
-				@reset-progress="${() => this.handleResetProgress()}"
+				@quest-select="${(/** @type {CustomEvent} */ e) => this.#handleQuestSelect(e.detail.questId)}"
+				@quest-continue="${(/** @type {CustomEvent} */ e) => this.#handleContinueQuest(e.detail.questId)}"
+				@reset-progress="${() => this.#handleResetProgress()}"
 			></quest-hub>
 		`;
 	}
 
-	handleQuestSelect(/** @type {string} */ questId) {
+	#handleQuestSelect(/** @type {string} */ questId) {
 		if (this.commandBus) {
 			return this.commandBus.execute(
 				new StartQuestCommand({
@@ -462,7 +442,7 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 		return this.sessionManager.startQuest(questId);
 	}
 
-	handleContinueQuest(/** @type {string} */ questId) {
+	#handleContinueQuest(/** @type {string} */ questId) {
 		if (this.commandBus) {
 			return this.commandBus.execute(
 				new ContinueQuestCommand({
@@ -522,14 +502,39 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 			<game-view
 				.gameState="${gameState}"
 				.app="${this}"
-				@resume="${this.handleResume}"
-				@restart="${this.handleRestartQuest}"
-				@quit="${this.handleQuitToHub}"
-				@close-dialog="${this.handleCloseDialog}"
-				@toggle-hot-switch="${this.handleToggleHotSwitch}"
-				@reward-collected="${this.handleRewardCollected}"
-				@return-to-hub="${this.handleReturnToHub}"
+				@resume="${() => this.#handleResume()}"
+				@restart="${() => this.#handleRestartQuest()}"
+				@quit="${() => this.#handleQuitToHub()}"
+				@close-dialog="${() => this.#handleCloseDialog()}"
+				@toggle-hot-switch="${() => this.#handleToggleHotSwitch()}"
+				@reward-collected="${() => this.#handleRewardCollected()}"
+				@return-to-hub="${() => this.#handleReturnToHub()}"
 			></game-view>
 		`;
+	}
+
+	/**
+	 * Executes a command if commandBus is available
+	 * @param {any} command
+	 * @param {Function} [fallback] - Fallback function if no commandBus
+	 */
+	#executeCommand(command, fallback) {
+		if (this.commandBus) {
+			this.commandBus.execute(command);
+		} else if (fallback) {
+			fallback();
+		}
+	}
+
+	/**
+	 * Returns to hub (shared logic)
+	 */
+	#returnToHub() {
+		this.#executeCommand(
+			new ReturnToHubCommand({
+				returnToHubUseCase: this.sessionManager._returnToHubUseCase,
+			}),
+			() => this.sessionManager.returnToHub(),
+		);
 	}
 }
