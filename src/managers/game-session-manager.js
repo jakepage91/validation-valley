@@ -85,34 +85,27 @@ export class GameSessionManager extends Observable {
 	setupEventListeners() {
 		if (!this.eventBus) return;
 
-		this.eventBus.on(EVENTS.QUEST.STARTED, this._handleQuestStart.bind(this));
-		this.eventBus.on(
-			EVENTS.QUEST.CHAPTER_CHANGED,
-			this._handleChapterChange.bind(this),
+		this.eventBus.on(EVENTS.QUEST.STARTED, (payload) =>
+			this.#handleQuestStart(payload),
 		);
-		this.eventBus.on(
-			EVENTS.QUEST.COMPLETED,
-			this._handleQuestComplete.bind(this),
+		this.eventBus.on(EVENTS.QUEST.CHAPTER_CHANGED, (payload) =>
+			this.#handleChapterChange(payload),
 		);
-		this.eventBus.on(
-			EVENTS.QUEST.RETURN_TO_HUB,
-			this._handleReturnToHub.bind(this),
+		this.eventBus.on(EVENTS.QUEST.COMPLETED, (payload) =>
+			this.#handleQuestComplete(payload),
 		);
-		this.eventBus.on(
-			EVENTS.UI.THEME_CHANGED,
-			this._handleThemeChange.bind(this),
+		this.eventBus.on(EVENTS.QUEST.RETURN_TO_HUB, () =>
+			this.#handleReturnToHub(),
 		);
-		this.eventBus.on(
-			EVENTS.UI.CONTEXT_CHANGED,
-			this._handleContextChange.bind(this),
+		this.eventBus.on(EVENTS.UI.THEME_CHANGED, (payload) =>
+			this.#handleThemeChange(payload),
 		);
-		this.eventBus.on(
-			EVENTS.UI.DIALOG_OPENED,
-			this._handleShowDialog.bind(this),
+		this.eventBus.on(EVENTS.UI.CONTEXT_CHANGED, (payload) =>
+			this.#handleContextChange(payload),
 		);
-		this.eventBus.on(
-			EVENTS.UI.INTERACTION_LOCKED,
-			this._handleInteractionLocked.bind(this),
+		this.eventBus.on(EVENTS.UI.DIALOG_OPENED, () => this.#handleShowDialog());
+		this.eventBus.on(EVENTS.UI.INTERACTION_LOCKED, (payload) =>
+			this.#handleInteractionLocked(payload),
 		);
 	}
 
@@ -121,7 +114,7 @@ export class GameSessionManager extends Observable {
 	 * @param {Object} payload
 	 * @param {import('../services/quest-registry-service').Quest} payload.quest
 	 */
-	_handleQuestStart({ quest }) {
+	#handleQuestStart({ quest }) {
 		this.isLoading = false;
 		this.currentQuest = quest;
 		this.isInHub = false;
@@ -135,7 +128,7 @@ export class GameSessionManager extends Observable {
 	 * @param {any} payload.chapter
 	 * @param {number} payload.index
 	 */
-	_handleChapterChange({ chapter, index }) {
+	#handleChapterChange({ chapter, index }) {
 		// Update URL to reflect chapter (without reloading)
 		if (this.currentQuest && this.router) {
 			this.router.navigate(
@@ -155,23 +148,10 @@ export class GameSessionManager extends Observable {
 
 			// Mapping ServiceType to HotSwitchState
 			if (chapterData.serviceType !== undefined) {
-				if (chapterData.serviceType === null) {
-					this.gameState.setHotSwitchState(null);
-				} else {
-					switch (chapterData.serviceType) {
-						case ServiceType.LEGACY:
-							this.gameState.setHotSwitchState("legacy");
-							break;
-						case ServiceType.NEW:
-							this.gameState.setHotSwitchState("new");
-							break;
-						case ServiceType.MOCK:
-							this.gameState.setHotSwitchState("mock");
-							break;
-						default:
-							break;
-					}
-				}
+				const hotSwitchState = this.#mapServiceTypeToHotSwitch(
+					chapterData.serviceType,
+				);
+				this.gameState.setHotSwitchState(hotSwitchState);
 			}
 		}
 		this.gameState.resetChapterState();
@@ -202,7 +182,7 @@ export class GameSessionManager extends Observable {
 	 * @param {Object} payload
 	 * @param {import('../services/quest-registry-service').Quest} payload.quest
 	 */
-	_handleQuestComplete({ quest }) {
+	#handleQuestComplete({ quest }) {
 		logger.info(`✅ Completed quest: ${quest.name}`);
 		logger.info(`🏆 Earned badge: ${quest.reward?.badge}`);
 		this.gameState.setQuestCompleted(true);
@@ -215,7 +195,7 @@ export class GameSessionManager extends Observable {
 	/**
 	 * Handle return to hub event
 	 */
-	_handleReturnToHub() {
+	#handleReturnToHub() {
 		this.gameState.setQuestCompleted(false);
 		this.gameState.setPaused(false);
 		this.returnToHub();
@@ -226,7 +206,7 @@ export class GameSessionManager extends Observable {
 	 * @param {Object} payload
 	 * @param {import('../services/game-state-service').ThemeMode} payload.theme
 	 */
-	_handleThemeChange({ theme }) {
+	#handleThemeChange({ theme }) {
 		this.gameState.setThemeMode(theme);
 	}
 
@@ -235,7 +215,7 @@ export class GameSessionManager extends Observable {
 	 * @param {Object} payload
 	 * @param {import('../services/game-state-service').HotSwitchState} payload.context
 	 */
-	_handleContextChange({ context }) {
+	#handleContextChange({ context }) {
 		if (this.gameState.hotSwitchState.get() !== context) {
 			this.gameState.setHotSwitchState(context);
 		}
@@ -244,7 +224,7 @@ export class GameSessionManager extends Observable {
 	/**
 	 * Handle show dialog event
 	 */
-	_handleShowDialog() {
+	#handleShowDialog() {
 		this.gameState.setShowDialog(true);
 	}
 
@@ -253,7 +233,7 @@ export class GameSessionManager extends Observable {
 	 * @param {Object} payload
 	 * @param {string|null} payload.message
 	 */
-	_handleInteractionLocked({ message }) {
+	#handleInteractionLocked({ message }) {
 		this.gameState.setLockedMessage(message);
 	}
 
@@ -340,10 +320,7 @@ export class GameSessionManager extends Observable {
 	 * Start a new quest
 	 */
 	async startQuest(/** @type {string} */ questId) {
-		this.isLoading = true;
-		this.gameState.setQuestCompleted(false);
-		this.gameState.setPaused(false);
-		this.notify({ type: "loading", isLoading: true });
+		this.#setLoadingState(true);
 
 		const result = await this._startQuestUseCase.execute(questId);
 
@@ -357,18 +334,14 @@ export class GameSessionManager extends Observable {
 			});
 		}
 
-		this.isLoading = false;
-		this.notify({ type: "loading", isLoading: false });
+		this.#setLoadingState(false);
 	}
 
 	/**
 	 * Continue quest from last checkpoint
 	 */
 	async continueQuest(/** @type {string} */ questId) {
-		this.isLoading = true;
-		this.gameState.setQuestCompleted(false);
-		this.gameState.setPaused(false);
-		this.notify({ type: "loading", isLoading: true });
+		this.#setLoadingState(true);
 
 		const result = await this._continueQuestUseCase.execute(questId);
 
@@ -382,8 +355,7 @@ export class GameSessionManager extends Observable {
 			});
 		}
 
-		this.isLoading = false;
-		this.notify({ type: "loading", isLoading: false });
+		this.#setLoadingState(false);
 	}
 
 	/**
@@ -485,5 +457,41 @@ export class GameSessionManager extends Observable {
 		} finally {
 			this._isReturningToHub = false;
 		}
+	}
+
+	/**
+	 * Maps ServiceType to HotSwitchState
+	 * @param {import('../services/user-services').ServiceType | null} serviceType
+	 * @returns {import('../services/game-state-service').HotSwitchState}
+	 */
+	#mapServiceTypeToHotSwitch(serviceType) {
+		if (serviceType === null) {
+			return null;
+		}
+
+		const mapping = {
+			[ServiceType.LEGACY]: "legacy",
+			[ServiceType.NEW]: "new",
+			[ServiceType.MOCK]: "mock",
+		};
+
+		return (
+			/** @type {import('../services/game-state-service').HotSwitchState} */ (
+				mapping[serviceType]
+			) || null
+		);
+	}
+
+	/**
+	 * Sets loading state and prepares game for quest
+	 * @param {boolean} isLoading
+	 */
+	#setLoadingState(isLoading) {
+		this.isLoading = isLoading;
+		if (isLoading) {
+			this.gameState.setQuestCompleted(false);
+			this.gameState.setPaused(false);
+		}
+		this.notify({ type: "loading", isLoading });
 	}
 }
