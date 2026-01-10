@@ -85,5 +85,38 @@ describe("ProcessGameZoneInteractionUseCase", () => {
 				payload: null,
 			});
 		});
+		it("should handle exact boundary for NEW/LEGACY split (x=50)", () => {
+			// New zone is x < 50, Legacy is x >= 50
+			// Case x=49.9 -> New
+			expect(
+				useCase.execute({
+					x: 49.9,
+					y: 50,
+					chapter,
+					hasCollectedItem: false,
+				}),
+			).toContainEqual({ type: "CONTEXT_CHANGE", payload: "new" });
+
+			// Case x=50 -> Legacy
+			expect(
+				useCase.execute({
+					x: 50,
+					y: 50,
+					chapter,
+					hasCollectedItem: false,
+				}),
+			).toContainEqual({ type: "CONTEXT_CHANGE", payload: "legacy" });
+		});
+	});
+
+	it("should return empty array if chapter is missing", () => {
+		const results = useCase.execute({
+			x: 0,
+			y: 0,
+			// @ts-expect-error - Testing missing chapter
+			chapter: null,
+			hasCollectedItem: false,
+		});
+		expect(results).toEqual([]);
 	});
 });

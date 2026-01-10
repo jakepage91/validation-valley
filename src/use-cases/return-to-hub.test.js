@@ -94,4 +94,27 @@ describe("ReturnToHubUseCase", () => {
 		expect(result.success).toBe(true);
 		expect(mockQuestController.returnToHub).toHaveBeenCalled();
 	});
+	it("should handle mistakes in questController.returnToHub", () => {
+		const error = new Error("Quest Error");
+		mockQuestController.returnToHub.mockImplementation(() => {
+			throw error;
+		});
+
+		const result = useCase.execute();
+
+		expect(result.success).toBe(false);
+		expect(result.error).toBe(error);
+	});
+
+	it("should catch and return errors during navigation", () => {
+		const error = new Error("Nav Error");
+		mockRouter.navigate.mockImplementation(() => {
+			throw error;
+		});
+
+		const result = useCase.execute();
+
+		expect(result.success).toBe(false);
+		expect(result.error).toBe(error);
+	});
 });
