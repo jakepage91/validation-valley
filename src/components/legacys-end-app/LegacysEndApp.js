@@ -280,17 +280,26 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 				this.serviceController.loadUserData();
 			}
 		}
-		this.applyTheme();
 	}
 
 	/** @type {import('../../services/game-state-service').HotSwitchState} */
 	_lastHotSwitchState = null;
+
+	/** @type {import('../../services/game-state-service.js').ThemeMode | null} */
+	_lastThemeMode = null;
 
 	/**
 	 * @param {import('lit').PropertyValues} changedProperties
 	 */
 	willUpdate(changedProperties) {
 		super.willUpdate(changedProperties);
+
+		// Apply theme only when it changes
+		const newThemeMode = this.gameState.themeMode.get();
+		if (this._lastThemeMode !== newThemeMode) {
+			this.applyTheme();
+			this._lastThemeMode = newThemeMode;
+		}
 
 		// React directly to signals
 		const newHotSwitchState = this.gameState.hotSwitchState.get();
