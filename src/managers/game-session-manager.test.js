@@ -53,11 +53,21 @@ describe("GameSessionManager", () => {
 				hasCollectedItem: false,
 				isPaused: false,
 				isEvolving: false,
+				hotSwitchState: "new",
 			}),
 			subscribe: vi.fn(),
 			setHeroPosition: vi.fn(),
 			setPaused: vi.fn(),
 			setEvolving: vi.fn(),
+			hotSwitchState: { get: vi.fn(() => "new") },
+			isPaused: { get: vi.fn(() => false) },
+			isQuestCompleted: { get: vi.fn(() => false) },
+			showDialog: { get: vi.fn(() => false) },
+			heroPos: { get: vi.fn(() => ({ x: 50, y: 50 })) },
+			hasCollectedItem: { get: vi.fn(() => false) },
+			isRewardCollected: { get: vi.fn(() => false) },
+			isEvolving: { get: vi.fn(() => false) },
+			lockedMessage: { get: vi.fn(() => null) },
 			setCollectedItem: vi.fn(),
 			setRewardCollected: vi.fn(),
 			setQuestCompleted: vi.fn(),
@@ -219,8 +229,8 @@ describe("GameSessionManager", () => {
 
 		it("should handle context-changed event (Refactor: Event-driven zones)", () => {
 			manager.setupEventListeners();
-			// Mock initial state to be different
-			mockGameState.getState.mockReturnValue({ hotSwitchState: "legacy" });
+			// Mock initial state to be different (Signals)
+			mockGameState.hotSwitchState.get.mockReturnValue("legacy");
 
 			const contextCallback = mockEventBus.on.mock.calls.find(
 				(/** @type {any} */ call) => call[0] === "context-changed",

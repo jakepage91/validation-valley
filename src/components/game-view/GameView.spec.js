@@ -1,8 +1,85 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EVENTS } from "../../constants/events.js";
-import "./game-view.js";
+import { GameView } from "./game-view.js";
 
-/** @typedef {import("./game-view.js").GameView} GameView */
+/**
+ * Creates a complete mock app that satisfies the IGameContext interface.
+ */
+function getMockApp(overrides = {}) {
+	return {
+		addController: vi.fn(),
+		getChapterData: vi.fn(),
+		gameState: {
+			setPaused: vi.fn(),
+			isPaused: { get: vi.fn(() => false) },
+			isQuestCompleted: { get: vi.fn(() => false) },
+			showDialog: { get: vi.fn(() => false) },
+			heroPos: { get: vi.fn(() => ({ x: 0, y: 0 })) },
+			isEvolving: { get: vi.fn(() => false) },
+			hotSwitchState: { get: vi.fn(() => "new") },
+			hasCollectedItem: { get: vi.fn(() => false) },
+			isRewardCollected: { get: vi.fn(() => false) },
+			lockedMessage: { get: vi.fn(() => null) },
+			getState: vi.fn(() => ({
+				ui: { isPaused: false },
+				heroPos: { x: 0, y: 0 },
+				hasCollectedItem: false,
+				themeMode: "light",
+				hotSwitchState: "new",
+				isQuestCompleted: false,
+				showDialog: false,
+			})),
+			setHeroPosition: vi.fn(),
+			setCurrentDialogText: vi.fn(),
+		},
+		handleMove: vi.fn(),
+		handleInteract: vi.fn(),
+		getActiveService: vi.fn(() => null),
+		profileProvider: { setValue: vi.fn() },
+		suitProvider: { setValue: vi.fn() },
+		gearProvider: { setValue: vi.fn() },
+		powerProvider: { setValue: vi.fn() },
+		masteryProvider: { setValue: vi.fn() },
+		serviceController: { loadUserData: vi.fn(), options: {} },
+		characterContexts: { options: {} },
+		gameService: {
+			setLevel: vi.fn(),
+			giveItem: vi.fn(),
+			teleport: vi.fn(),
+			getState: vi.fn(),
+			setTheme: vi.fn(),
+			startQuest: vi.fn(),
+			completeQuest: vi.fn(),
+			completeChapter: vi.fn(),
+			returnToHub: vi.fn(),
+			listQuests: vi.fn(() => []),
+			getProgress: vi.fn(),
+			resetProgress: vi.fn(),
+		},
+		questController: {
+			currentChapter: { exitZone: { x: 10, y: 10 } },
+			hasExitZone: vi.fn(() => true),
+			getCurrentChapterNumber: vi.fn(() => 1),
+			getTotalChapters: vi.fn(() => 3),
+			isLastChapter: vi.fn(() => false),
+		},
+		eventBus: {
+			on: vi.fn(),
+			off: vi.fn(),
+			emit: vi.fn(),
+		},
+		commandBus: {
+			execute: vi.fn(),
+		},
+		sessionManager: {
+			getGameState: vi.fn(() => ({
+				isLoading: false,
+				isInHub: false,
+			})),
+		},
+		...overrides,
+	};
+}
 
 describe("GameView Component", () => {
 	beforeEach(() => {
@@ -10,7 +87,7 @@ describe("GameView Component", () => {
 	});
 
 	it("renders loading state when no config is provided", async () => {
-		const el = /** @type {GameView} */ (document.createElement("game-view"));
+		const el = /** @type {any} */ (document.createElement("game-view"));
 		document.body.appendChild(el);
 		await el.updateComplete;
 
@@ -18,7 +95,8 @@ describe("GameView Component", () => {
 	});
 
 	it("renders game-viewport when config is provided", async () => {
-		const el = /** @type {GameView} */ (document.createElement("game-view"));
+		const el = /** @type {any} */ (document.createElement("game-view"));
+		el.app = getMockApp();
 		el.gameState = /** @type {any} */ ({
 			config: {
 				canToggleTheme: true,
@@ -63,58 +141,8 @@ describe("GameView Component", () => {
 		let mockApp;
 
 		beforeEach(async () => {
-			// Create mock app
-			mockApp = {
-				addController: vi.fn(),
-				getChapterData: vi.fn(),
-				gameState: {
-					setPaused: vi.fn(),
-					getState: vi.fn(() => ({
-						ui: { isPaused: false },
-						heroPos: { x: 0, y: 0 },
-						hasCollectedItem: false,
-					})),
-					setHeroPosition: vi.fn(),
-				},
-				handleMove: vi.fn(), // Kept but probably unused
-				handleInteract: vi.fn(), // Kept but probably unused
-				getActiveService: vi.fn(() => null),
-				profileProvider: { setValue: vi.fn() },
-				suitProvider: { setValue: vi.fn() },
-				gearProvider: { setValue: vi.fn() },
-				powerProvider: { setValue: vi.fn() },
-				masteryProvider: { setValue: vi.fn() },
-				serviceController: null,
-				characterContexts: null,
-				gameService: {
-					setLevel: vi.fn(),
-					giveItem: vi.fn(),
-					teleport: vi.fn(),
-					getState: vi.fn(),
-					setTheme: vi.fn(),
-					startQuest: vi.fn(),
-					completeQuest: vi.fn(),
-					completeChapter: vi.fn(),
-					returnToHub: vi.fn(),
-					listQuests: vi.fn(() => []),
-					getProgress: vi.fn(),
-					resetProgress: vi.fn(),
-				},
-				questController: {
-					currentChapter: { exitZone: { x: 10, y: 10 } },
-					hasExitZone: vi.fn(() => true),
-				},
-				eventBus: {
-					on: vi.fn(),
-					off: vi.fn(),
-					emit: vi.fn(),
-				},
-				commandBus: {
-					execute: vi.fn(),
-				},
-			};
-
-			el = /** @type {GameView} */ (document.createElement("game-view"));
+			mockApp = getMockApp();
+			el = /** @type {any} */ (document.createElement("game-view"));
 			el.app = mockApp;
 			el.gameState = /** @type {any} */ ({
 				ui: {

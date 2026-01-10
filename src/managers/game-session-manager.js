@@ -77,8 +77,6 @@ export class GameSessionManager extends Observable {
 		this.isInHub = true;
 		this.currentQuest = null;
 		this._isReturningToHub = false;
-
-		// Subscription to game state changes removed in favor of direct Signal usage in components
 	}
 
 	/**
@@ -95,10 +93,6 @@ export class GameSessionManager extends Observable {
 		this.eventBus.on(
 			EVENTS.QUEST.COMPLETED,
 			this._handleQuestComplete.bind(this),
-		);
-		this.eventBus.on(
-			EVENTS.QUEST.RETURN_TO_HUB,
-			this._handleReturnToHub.bind(this),
 		);
 		this.eventBus.on(
 			EVENTS.QUEST.RETURN_TO_HUB,
@@ -128,13 +122,11 @@ export class GameSessionManager extends Observable {
 	 * @param {import('../services/quest-registry-service').Quest} payload.quest
 	 */
 	_handleQuestStart({ quest }) {
-		this.isLoading = true;
+		this.isLoading = false;
 		this.currentQuest = quest;
 		this.isInHub = false;
 		logger.info(`🎮 Started quest: ${quest.name}`);
-		this.notify({ type: "loading", isLoading: true });
-		this.isLoading = false;
-		this.notify({ type: "loading", isLoading: false });
+		this.notify({ type: "navigation", location: "quest", questId: quest.id });
 	}
 
 	/**
@@ -153,21 +145,13 @@ export class GameSessionManager extends Observable {
 		}
 
 		// Ensure we have fresh data and setup the world
-		const chapterData = chapter; // Full data passed from QuestController.getCurrentChapterData()
+		const chapterData = chapter;
 
 		if (chapterData?.startPos) {
 			this.gameState.setHeroPosition(
 				chapterData.startPos.x,
 				chapterData.startPos.y,
 			);
-
-			// Don't automatically set hotSwitchState based on serviceType
-			// Let it remain null unless explicitly set by zones or user interaction
-
-			// If chapter has hot switch, check zones (might override to null if outside zones)
-			if (chapterData.hasHotSwitch && this.zones) {
-				this.zones.checkZones(chapterData.startPos.x, chapterData.startPos.y);
-			}
 
 			// Mapping ServiceType to HotSwitchState
 			if (chapterData.serviceType !== undefined) {
@@ -185,7 +169,6 @@ export class GameSessionManager extends Observable {
 							this.gameState.setHotSwitchState("mock");
 							break;
 						default:
-							// Do not reset if unknown, keep current or null
 							break;
 					}
 				}
@@ -253,7 +236,7 @@ export class GameSessionManager extends Observable {
 	 * @param {import('../services/game-state-service').HotSwitchState} payload.context
 	 */
 	_handleContextChange({ context }) {
-		if (this.gameState.getState().hotSwitchState !== context) {
+		if (this.gameState.hotSwitchState.get() !== context) {
 			this.gameState.setHotSwitchState(context);
 		}
 	}
@@ -410,11 +393,11 @@ export class GameSessionManager extends Observable {
 		try {
 			const success = this.questController.jumpToChapter(chapterId);
 			if (!success) {
-				this.isLoading = false;
 				this.notify({ type: "loading", isLoading: false });
 			}
 			return success;
 		} catch {
+			this.notify({ type: "loading", isLoading: false });
 			return false;
 		}
 	}
@@ -484,7 +467,7 @@ export class GameSessionManager extends Observable {
 	returnToHub(replace = false) {
 		if (this.isInHub && !this.currentQuest) return;
 
-		// Guard against infinite recursion between manager and controller callbacks
+		// Guard against infinite recursion
 		if (this._isReturningToHub) return;
 		this._isReturningToHub = true;
 

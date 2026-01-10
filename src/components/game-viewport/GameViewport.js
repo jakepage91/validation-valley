@@ -1,5 +1,6 @@
 import "@awesome.me/webawesome/dist/components/card/card.js";
 import "@awesome.me/webawesome/dist/components/details/details.js";
+import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { ifDefined } from "lit/directives/if-defined.js";
@@ -10,7 +11,6 @@ import {
 	processImageSrcset,
 } from "../../utils/process-assets.js";
 import "../game-hud/game-hud.js";
-import { gameViewportStyles } from "./GameViewport.styles.js";
 import "../hero-profile/hero-profile.js";
 import "../npc-element/npc-element.js";
 import "../reward-element/reward-element.js";
@@ -18,54 +18,30 @@ import "../viewport-elements/game-context-zones/game-context-zones.js";
 import "../viewport-elements/game-controls/game-controls.js";
 import "../viewport-elements/game-exit-zone/game-exit-zone.js";
 import "../viewport-elements/game-theme-zones/game-theme-zones.js";
+import { gameViewportStyles } from "./GameViewport.styles.js";
 
 /**
  * @element game-viewport
- * @property {Object} gameState
- * @property {boolean} isAnimatingReward
- * @property {string} rewardAnimState
- * @property {boolean} isRewardCollected
+ * @property {Object} gameState - Configuration derived state
+ * @property {import('../legacys-end-app/LegacysEndApp.js').LegacysEndApp} app - Reference to Main App for direct signal access
  */
-export class GameViewport extends LitElement {
+export class GameViewport extends SignalWatcher(LitElement) {
 	static properties = {
 		gameState: { type: Object },
+		app: { type: Object },
 		isAnimatingReward: { state: true },
 		rewardAnimState: { state: true },
-		isRewardCollected: { type: Boolean },
+		isRewardCollected: { state: true },
 		isVoiceActive: { type: Boolean },
 	};
-
-	/**
-	 * @typedef {import('../../content/quests/quest-types.js').LevelConfig} LevelConfig
-	 * @typedef {import('../../services/quest-registry-service.js').Quest} Quest
-	 *
-	 * @typedef {Object} GameSessionState
-	 * @property {LevelConfig} [config]
-	 * @property {ViewQuest} [quest]
-	 * @property {Object} [levelState]
-	 * @property {boolean} [levelState.hasCollectedItem]
-	 * @property {boolean} [levelState.isCloseToTarget]
-	 * @property {boolean} [levelState.isRewardCollected]
-	 * @property {Object} [hero]
-	 * @property {{x: number, y: number}} [hero.pos]
-	 * @property {boolean} [hero.isEvolving]
-	 * @property {string} [hero.hotSwitchState]
-	 * @property {string} [hero.image]
-	 * @property {string} [hero.reward]
-	 * @property {Object} [ui]
-	 * @property {string} [ui.lockedMessage]
-	 */
-
-	/**
-	 * @typedef {{ data: Quest, chapterNumber?: number, totalChapters?: number }} ViewQuest
-	 */
 
 	static styles = gameViewportStyles;
 
 	constructor() {
 		super();
-		/** @type {GameSessionState} */
-		this.gameState = /** @type {GameSessionState} */ ({});
+		this.gameState = {};
+		/** @type {any} */
+		this.app = null;
 		this.isAnimatingReward = false;
 		this.rewardAnimState = "";
 		this.isRewardCollected = false;
@@ -76,57 +52,68 @@ export class GameViewport extends LitElement {
 	 * @param {import("lit").PropertyValues} changedProperties
 	 */
 	willUpdate(changedProperties) {
-		if (changedProperties.has("gameState")) {
-			// Check if hasCollectedItem changed from false to true
-			const oldState = changedProperties.get("gameState");
-			const wasCollected = oldState?.levelState?.hasCollectedItem;
-			const isCollected = this.gameState?.levelState?.hasCollectedItem;
+		super.willUpdate(changedProperties);
 
-			if (!wasCollected && isCollected) {
-				this.isAnimatingReward = true;
-				this.rewardAnimState = "start";
-				// ... animation logic ...
-			} else if (!isCollected) {
+		// Handle reward collection animation trigger via signal observation
+		if (this.app?.gameState) {
+			const hasCollectedItem = this.app.gameState.hasCollectedItem.get();
+			const prevHasCollectedItem = changedProperties.has("app")
+				? false
+				: this._lastHasCollectedItem;
+
+			if (!prevHasCollectedItem && hasCollectedItem) {
+				this.startRewardAnimation();
+			} else if (!hasCollectedItem) {
 				this.isRewardCollected = false;
 			}
-		}
-
-		if (this.isAnimatingReward && this.rewardAnimState === "start") {
-			// Step 1: Grow to center
-			setTimeout(() => {
-				this.rewardAnimState = "growing";
-				this.requestUpdate();
-			}, 50);
-
-			// Step 2: Move to hero
-			setTimeout(() => {
-				this.rewardAnimState = "moving";
-				this.requestUpdate();
-			}, gameConfig.animation.rewardDuration / 2);
-
-			// Step 3: End
-			setTimeout(() => {
-				this.isAnimatingReward = false;
-				this.rewardAnimState = "";
-				this.isRewardCollected = true; // New state to trigger visual changes
-				console.log("✨ GameViewport dispatching reward-collected");
-				this.dispatchEvent(
-					new CustomEvent("reward-collected", {
-						bubbles: true,
-						composed: true,
-					}),
-				);
-				this.requestUpdate();
-			}, gameConfig.animation.rewardDuration);
+			this._lastHasCollectedItem = hasCollectedItem;
 		}
 	}
 
-	render() {
-		if (!this.gameState || !this.gameState.config) return html``;
+	startRewardAnimation() {
+		this.isAnimatingReward = true;
+		this.rewardAnimState = "start";
 
-		const { config, quest, levelState, hero } = this.gameState;
+		// Step 1: Grow to center
+		setTimeout(() => {
+			this.rewardAnimState = "growing";
+			this.requestUpdate();
+		}, 50);
+
+		// Step 2: Move to hero
+		setTimeout(() => {
+			this.rewardAnimState = "moving";
+			this.requestUpdate();
+		}, gameConfig.animation.rewardDuration / 2);
+
+		// Step 3: End
+		setTimeout(() => {
+			this.isAnimatingReward = false;
+			this.rewardAnimState = "";
+			this.isRewardCollected = true;
+			this.dispatchEvent(
+				new CustomEvent("reward-collected", {
+					bubbles: true,
+					composed: true,
+				}),
+			);
+			this.requestUpdate();
+		}, gameConfig.animation.rewardDuration);
+	}
+
+	render() {
+		const state = /** @type {any} */ (this.gameState || {});
+		const config = state.config;
+		const quest = state.quest;
+		const stateService = this.app?.gameState;
+
+		if (!config || !stateService || !stateService.isPaused) return html``;
+
 		const backgroundStyle = config.backgroundStyle || "";
 		const backgroundPath = extractAssetPath(backgroundStyle);
+
+		const hotSwitchState = stateService.hotSwitchState.get();
+		const hasCollectedItem = stateService.hasCollectedItem.get();
 
 		return html`
 			<game-hud 
@@ -157,13 +144,13 @@ export class GameViewport extends LitElement {
 				></game-theme-zones>
 
 				<game-exit-zone 
-					.zoneConfig="${config?.exitZone || /** @type {any} */ ({})}" 
-					.active="${levelState?.hasCollectedItem || false}"
+					.zoneConfig="${config?.exitZone || {}}" 
+					.active="${hasCollectedItem}"
 				></game-exit-zone>
 
 				<game-context-zones 
 					?active="${config?.hasHotSwitch || false}"
-					.state="${hero?.hotSwitchState || "legacy"}"
+					.state="${hotSwitchState || "legacy"}"
 				></game-context-zones>
 
 				${this._renderNPC()}
@@ -174,8 +161,17 @@ export class GameViewport extends LitElement {
 	}
 
 	_renderNPC() {
-		const { config, levelState } = this.gameState;
-		if (!config?.npc) return "";
+		const state = /** @type {any} */ (this.gameState || {});
+		const config = state.config;
+		const stateService = this.app?.gameState;
+		if (!config?.npc || !stateService) return "";
+
+		const hasCollectedItem = stateService.hasCollectedItem.get();
+		const isRewardCollected = stateService.isRewardCollected.get();
+		const lockedMessage = stateService.lockedMessage.get();
+
+		// Interaction controller state remains external for now
+		const isCloseToTarget = this.app?.interaction?.isCloseToNpc() || false;
 
 		return html`
 			<npc-element
@@ -184,40 +180,44 @@ export class GameViewport extends LitElement {
 				.icon="${config.npc.icon || "user"}"
 				.x="${config.npc.position.x}"
 				.y="${config.npc.position.y}"
-				.isClose="${levelState?.isCloseToTarget || false}"
-				.action="${this.gameState.ui?.lockedMessage || ""}"
-				.hasCollectedItem="${levelState?.hasCollectedItem || false}"
-				.isRewardCollected="${levelState?.isRewardCollected || false}"
+				.isClose="${isCloseToTarget}"
+				.action="${lockedMessage || ""}"
+				.hasCollectedItem="${hasCollectedItem}"
+				.isRewardCollected="${isRewardCollected}"
 			></npc-element>
 		`;
 	}
 
 	_renderReward() {
-		const { config, levelState, hero } = this.gameState;
-		if (
-			!this.isAnimatingReward &&
-			(levelState?.hasCollectedItem || !config?.reward)
-		) {
+		const state = /** @type {any} */ (this.gameState || {});
+		const config = state.config;
+		const stateService = this.app?.gameState;
+		if (!config?.reward || !stateService) return "";
+
+		const hasCollectedItem = stateService.hasCollectedItem.get();
+
+		if (!this.isAnimatingReward && hasCollectedItem) {
 			return "";
 		}
 
 		// Calculations for animation or static position
-		let x = config?.reward?.position?.x || 0;
-		let y = config?.reward?.position?.y || 0;
+		let x = config.reward.position.x;
+		let y = config.reward.position.y;
 
 		if (this.isAnimatingReward) {
 			if (this.rewardAnimState === "growing") {
 				x = 50;
 				y = 50;
 			} else if (this.rewardAnimState === "moving") {
-				x = hero?.pos?.x || 0;
-				y = hero?.pos?.y || 0;
+				const heroPos = stateService.heroPos.get();
+				x = heroPos.x;
+				y = heroPos.y;
 			}
 		}
 
 		return html`
 			<reward-element
-				.image="${config?.reward?.image || ""}"
+				.image="${config.reward.image || ""}"
 				.x="${x}"
 				.y="${y}"
 				class=${classMap({ [this.rewardAnimState]: this.isAnimatingReward })}
@@ -226,10 +226,16 @@ export class GameViewport extends LitElement {
 	}
 
 	_renderHero() {
-		const { config, hero } = this.gameState;
-		if (!hero) return "";
+		const state = /** @type {any} */ (this.gameState || {});
+		const config = state.config;
+		const stateService = this.app?.gameState;
+		if (!stateService) return "";
 
-		const transition = hero.isEvolving
+		const heroPos = stateService.heroPos.get();
+		const isEvolving = stateService.isEvolving.get();
+		const hotSwitchState = stateService.hotSwitchState.get();
+
+		const transition = isEvolving
 			? "opacity 0.5s ease-out"
 			: "left 0.075s linear, top 0.075s linear";
 
@@ -242,13 +248,13 @@ export class GameViewport extends LitElement {
 		return html`
 			<hero-profile 
 				style="
-					left: ${hero.pos?.x || 0}%; 
-					top: ${hero.pos?.y || 0}%;
-					opacity: ${hero.isEvolving ? 0 : 1};
+					left: ${heroPos.x}%; 
+					top: ${heroPos.y}%;
+					opacity: ${isEvolving ? 0 : 1};
 					transition: ${transition};
 				"
 				.imageSrc="${imageSrc || ""}"
-				.hotSwitchState="${hero.hotSwitchState || ""}"
+				.hotSwitchState="${hotSwitchState || ""}"
 			></hero-profile>
 		`;
 	}
