@@ -30,6 +30,8 @@ describe("StartQuestUseCase", () => {
 		// Create use case instance
 		useCase = new StartQuestUseCase({
 			questController: mockQuestController,
+			eventBus,
+			logger: /** @type {any} */ ({ error: vi.fn() }),
 		});
 	});
 

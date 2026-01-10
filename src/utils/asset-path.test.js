@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { getAssetPath } from "./asset-path.js";
 
 describe("getAssetPath", () => {

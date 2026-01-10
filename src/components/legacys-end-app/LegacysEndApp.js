@@ -3,33 +3,15 @@ import { html, LitElement } from "lit";
 import { CollectRewardCommand } from "../../commands/collect-reward-command.js";
 import { CommandBus } from "../../commands/command-bus.js";
 import { ContinueQuestCommand } from "../../commands/continue-quest-command.js";
-import {
-	loggingMiddleware,
-	performanceMiddleware,
-	validationMiddleware,
-} from "../../commands/middleware.js";
 import { ReturnToHubCommand } from "../../commands/return-to-hub-command.js";
 import { StartQuestCommand } from "../../commands/start-quest-command.js";
 import { ToggleHotSwitchCommand } from "../../commands/toggle-hot-switch-command.js";
 import { ROUTES } from "../../constants/routes.js";
 import { eventBus as centralEventBus } from "../../core/event-bus.js";
-import { GameSessionManager } from "../../managers/game-session-manager.js";
+import { GameBootstrapper } from "../../core/game-bootstrapper.js";
 import { ContextMixin } from "../../mixins/context-mixin.js";
-import { GameStateService } from "../../services/game-state-service.js";
 import { logger } from "../../services/logger-service.js";
-import { ProgressService } from "../../services/progress-service.js";
 import { getComingSoonQuests } from "../../services/quest-registry-service.js";
-import { LocalStorageAdapter } from "../../services/storage-service.js";
-import {
-	LegacyUserService,
-	MockUserService,
-	NewUserService,
-} from "../../services/user-services.js";
-import { setupRoutes } from "../../setup/routes.js";
-import { setupGameService } from "../../setup/setup-game.js";
-import { setupQuest } from "../../setup/setup-quest.js";
-import { setupSessionManager } from "../../setup/setup-session-manager.js";
-import { Router } from "../../utils/router.js";
 import { legacysEndAppStyles } from "./LegacysEndApp.styles.js";
 
 import "@awesome.me/webawesome/dist/components/spinner/spinner.js";
@@ -121,9 +103,6 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 		this.hasSeenIntro = false;
 		this.showQuestCompleteDialog = false;
 
-		// Initialize Services
-		this.#setupServices();
-
 		// Initialize process
 		this.userData = {};
 		this.userLoading = true;
@@ -133,19 +112,44 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 		this.currentQuest = null;
 		this.isInHub = false;
 
-		// Initialize Router
-		this.router = new Router();
-		setupRoutes(
-			this.router,
-			/** @type {any} */ ({ sessionManager: this.sessionManager }),
-		);
+		// Initialize Bootstrapper
+		this.bootstrapper = new GameBootstrapper();
+		const context = this.bootstrapper.bootstrap(this);
 
-		// Initialize Controllers and Managers
-		this.#setupControllers();
+		// Map context to properties
+		this.eventBus = context.eventBus;
+		this.progressService =
+			/** @type {import("../../services/progress-service.js").ProgressService} */ (
+				context.progressService
+			);
+		this.gameState = context.gameState;
+		this.storageAdapter = context.storageAdapter;
+		this.gameService =
+			/** @type {import("../../services/game-service.js").GameService} */ (
+				context.gameService
+			);
+		this.services = context.services;
+		this.sessionManager = context.sessionManager;
+		this.commandBus = context.commandBus;
+		this.router = /** @type {import("../../utils/router.js").Router} */ (
+			context.router
+		);
+		this.questController =
+			/** @type {import("../../controllers/quest-controller.js").QuestController} */ (
+				context.questController
+			);
+
+		// Controllers implicit on this, but good to keep references if needed
+		// this.serviceController = context.serviceController;
+		// this.characterContexts = context.characterContexts;
 
 		/** @type {import('../../services/game-state-service').HotSwitchState} */
 		this._lastHotSwitchState = null;
 	}
+
+	// Deleted #setupServices
+	// Deleted #setupControllers
+	// Deleted #getGameContext
 
 	connectedCallback() {
 		super.connectedCallback();
@@ -204,66 +208,6 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 
 	disconnectedCallback() {
 		super.disconnectedCallback();
-	}
-
-	#setupServices() {
-		// Initialize Services
-		this.storageAdapter = new LocalStorageAdapter();
-		this.gameState = new GameStateService();
-		this.progressService = new ProgressService(this.storageAdapter);
-
-		this.services = {
-			legacy: new LegacyUserService(),
-			mock: new MockUserService(),
-			new: new NewUserService(),
-		};
-
-		// Initialize Command Bus
-		this.commandBus = new CommandBus();
-		this.commandBus.use(validationMiddleware);
-		this.commandBus.use(loggingMiddleware);
-		this.commandBus.use(performanceMiddleware);
-
-		// Initialize Session Manager
-		this.sessionManager = new GameSessionManager({
-			gameState: this.gameState,
-			progressService: this.progressService,
-			commandBus: this.commandBus,
-			eventBus: this.eventBus,
-			router: null,
-			questController: null,
-			controllers: {},
-		});
-	}
-
-	#setupControllers() {
-		const context = this.#getGameContext();
-
-		setupQuest(this, context);
-		this.questController = /** @type {any} */ (context.questController);
-
-		setupSessionManager(context);
-
-		setupGameService(context);
-		this.gameService = /** @type {any} */ (context.gameService);
-
-		this.sessionManager = context.sessionManager;
-	}
-
-	#getGameContext() {
-		return {
-			eventBus: this.eventBus,
-			gameState: this.gameState,
-			commandBus: this.commandBus,
-			sessionManager: this.sessionManager,
-			questController: this.questController,
-			progressService: this.progressService,
-			gameService: this.gameService,
-			router: this.router,
-			serviceController: this.serviceController,
-			characterContexts: this.characterContexts,
-			services: this.services,
-		};
 	}
 
 	applyTheme() {

@@ -245,6 +245,8 @@ export class GameSessionManager extends Observable {
 		if (!this.__startQuestUseCase) {
 			this.__startQuestUseCase = new StartQuestUseCase({
 				questController: this.questController,
+				eventBus: this.eventBus,
+				logger,
 			});
 		}
 		return this.__startQuestUseCase;

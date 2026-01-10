@@ -214,7 +214,9 @@ describe("VoiceSynthesisService", () => {
 
 		it("should handle speech synthesis unavailability gracefully", () => {
 			service.synthesis = /** @type {any} */ (null);
-			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {}); // Mock logger if it uses console, actually it uses logger-service mock but we can spy on logger behavior if we imported logger spy?
+			const _consoleSpy = vi
+				.spyOn(console, "warn")
+				.mockImplementation(() => {}); // Mock logger if it uses console, actually it uses logger-service mock but we can spy on logger behavior if we imported logger spy?
 			// Wait, logger is imported from "./logger-service.js".
 			// But the test doesn't mock logger explicitly?
 			// Ah, the file says `import { logger } from "./logger-service.js";` but tests don't mock it?
