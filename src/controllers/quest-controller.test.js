@@ -102,6 +102,7 @@ describe("QuestController", () => {
 			);
 			expect(mockEventBus.emit).toHaveBeenCalledWith(EVENTS.QUEST.STARTED, {
 				quest: mockQuest,
+				started: true,
 			});
 			expect(mockEventBus.emit).toHaveBeenCalledWith(
 				EVENTS.QUEST.CHAPTER_CHANGED,

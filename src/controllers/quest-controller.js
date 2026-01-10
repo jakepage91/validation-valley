@@ -114,7 +114,7 @@ export class QuestController {
 
 		// Check if quest is available
 		if (!this.progressService.isQuestAvailable(questId)) {
-			console.warn(`Quest not available: ${questId}`);
+			logger.warn(`Quest not available: ${questId}`);
 			return;
 		}
 
@@ -130,13 +130,7 @@ export class QuestController {
 		this.progressService.setCurrentQuest(questId, chapterId);
 
 		// Emit global event
-		this.eventBus.emit(EVENTS.QUEST.STARTED, { quest });
-		if (this.currentChapter) {
-			this.eventBus.emit(EVENTS.QUEST.CHAPTER_CHANGED, {
-				chapter: this.currentChapter,
-				index: 0,
-			});
-		}
+		this.#emitQuestEvents({ started: true });
 
 		this.host.requestUpdate();
 	}
@@ -154,7 +148,7 @@ export class QuestController {
 
 		// Check if quest is available (unlocked)
 		if (!this.progressService.isQuestAvailable(questId)) {
-			console.warn(`Quest not available: ${questId}`);
+			logger.warn(`Quest not available: ${questId}`);
 			return false;
 		}
 
@@ -173,17 +167,7 @@ export class QuestController {
 		this.currentChapter = this.getCurrentChapterData();
 
 		// Emit global event
-		this.eventBus.emit(EVENTS.QUEST.STARTED, {
-			quest,
-			loaded: true,
-		});
-
-		if (this.currentChapter) {
-			this.eventBus.emit(EVENTS.QUEST.CHAPTER_CHANGED, {
-				chapter: this.currentChapter,
-				index: this.currentChapterIndex,
-			});
-		}
+		this.#emitQuestEvents({ loaded: true });
 
 		this.host.requestUpdate();
 		return true;
@@ -203,24 +187,14 @@ export class QuestController {
 		}
 
 		if (!this.currentQuest) {
-			console.warn("No quest to resume");
+			logger.warn("No quest to resume");
 			return;
 		}
 
 		// Ensure content is loaded (if currentQuest was set but content missing)
 
 		// Emit global event
-		this.eventBus.emit(EVENTS.QUEST.STARTED, {
-			quest: this.currentQuest,
-			resumed: true,
-		});
-
-		if (this.currentChapter) {
-			this.eventBus.emit(EVENTS.QUEST.CHAPTER_CHANGED, {
-				chapter: this.currentChapter,
-				index: this.currentChapterIndex,
-			});
-		}
+		this.#emitQuestEvents({ resumed: true });
 
 		this.host.requestUpdate();
 	}
@@ -237,22 +211,9 @@ export class QuestController {
 		}
 
 		// Find the first uncompleted chapter
-		let nextChapterIndex = 0;
-		if (quest.chapterIds) {
-			for (let i = 0; i < quest.chapterIds.length; i++) {
-				const chapterId = quest.chapterIds[i];
-				const isCompleted = this.progressService.isChapterCompleted(chapterId);
-				console.log(
-					`🔍 Checking chapter ${i} (${chapterId}): ${isCompleted ? "Completed" : "Not Completed"}`,
-				);
-				if (!isCompleted) {
-					nextChapterIndex = i;
-					break;
-				}
-			}
-		}
-		console.log(
-			`▶️ Resuming quest ${questId} at chapter index ${nextChapterIndex}`,
+		const nextChapterIndex = this.#findFirstUncompletedChapter(quest);
+		logger.debug(
+			`Resuming quest ${questId} at chapter index ${nextChapterIndex}`,
 		);
 
 		this.currentQuest = quest;
@@ -264,17 +225,7 @@ export class QuestController {
 		this.progressService.setCurrentQuest(questId, chapterId);
 
 		// Emit global event
-		this.eventBus.emit(EVENTS.QUEST.STARTED, {
-			quest,
-			continued: true,
-		});
-
-		if (this.currentChapter) {
-			this.eventBus.emit(EVENTS.QUEST.CHAPTER_CHANGED, {
-				chapter: this.currentChapter,
-				index: nextChapterIndex,
-			});
-		}
+		this.#emitQuestEvents({ continued: true });
 
 		this.host.requestUpdate();
 	}
@@ -285,14 +236,14 @@ export class QuestController {
 	 */
 	jumpToChapter(chapterId) {
 		if (!this.currentQuest) {
-			console.warn("Cannot jump to chapter: No active quest");
+			logger.warn("Cannot jump to chapter: No active quest");
 			return false;
 		}
 
 		// 1. Validate Chapter Exists
 		const index = this.currentQuest.chapterIds?.indexOf(chapterId);
 		if (index === -1 || index === undefined) {
-			console.warn(`Chapter not found: ${chapterId}`);
+			logger.warn(`Chapter not found: ${chapterId}`);
 			return false;
 		}
 
@@ -321,18 +272,7 @@ export class QuestController {
 		this.progressService.setCurrentQuest(this.currentQuest.id, targetChapterId);
 
 		// Emit global event
-		if (this.currentQuest) {
-			this.eventBus.emit(EVENTS.QUEST.STARTED, {
-				quest: this.currentQuest,
-				jumped: true,
-			});
-		}
-		if (this.currentChapter) {
-			this.eventBus.emit(EVENTS.QUEST.CHAPTER_CHANGED, {
-				chapter: this.currentChapter,
-				index: this.currentChapterIndex,
-			});
-		}
+		this.#emitQuestEvents({ jumped: true });
 		this.host.requestUpdate();
 		return true;
 	}
@@ -357,7 +297,7 @@ export class QuestController {
 			: {};
 
 		if (!restChapterData) {
-			console.warn(`Chapter data not found for ID: ${chapterId}`);
+			logger.warn(`Chapter data not found for ID: ${chapterId}`);
 			// @ts-expect-error
 			return { id: chapterId }; // Fallback
 		}
@@ -610,5 +550,45 @@ export class QuestController {
 		}
 		const chapterIds = this.currentQuest.chapterIds;
 		return chapterIds[chapterIds.length - 1];
+	}
+
+	/**
+	 * Emits quest and chapter events
+	 * @param {Object} additionalData - Additional data to include in QUEST.STARTED event
+	 */
+	#emitQuestEvents(additionalData = {}) {
+		if (this.currentQuest) {
+			this.eventBus.emit(EVENTS.QUEST.STARTED, {
+				quest: this.currentQuest,
+				...additionalData,
+			});
+		}
+
+		if (this.currentChapter) {
+			this.eventBus.emit(EVENTS.QUEST.CHAPTER_CHANGED, {
+				chapter: this.currentChapter,
+				index: this.currentChapterIndex,
+			});
+		}
+	}
+
+	/**
+	 * Finds the first uncompleted chapter in a quest
+	 * @param {Quest} quest - Quest to search
+	 * @returns {number} Index of first uncompleted chapter
+	 */
+	#findFirstUncompletedChapter(quest) {
+		if (!quest.chapterIds) {
+			return 0;
+		}
+
+		for (let i = 0; i < quest.chapterIds.length; i++) {
+			const chapterId = quest.chapterIds[i];
+			if (!this.progressService.isChapterCompleted(chapterId)) {
+				return i;
+			}
+		}
+
+		return 0;
 	}
 }
