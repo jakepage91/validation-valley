@@ -17,6 +17,7 @@ This document outlines the mandatory architectural and coding standards for "Leg
      */
     ```
 *   **No "Any"**: Avoid generic `Object` types where possible; define the shape.
+*   **Private Methods**: Document private methods with JSDoc but mark them as internal.
 
 ---
 
@@ -65,13 +66,21 @@ This document outlines the mandatory architectural and coding standards for "Leg
 
 ## 4. Logging
 
-*   **No Console Logs**: Do not use `console.log`, `console.warn`, etc. directly.
+*   **No Console Logs**: Do not use `console.log`, `console.warn`, etc. directly in production code.
 *   **Use LoggerService**: Always import the `logger` singleton.
     ```javascript
     import { logger } from "./services/logger-service.js";
     logger.debug("Player moved", { x, y });
+    logger.info("Quest started", { questId });
+    logger.warn("Invalid state", { state });
+    logger.error("Failed to load", error);
     ```
 *   **Env Awareness**: The logger automatically silences debug logs in production/test unless forced.
+*   **Best Practices**:
+    *   Use `logger.debug()` for development-only logs
+    *   Use `logger.info()` for important user actions
+    *   Use `logger.warn()` for recoverable issues
+    *   Use `logger.error()` for critical failures
 
 ---
 
@@ -96,11 +105,144 @@ Every component must follow this strict structure in its own directory:
 *   **Private/Internal State**: Use Lit's `@state()` decorator.
 *   **Public API**: Use `@property()`.
 *   **Service Access**: Use `@consume({ context: myContext })`.
+*   **Private Methods**: Use `#` prefix for private methods and helpers.
+    ```javascript
+    class MyComponent extends LitElement {
+      // Public method
+      startQuest(questId) {
+        this.#validateQuest(questId);
+        this.#executeQuest(questId);
+      }
+      
+      // Private helper methods
+      #validateQuest(questId) { ... }
+      #executeQuest(questId) { ... }
+    }
+    ```
+*   **Event Handlers**: Convert to private methods and bind with arrow functions in templates.
+    ```javascript
+    // In class
+    #handleClick() { ... }
+    
+    // In template
+    render() {
+      return html`<button @click="${() => this.#handleClick()}">Click</button>`;
+    }
+    ```
+
+### Helper Methods
+*   **Extract Duplicated Logic**: If you see the same code pattern 2+ times, extract it to a private helper method.
+*   **Single Responsibility**: Each helper should do one thing well.
+*   **Descriptive Names**: Use clear, descriptive names for helpers (e.g., `#executeCommand`, `#mapServiceType`).
 
 ---
 
-## 6. Git & Workflow
+## 6. Code Quality
+
+### Encapsulation
+*   **Private by Default**: Make methods private (#) unless they need to be part of the public API.
+*   **Clear API Surface**: Only expose what's necessary for external consumers.
+*   **Helper Methods**: Extract common logic into private helper methods.
+
+### Code Duplication
+*   **DRY Principle**: Don't Repeat Yourself. Extract duplicated code into helpers.
+*   **Threshold**: If you copy-paste code more than once, it should be a function.
+
+### Naming Conventions
+*   **Private Methods**: Prefix with `#` (e.g., `#handleEvent`, `#validateInput`)
+*   **Event Handlers**: Use `#handle` prefix (e.g., `#handleClick`, `#handleSubmit`)
+*   **Helpers**: Use descriptive verbs (e.g., `#executeCommand`, `#mapServiceType`, `#setLoadingState`)
+
+---
+
+## 7. Git & Workflow
 
 *   **Main Branch**: The source of truth is `main` (not `master`).
 *   **CI Checks**: Do not merge PRs if the **CI & Coverage** workflow fails.
 *   **Artifacts**: Do not commit `coverage/` or `dist/` folders (enforced via `.gitignore`).
+*   **Commit Messages**: Follow conventional commits format:
+    ```
+    type(scope): description
+    
+    Examples:
+    feat(quest-hub): add quest filtering
+    fix(game-view): resolve dialog state issue
+    refactor(quest-controller): improve encapsulation
+    docs(readme): update architecture section
+    test(game-state): add signal tests
+    ```
+
+---
+
+## 8. Performance
+
+*   **Avoid Unnecessary Renders**: Use `willUpdate()` to check if updates are needed before re-rendering.
+*   **Optimize Expensive Operations**: Cache results, use memoization when appropriate.
+*   **Signal Usage**: Only subscribe to signals you actually need.
+*   **Example**: Theme application optimization
+    ```javascript
+    willUpdate(changedProperties) {
+      // Only apply theme if it actually changed
+      if (this.gameState.themeMode.get() !== this._lastThemeMode) {
+        this.applyTheme();
+        this._lastThemeMode = this.gameState.themeMode.get();
+      }
+    }
+    ```
+
+---
+
+## 9. Recent Best Practices (Phase 10)
+
+### Event Handler Pattern
+```javascript
+class MyComponent extends LitElement {
+  // Private event handlers
+  #handleSubmit() { ... }
+  #handleCancel() { ... }
+  
+  // Bind with arrow functions in template
+  render() {
+    return html`
+      <button @click="${() => this.#handleSubmit()}">Submit</button>
+      <button @click="${() => this.#handleCancel()}">Cancel</button>
+    `;
+  }
+}
+```
+
+### Helper Extraction Pattern
+```javascript
+class MyComponent extends LitElement {
+  // Extract duplicated command execution logic
+  #executeCommand(command, fallback) {
+    if (this.commandBus) {
+      this.commandBus.execute(command);
+    } else if (fallback) {
+      fallback();
+    }
+  }
+  
+  // Use the helper
+  #handleAction() {
+    this.#executeCommand(
+      new SomeCommand({ ... }),
+      () => { /* fallback logic */ }
+    );
+  }
+}
+```
+
+### Logging Pattern
+```javascript
+// Replace console.log/warn/error with logger
+import { logger } from "../services/logger-service.js";
+
+// Before (❌)
+console.log("Quest started");
+console.warn("Invalid state");
+
+// After (✅)
+logger.info("Quest started", { questId });
+logger.warn("Invalid state", { state });
+```
