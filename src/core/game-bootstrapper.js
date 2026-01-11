@@ -34,6 +34,7 @@ import { eventBus as centralEventBus } from "./event-bus.js";
 /**
  * @typedef {Object} GameContext
  * @property {import('./event-bus.js').EventBus} eventBus
+ * @property {import('../services/logger-service.js').LoggerService} logger
  * @property {import('../services/game-state-service.js').GameStateService} gameState
  * @property {import('../commands/command-bus.js').CommandBus} commandBus
  * @property {import('../managers/game-session-manager.js').GameSessionManager} sessionManager
@@ -61,9 +62,9 @@ export class GameBootstrapper {
 	/**
 	 * Bootstrap the game application
 	 * @param {import('lit').ReactiveControllerHost} host - The Lit component host (LegacysEndApp)
-	 * @returns {GameContext}
+	 * @returns {Promise<GameContext>}
 	 */
-	bootstrap(host) {
+	async bootstrap(host) {
 		logger.info("GameBootstrapper: Starting initialization...");
 
 		// 1. Initialize Services
@@ -73,7 +74,7 @@ export class GameBootstrapper {
 		const router = new Router();
 
 		// 3. Initialize Controllers & Wiring
-		const context = this.#setupControllers(host, servicesContext, router);
+		const context = await this.#setupControllers(host, servicesContext, router);
 
 		// 4. Setup Routes
 		setupRoutes(
@@ -112,6 +113,7 @@ export class GameBootstrapper {
 			progressService,
 			commandBus,
 			eventBus: this.eventBus,
+			logger: logger,
 			router: /** @type {any} */ (null),
 			questController: /** @type {any} */ (null),
 			controllers: {},
@@ -132,11 +134,12 @@ export class GameBootstrapper {
 	 * @param {ServicesContext} servicesContext
 	 * @param {import('../utils/router.js').Router} router
 	 */
-	#setupControllers(host, servicesContext, router) {
+	async #setupControllers(host, servicesContext, router) {
 		// Create a mutable context object to pass around setup functions
 		// This pattern is used by the existing setup helper functions
 		const context = {
 			eventBus: this.eventBus,
+			logger: logger,
 			gameState: servicesContext.gameState,
 			commandBus: servicesContext.commandBus,
 			sessionManager: servicesContext.sessionManager,
@@ -155,7 +158,7 @@ export class GameBootstrapper {
 		// These helpers instantiate controllers and attach them to the host (LegacysEndApp)
 		// and also populate the context object with the created instances.
 
-		setupQuest(/** @type {any} */ (host), context);
+		await setupQuest(/** @type {any} */ (host), context);
 		setupSessionManager(context);
 		setupGameService(context);
 

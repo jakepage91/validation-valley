@@ -9,7 +9,7 @@ import { QuestController } from "../controllers/quest-controller.js";
  * @param {import('lit').LitElement} host
  * @param {IGameContext} context
  */
-export function setupQuest(host, context) {
+export async function setupQuest(host, context) {
 	if (!context) {
 		console.error("setupQuest: context is undefined");
 		return;
@@ -17,5 +17,7 @@ export function setupQuest(host, context) {
 	context.questController = new QuestController(host, {
 		progressService: context.progressService,
 		eventBus: /** @type {any} */ (context).eventBus,
+		logger: /** @type {any} */ (context).logger,
+		registry: await import("../services/quest-registry-service.js"),
 	});
 }

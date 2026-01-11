@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { eventBus, GameEvents } from "../core/event-bus.js";
+import { GameEvents } from "../core/event-bus.js";
 import { ContinueQuestUseCase } from "./continue-quest.js";
 
 describe("ContinueQuestUseCase", () => {
@@ -9,10 +9,12 @@ describe("ContinueQuestUseCase", () => {
 	let mockQuestController;
 	/** @type {any} */
 	let mockQuest;
+	/** @type {any} */
+	let mockEventBus;
+	/** @type {any} */
+	let mockLogger;
 
 	beforeEach(() => {
-		eventBus.clear();
-
 		mockQuest = {
 			id: "test-quest",
 			name: "Test Quest",
@@ -24,8 +26,20 @@ describe("ContinueQuestUseCase", () => {
 			currentQuest: mockQuest,
 		};
 
+		mockEventBus = {
+			emit: vi.fn(),
+			on: vi.fn(),
+			clear: vi.fn(),
+		};
+
+		mockLogger = {
+			error: vi.fn(),
+		};
+
 		useCase = new ContinueQuestUseCase({
 			questController: mockQuestController,
+			eventBus: mockEventBus,
+			logger: /** @type {any} */ (mockLogger),
 		});
 	});
 
@@ -41,30 +55,44 @@ describe("ContinueQuestUseCase", () => {
 	});
 
 	it("should emit LOADING_START event", async () => {
-		const listener = vi.fn();
-		eventBus.on(GameEvents.LOADING_START, listener);
+		// Simulate event bus behavior matching usage?
+		// Or verify emit called on mockEventBus?
+		// The test was checking real event bus subscription.
+		// Since we mock eventBus, we verify .emit is called.
 
 		await useCase.execute("test-quest");
 
-		expect(listener).toHaveBeenCalledWith({ source: "continueQuest" });
+		expect(mockEventBus.emit).toHaveBeenCalledWith(GameEvents.LOADING_START, {
+			source: "continueQuest",
+		});
+
+		await useCase.execute("test-quest");
+
+		// Check emission directly
 	});
 
 	it("should emit NAVIGATE_QUEST event on success", async () => {
-		const listener = vi.fn();
-		eventBus.on(GameEvents.NAVIGATE_QUEST, listener);
+		await useCase.execute("test-quest");
+
+		expect(mockEventBus.emit).toHaveBeenCalledWith(GameEvents.NAVIGATE_QUEST, {
+			questId: "test-quest",
+		});
 
 		await useCase.execute("test-quest");
 
-		expect(listener).toHaveBeenCalledWith({ questId: "test-quest" });
+		// Check emission directly
 	});
 
 	it("should emit LOADING_END event", async () => {
-		const listener = vi.fn();
-		eventBus.on(GameEvents.LOADING_END, listener);
+		await useCase.execute("test-quest");
+
+		expect(mockEventBus.emit).toHaveBeenCalledWith(GameEvents.LOADING_END, {
+			source: "continueQuest",
+		});
 
 		await useCase.execute("test-quest");
 
-		expect(listener).toHaveBeenCalledWith({ source: "continueQuest" });
+		// Check emission directly
 	});
 
 	it("should handle errors gracefully", async () => {
@@ -82,16 +110,17 @@ describe("ContinueQuestUseCase", () => {
 		const error = new Error("Quest not found");
 		mockQuestController.continueQuest.mockRejectedValue(error);
 
-		const listener = vi.fn();
-		eventBus.on(GameEvents.ERROR, listener);
-
 		await useCase.execute("invalid-quest");
 
-		expect(listener).toHaveBeenCalledWith({
+		expect(mockEventBus.emit).toHaveBeenCalledWith(GameEvents.ERROR, {
 			message: "Failed to continue quest",
 			error,
 			context: { questId: "invalid-quest" },
 		});
+
+		await useCase.execute("invalid-quest");
+
+		// Checked above
 	});
 
 	it("should emit LOADING_END even on error", async () => {
@@ -99,11 +128,14 @@ describe("ContinueQuestUseCase", () => {
 			new Error("Test error"),
 		);
 
-		const listener = vi.fn();
-		eventBus.on(GameEvents.LOADING_END, listener);
+		await useCase.execute("test-quest");
+
+		expect(mockEventBus.emit).toHaveBeenCalledWith(GameEvents.LOADING_END, {
+			source: "continueQuest",
+		});
 
 		await useCase.execute("test-quest");
 
-		expect(listener).toHaveBeenCalledWith({ source: "continueQuest" });
+		// Check emission directly
 	});
 });

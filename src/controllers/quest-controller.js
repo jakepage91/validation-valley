@@ -4,9 +4,7 @@
 
 import { EVENTS } from "../constants/events.js";
 import { eventBus } from "../core/event-bus.js";
-import { logger } from "../services/logger-service.js";
 import { ProgressService } from "../services/progress-service.js";
-import * as DefaultRegistry from "../services/quest-registry-service.js";
 import { EvaluateChapterTransitionUseCase } from "../use-cases/evaluate-chapter-transition.js";
 
 /**
@@ -15,9 +13,10 @@ import { EvaluateChapterTransitionUseCase } from "../use-cases/evaluate-chapter-
  *
  * @typedef {Object} QuestControllerOptions
  * @property {import('../services/progress-service.js').ProgressService} [progressService] - Progress tracking service
- * @property {typeof DefaultRegistry} [registry] - Quest registry module
+ * @property {typeof import('../services/quest-registry-service.js')} [registry] - Quest registry module
  * @property {import('../commands/command-bus.js').CommandBus} [commandBus] - Command bus
  * @property {import('../core/event-bus.js').EventBus} [eventBus] - Event bus
+ * @property {import('../services/logger-service.js').LoggerService} [logger] - Logger
  * @property {EvaluateChapterTransitionUseCase} [evaluateChapterTransition] - Use case
  */
 
@@ -50,7 +49,7 @@ export class QuestController {
 		/** @type {QuestControllerOptions} */
 		this.options = {
 			progressService: undefined,
-			registry: DefaultRegistry,
+			registry: undefined,
 			evaluateChapterTransition: new EvaluateChapterTransitionUseCase(),
 			...options,
 		};
@@ -59,8 +58,13 @@ export class QuestController {
 			this.options.progressService || new ProgressService();
 		/** @type {import('../core/event-bus.js').EventBus} */
 		this.eventBus = /** @type {any} */ (options).eventBus || eventBus;
-		/** @type {typeof DefaultRegistry} */
-		this.registry = this.options.registry || DefaultRegistry;
+		/** @type {import('../services/logger-service.js').LoggerService} */
+		this.logger = /** @type {any} */ (options).logger;
+		/** @type {typeof import('../services/quest-registry-service.js')} */
+		this.registry = /** @type {any} */ (this.options.registry);
+
+		if (!this.logger) throw new Error("Logger is required");
+		if (!this.registry) throw new Error("Registry is required");
 		/** @type {Quest|null} */
 		this.currentQuest = null;
 		/** @type {Chapter|null} */
@@ -108,13 +112,13 @@ export class QuestController {
 	async startQuest(questId) {
 		const quest = this.registry.getQuest(questId);
 		if (!quest) {
-			logger.error(`Quest not found: ${questId}`);
+			this.logger.error(`Quest not found: ${questId}`);
 			return;
 		}
 
 		// Check if quest is available
 		if (!this.progressService.isQuestAvailable(questId)) {
-			logger.warn(`Quest not available: ${questId}`);
+			this.logger.warn(`Quest not available: ${questId}`);
 			return;
 		}
 
@@ -142,13 +146,13 @@ export class QuestController {
 	async loadQuest(questId) {
 		const quest = this.registry.getQuest(questId);
 		if (!quest) {
-			logger.error(`Quest not found: ${questId}`);
+			this.logger.error(`Quest not found: ${questId}`);
 			return false;
 		}
 
 		// Check if quest is available (unlocked)
 		if (!this.progressService.isQuestAvailable(questId)) {
-			logger.warn(`Quest not available: ${questId}`);
+			this.logger.warn(`Quest not available: ${questId}`);
 			return false;
 		}
 
@@ -187,7 +191,7 @@ export class QuestController {
 		}
 
 		if (!this.currentQuest) {
-			logger.warn("No quest to resume");
+			this.logger.warn("No quest to resume");
 			return;
 		}
 
@@ -206,13 +210,13 @@ export class QuestController {
 	async continueQuest(questId) {
 		const quest = this.registry.getQuest(questId);
 		if (!quest) {
-			logger.error(`Quest not found: ${questId}`);
+			this.logger.error(`Quest not found: ${questId}`);
 			return;
 		}
 
 		// Find the first uncompleted chapter
 		const nextChapterIndex = this.#findFirstUncompletedChapter(quest);
-		logger.debug(
+		this.logger.debug(
 			`Resuming quest ${questId} at chapter index ${nextChapterIndex}`,
 		);
 
@@ -236,14 +240,14 @@ export class QuestController {
 	 */
 	jumpToChapter(chapterId) {
 		if (!this.currentQuest) {
-			logger.warn("Cannot jump to chapter: No active quest");
+			this.logger.warn("Cannot jump to chapter: No active quest");
 			return false;
 		}
 
 		// 1. Validate Chapter Exists
 		const index = this.currentQuest.chapterIds?.indexOf(chapterId);
 		if (index === -1 || index === undefined) {
-			logger.warn(`Chapter not found: ${chapterId}`);
+			this.logger.warn(`Chapter not found: ${chapterId}`);
 			return false;
 		}
 
@@ -257,7 +261,7 @@ export class QuestController {
 				prevChapterId &&
 				!this.progressService.isChapterCompleted(prevChapterId)
 			) {
-				logger.warn(
+				this.logger.warn(
 					`🚫 Cannot jump to ${chapterId}. Previous chapter ${prevChapterId} not completed.`,
 				);
 				return false;
@@ -295,7 +299,7 @@ export class QuestController {
 		const rawChapterData = this.currentQuest.chapters?.[chapterId];
 
 		if (!rawChapterData) {
-			logger.warn(`Chapter data not found for ID: ${chapterId}`);
+			this.logger.warn(`Chapter data not found for ID: ${chapterId}`);
 			// @ts-expect-error
 			return { id: chapterId }; // Fallback
 		}

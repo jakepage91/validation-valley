@@ -114,7 +114,11 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 
 		// Initialize Bootstrapper
 		this.bootstrapper = new GameBootstrapper();
-		const context = this.bootstrapper.bootstrap(this);
+		this.initGame();
+	}
+
+	async initGame() {
+		const context = await this.bootstrapper.bootstrap(this);
 
 		// Map context to properties
 		this.eventBus = context.eventBus;
@@ -138,6 +142,10 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 			/** @type {import("../../controllers/quest-controller.js").QuestController} */ (
 				context.questController
 			);
+
+		// Initial sync after loading
+		this.syncSessionState();
+		this.requestUpdate();
 
 		// Controllers implicit on this, but good to keep references if needed
 		// this.serviceController = context.serviceController;
@@ -259,6 +267,7 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 	}
 
 	syncSessionState() {
+		if (!this.sessionManager) return;
 		const sessionState = this.sessionManager.getGameState();
 		this.isLoading = sessionState.isLoading;
 		this.isInHub = sessionState.isInHub;
@@ -353,6 +362,7 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 	}
 
 	getEnrichedQuests() {
+		if (!this.questController) return [];
 		return this.questController.getAvailableQuests().map((quest) => ({
 			...quest,
 			progress: this.questController.getQuestProgress(quest.id),

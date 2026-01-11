@@ -1,5 +1,4 @@
 import { ROUTES } from "../constants/routes.js";
-import { logger } from "../services/logger-service.js";
 
 /**
  * ReturnToHubUseCase
@@ -12,10 +11,12 @@ export class ReturnToHubUseCase {
 	 * @param {Object} dependencies
 	 * @param {import('../controllers/quest-controller.js').QuestController} dependencies.questController
 	 * @param {import('../utils/router.js').Router} dependencies.router
+	 * @param {import('../services/logger-service.js').LoggerService} dependencies.logger
 	 */
-	constructor({ questController, router }) {
+	constructor({ questController, router, logger }) {
 		this.questController = questController;
 		this.router = router;
+		this.logger = logger;
 	}
 
 	/**
@@ -25,7 +26,7 @@ export class ReturnToHubUseCase {
 	 */
 	execute(replace = false) {
 		try {
-			logger.info("🏛️ Returning to Hub");
+			this.logger.info("🏛️ Returning to Hub");
 
 			// Reset quest controller if needed
 			if (this.questController?.currentQuest) {
@@ -39,7 +40,7 @@ export class ReturnToHubUseCase {
 
 			return { success: true };
 		} catch (error) {
-			logger.error("Failed to return to hub:", error);
+			this.logger.error("Failed to return to hub:", error);
 			return {
 				success: false,
 				error: error instanceof Error ? error : new Error(String(error)),

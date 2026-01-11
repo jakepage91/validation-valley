@@ -10,6 +10,9 @@ describe("ReturnToHubUseCase", () => {
 	/** @type {any} */
 	let mockRouter;
 
+	/** @type {any} */
+	let mockLogger;
+
 	beforeEach(() => {
 		mockQuestController = {
 			currentQuest: { id: "test-quest" },
@@ -21,9 +24,15 @@ describe("ReturnToHubUseCase", () => {
 			navigate: vi.fn(),
 		};
 
+		mockLogger = {
+			info: vi.fn(),
+			error: vi.fn(),
+		};
+
 		useCase = new ReturnToHubUseCase({
 			questController: mockQuestController,
 			router: mockRouter,
+			logger: /** @type {any} */ (mockLogger),
 		});
 	});
 
@@ -74,6 +83,7 @@ describe("ReturnToHubUseCase", () => {
 			// @ts-expect-error - Testing with null questController
 			questController: null,
 			router: mockRouter,
+			logger: /** @type {any} */ (mockLogger),
 		});
 
 		const result = useCase.execute();
@@ -87,6 +97,7 @@ describe("ReturnToHubUseCase", () => {
 			questController: mockQuestController,
 			// @ts-expect-error - Testing with null router
 			router: null,
+			logger: /** @type {any} */ (mockLogger),
 		});
 
 		const result = useCase.execute();

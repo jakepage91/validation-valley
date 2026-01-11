@@ -1,5 +1,4 @@
-import { eventBus, GameEvents } from "../core/event-bus.js";
-import { logger } from "../services/logger-service.js";
+import { GameEvents } from "../core/event-bus.js";
 
 /**
  * CompleteQuestUseCase
@@ -11,9 +10,13 @@ export class CompleteQuestUseCase {
 	/**
 	 * @param {Object} dependencies
 	 * @param {import('../controllers/quest-controller.js').QuestController} dependencies.questController
+	 * @param {import('../core/event-bus.js').EventBus} dependencies.eventBus
+	 * @param {import('../services/logger-service.js').LoggerService} dependencies.logger
 	 */
-	constructor({ questController }) {
+	constructor({ questController, eventBus, logger }) {
 		this.questController = questController;
+		this.eventBus = eventBus;
+		this.logger = logger;
 	}
 
 	/**
@@ -26,26 +29,26 @@ export class CompleteQuestUseCase {
 			const currentQuest = this.questController.currentQuest;
 
 			if (!currentQuest) {
-				logger.warn("No active quest to complete");
+				this.logger.warn("No active quest to complete");
 				return { success: false, error: new Error("No active quest") };
 			}
 
 			const questId = currentQuest.id;
-			logger.info(`🎉 Completing quest: ${questId}`);
+			this.logger.info(`🎉 Completing quest: ${questId}`);
 
 			// Complete the quest via controller
 			this.questController.completeQuest();
 
 			// Emit completion event
-			eventBus.emit(GameEvents.QUEST_COMPLETE, {
+			this.eventBus.emit(GameEvents.QUEST_COMPLETE, {
 				questId,
 				quest: currentQuest,
 			});
 
 			return { success: true, questId };
 		} catch (error) {
-			logger.error("Failed to complete quest:", error);
-			eventBus.emit(GameEvents.ERROR, {
+			this.logger.error("Failed to complete quest:", error);
+			this.eventBus.emit(GameEvents.ERROR, {
 				message: "Failed to complete quest",
 				error,
 			});

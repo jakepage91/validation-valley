@@ -1,3 +1,10 @@
+export const LogLevel = {
+	DEBUG: 0,
+	INFO: 1,
+	WARN: 2,
+	ERROR: 3,
+};
+
 /**
  * @typedef {Object} LoggerOptions
  * @property {('debug'|'info'|'warn'|'error'|'silent')} [level='warn'] - Initial log level
@@ -6,8 +13,8 @@
  */
 
 /**
- * LoggerService - Centralized logging with log levels.
- * Controls output verbosity based on configuration and environment.
+ * Logger Service
+ * Centralized logging with levels and structured output
  */
 export class LoggerService {
 	/**

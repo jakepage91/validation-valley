@@ -35,6 +35,7 @@ export class GameSessionManager extends Observable {
 		 *   questController: import('../controllers/quest-controller').QuestController;
 		 *   router: import("../utils/router.js").Router;
 		 *   eventBus: import('../core/event-bus.js').EventBus;
+		 *   logger: import('../services/logger-service.js').LoggerService;
 		 *   controllers: {
 		 *     keyboard: import("../controllers/keyboard-controller.js").KeyboardController;
 		 *     interaction: import("../controllers/interaction-controller.js").InteractionController;
@@ -49,6 +50,7 @@ export class GameSessionManager extends Observable {
 			questController: /** @type {any} */ (null),
 			router: /** @type {any} */ (null),
 			eventBus: /** @type {any} */ (null),
+			logger: /** @type {any} */ (null),
 			controllers: {
 				keyboard: /** @type {any} */ (null),
 				interaction: /** @type {any} */ (null),
@@ -65,6 +67,8 @@ export class GameSessionManager extends Observable {
 		this.questController = this.options.questController;
 		this.router = this.options.router;
 		this.eventBus = this.options.eventBus;
+		/** @type {import('../services/logger-service.js').LoggerService} */
+		this.logger = this.options.logger || logger;
 
 		// Controllers
 		this.keyboard = this.options.controllers.keyboard;
@@ -118,7 +122,7 @@ export class GameSessionManager extends Observable {
 		this.isLoading = false;
 		this.currentQuest = quest;
 		this.isInHub = false;
-		logger.info(`🎮 Started quest: ${quest.name}`);
+		this.logger.info(`🎮 Started quest: ${quest.name}`);
 		this.notify({ type: "navigation", location: "quest", questId: quest.id });
 	}
 
@@ -163,10 +167,12 @@ export class GameSessionManager extends Observable {
 		if (state.hasCollectedItem) {
 			this.gameState.setCollectedItem(true);
 			this.gameState.setRewardCollected(true);
-			logger.info(`🔄 Restored collected item state for chapter ${chapter.id}`);
+			this.logger.info(
+				`🔄 Restored collected item state for chapter ${chapter.id}`,
+			);
 		}
 
-		logger.info(
+		this.logger.info(
 			`📖 Chapter ${index + 1}/${chapter.total}: ${chapterData?.name || chapter.id}`,
 		);
 
@@ -183,8 +189,8 @@ export class GameSessionManager extends Observable {
 	 * @param {import('../services/quest-registry-service').Quest} payload.quest
 	 */
 	#handleQuestComplete({ quest }) {
-		logger.info(`✅ Completed quest: ${quest.name}`);
-		logger.info(`🏆 Earned badge: ${quest.reward?.badge}`);
+		this.logger.info(`✅ Completed quest: ${quest.name}`);
+		this.logger.info(`🏆 Earned badge: ${quest.reward?.badge}`);
 		this.gameState.setQuestCompleted(true);
 		this.notify({
 			type: "quest-complete",
@@ -246,7 +252,7 @@ export class GameSessionManager extends Observable {
 			this.__startQuestUseCase = new StartQuestUseCase({
 				questController: this.questController,
 				eventBus: this.eventBus,
-				logger,
+				logger: this.logger,
 			});
 		}
 		return this.__startQuestUseCase;
@@ -260,6 +266,8 @@ export class GameSessionManager extends Observable {
 		if (!this.__continueQuestUseCase) {
 			this.__continueQuestUseCase = new ContinueQuestUseCase({
 				questController: this.questController,
+				eventBus: this.eventBus,
+				logger: this.logger,
 			});
 		}
 		return this.__continueQuestUseCase;
@@ -274,6 +282,7 @@ export class GameSessionManager extends Observable {
 			this.__returnToHubUseCase = new ReturnToHubUseCase({
 				questController: this.questController,
 				router: this.router,
+				logger: this.logger,
 			});
 		}
 		return this.__returnToHubUseCase;
@@ -298,6 +307,8 @@ export class GameSessionManager extends Observable {
 		if (!this.__completeQuestUseCase) {
 			this.__completeQuestUseCase = new CompleteQuestUseCase({
 				questController: this.questController,
+				eventBus: this.eventBus,
+				logger: this.logger,
 			});
 		}
 		return this.__completeQuestUseCase;
@@ -390,7 +401,9 @@ export class GameSessionManager extends Observable {
 			// If quest not active, load it first
 			if (!this.currentQuest || this.currentQuest.id !== questId) {
 				if (!this.progressService.isQuestAvailable(questId)) {
-					logger.warn(`🚫 Quest ${questId} not available. Redirecting to hub.`);
+					this.logger.warn(
+						`🚫 Quest ${questId} not available. Redirecting to hub.`,
+					);
 					this.returnToHub(true);
 					return;
 				}
@@ -400,7 +413,7 @@ export class GameSessionManager extends Observable {
 			// Try to jump to requested chapter
 			const success = this.questController.jumpToChapter(chapterId);
 			if (!success) {
-				logger.info(
+				this.logger.info(
 					`📖 Continuing quest ${questId} from last available chapter...`,
 				);
 				await this.questController.continueQuest(questId);
@@ -409,7 +422,7 @@ export class GameSessionManager extends Observable {
 			this.currentQuest = this.questController.currentQuest;
 			this.isInHub = false;
 		} catch (error) {
-			logger.error("Failed to load chapter:", error);
+			this.logger.error("Failed to load chapter:", error);
 		} finally {
 			this.isLoading = false;
 			this.notify({ type: "loading", isLoading: false });

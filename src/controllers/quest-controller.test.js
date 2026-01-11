@@ -2,10 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { QuestController } from "./quest-controller.js";
 
 // Mock dependencies
-vi.mock("../services/quest-registry-service.js", () => ({
-	getQuest: vi.fn(),
-	getAvailableQuests: vi.fn(),
-}));
+// Registry mock will be injected directly
+// ProgressService mock remains as checking module mock for now,
+// or should we inject mock instance?
+// Controller constructor: options.progressService.
+// The test currently mimics the module mock being the instance used?
+// The controller previously did `new ProgressService()`.
+// Now avoiding changing ProgressService logic too much in this step.
 
 vi.mock("../services/progress-service.js", () => {
 	return {
@@ -27,7 +30,6 @@ vi.mock("../services/progress-service.js", () => {
 });
 
 import { EVENTS } from "../constants/events.js";
-import { getQuest } from "../services/quest-registry-service.js";
 
 describe("QuestController", () => {
 	/** @type {import("lit").ReactiveControllerHost} */
@@ -42,6 +44,10 @@ describe("QuestController", () => {
 	let mockQuest;
 	/** @type {any} */
 	let mockEventBus;
+	/** @type {any} */
+	let mockRegistry;
+	/** @type {any} */
+	let mockLogger;
 
 	beforeEach(() => {
 		// Mock Host
@@ -69,7 +75,12 @@ describe("QuestController", () => {
 
 		// Reset Mocks
 		vi.clearAllMocks();
-		vi.mocked(getQuest).mockReturnValue(mockQuest);
+
+		// Mock Registry
+		mockRegistry = {
+			getQuest: vi.fn().mockReturnValue(mockQuest),
+			getAvailableQuests: vi.fn(),
+		};
 
 		// Mock EventBus
 		mockEventBus = {
@@ -78,7 +89,19 @@ describe("QuestController", () => {
 			unsubscribe: vi.fn(),
 		};
 
-		controller = new QuestController(host, { eventBus: mockEventBus });
+		// Mock Logger
+		mockLogger = {
+			error: vi.fn(),
+			warn: vi.fn(),
+			debug: vi.fn(),
+			info: vi.fn(),
+		};
+
+		controller = new QuestController(host, {
+			eventBus: mockEventBus,
+			registry: /** @type {any} */ (mockRegistry),
+			logger: /** @type {any} */ (mockLogger),
+		});
 	});
 
 	it("should initialize and add itself to host", () => {
@@ -89,7 +112,7 @@ describe("QuestController", () => {
 		it("should start a quest successfully", async () => {
 			await controller.startQuest("test-quest");
 
-			expect(getQuest).toHaveBeenCalledWith("test-quest");
+			expect(mockRegistry.getQuest).toHaveBeenCalledWith("test-quest");
 			expect(controller.currentQuest).toEqual(mockQuest);
 			expect(controller.currentChapterIndex).toBe(0);
 			expect(controller.currentChapter?.id).toBe("chapter-1");
@@ -115,7 +138,7 @@ describe("QuestController", () => {
 		});
 
 		it("should not start a quest if it does not exist", async () => {
-			vi.mocked(getQuest).mockReturnValue(/** @type {any} */ (null));
+			mockRegistry.getQuest.mockReturnValue(/** @type {any} */ (null));
 
 			await controller.startQuest("non-existent");
 
@@ -203,7 +226,7 @@ describe("QuestController", () => {
 			await controller.resumeQuest();
 
 			expect(controller.progressService.getProgress).toHaveBeenCalled();
-			expect(getQuest).toHaveBeenCalledWith("test-quest");
+			expect(mockRegistry.getQuest).toHaveBeenCalledWith("test-quest");
 			expect(mockEventBus.emit).toHaveBeenCalledWith(EVENTS.QUEST.STARTED, {
 				quest: mockQuest,
 				continued: true,
@@ -367,7 +390,7 @@ describe("QuestController", () => {
 		});
 
 		it("should return false if quest does not exist", async () => {
-			vi.mocked(getQuest).mockReturnValue(/** @type {any} */ (null));
+			mockRegistry.getQuest.mockReturnValue(/** @type {any} */ (null));
 			const result = await controller.loadQuest("non-existent");
 			expect(result).toBe(false);
 		});
@@ -391,14 +414,12 @@ describe("QuestController", () => {
 				{ id: "quest-1", name: "Quest 1" },
 				{ id: "quest-2", name: "Quest 2" },
 			]);
-			vi.spyOn(controller.registry, "getAvailableQuests").mockReturnValue(
-				mockAvailableQuests,
-			);
+			mockRegistry.getAvailableQuests.mockReturnValue(mockAvailableQuests);
 
 			const quests = controller.getAvailableQuests();
 
 			expect(quests).toEqual(mockAvailableQuests);
-			expect(controller.registry.getAvailableQuests).toHaveBeenCalled();
+			expect(mockRegistry.getAvailableQuests).toHaveBeenCalled();
 		});
 
 		it("getQuestProgress should return progress from service", () => {

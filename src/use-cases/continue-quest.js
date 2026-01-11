@@ -1,5 +1,4 @@
-import { eventBus, GameEvents } from "../core/event-bus.js";
-import { logger } from "../services/logger-service.js";
+import { GameEvents } from "../core/event-bus.js";
 
 /**
  * ContinueQuestUseCase
@@ -11,9 +10,13 @@ export class ContinueQuestUseCase {
 	/**
 	 * @param {Object} dependencies
 	 * @param {import('../controllers/quest-controller.js').QuestController} dependencies.questController
+	 * @param {import('../core/event-bus.js').EventBus} dependencies.eventBus
+	 * @param {import('../services/logger-service.js').LoggerService} dependencies.logger
 	 */
-	constructor({ questController }) {
+	constructor({ questController, eventBus, logger }) {
 		this.questController = questController;
+		this.eventBus = eventBus;
+		this.logger = logger;
 	}
 
 	/**
@@ -24,21 +27,21 @@ export class ContinueQuestUseCase {
 	async execute(questId) {
 		try {
 			// Emit loading start event
-			eventBus.emit(GameEvents.LOADING_START, { source: "continueQuest" });
+			this.eventBus.emit(GameEvents.LOADING_START, { source: "continueQuest" });
 
 			// Continue the quest through the controller
 			await this.questController.continueQuest(questId);
 			const quest = this.questController.currentQuest;
 
 			// Emit navigation event
-			eventBus.emit(GameEvents.NAVIGATE_QUEST, { questId });
+			this.eventBus.emit(GameEvents.NAVIGATE_QUEST, { questId });
 
 			return { success: true, quest };
 		} catch (error) {
-			logger.error("Failed to continue quest:", error);
+			this.logger.error("Failed to continue quest:", error);
 
 			// Emit error event
-			eventBus.emit(GameEvents.ERROR, {
+			this.eventBus.emit(GameEvents.ERROR, {
 				message: "Failed to continue quest",
 				error,
 				context: { questId },
@@ -51,7 +54,7 @@ export class ContinueQuestUseCase {
 			};
 		} finally {
 			// Always emit loading end
-			eventBus.emit(GameEvents.LOADING_END, { source: "continueQuest" });
+			this.eventBus.emit(GameEvents.LOADING_END, { source: "continueQuest" });
 		}
 	}
 }

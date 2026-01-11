@@ -44,6 +44,8 @@ describe("GameSessionManager", () => {
 	let mockControllers;
 	/** @type {any} */
 	let mockEventBus;
+	/** @type {any} */
+	let mockLogger;
 
 	beforeEach(() => {
 		// Mock GameStateService
@@ -125,6 +127,14 @@ describe("GameSessionManager", () => {
 			off: vi.fn(),
 		};
 
+		// Mock Logger
+		mockLogger = {
+			info: vi.fn(),
+			warn: vi.fn(),
+			error: vi.fn(),
+			debug: vi.fn(),
+		};
+
 		manager = new GameSessionManager({
 			gameState: mockGameState,
 			progressService: mockProgressService,
@@ -132,6 +142,7 @@ describe("GameSessionManager", () => {
 			router: mockRouter,
 			controllers: mockControllers,
 			eventBus: mockEventBus,
+			logger: mockLogger,
 		});
 	});
 
