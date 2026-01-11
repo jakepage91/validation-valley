@@ -26,16 +26,18 @@ import { EVENTS } from "../constants/events.js";
 export class KeyboardController {
 	/**
 	 * @param {import('lit').ReactiveControllerHost} host
-	 * @param {import('../core/game-context.js').IGameContext} context
-	 * @param {Partial<KeyboardOptions>} [options]
+	 * @param {Partial<KeyboardOptions & import('../core/game-context.js').IGameContext & {interaction: any}>} [options]
 	 */
-	constructor(host, context, options = {}) {
+	constructor(host, options = {}) {
 		/** @type {import('lit').ReactiveControllerHost} */
 		this.host = host;
-		this.context = context;
-		/** @type {KeyboardOptions} */
+		/** @type {KeyboardOptions & {interaction: any, commandBus: import('../commands/command-bus.js').CommandBus|undefined, eventBus: any, gameState: any}} */
 		this.options = {
 			speed: 2.5,
+			interaction: undefined,
+			commandBus: undefined,
+			eventBus: undefined,
+			gameState: undefined,
 			...options,
 		};
 
@@ -56,7 +58,7 @@ export class KeyboardController {
 	 * @param {KeyboardEvent} e
 	 */
 	handleKeyDown(e) {
-		const { commandBus, eventBus, interaction, gameState } = this.context;
+		const { commandBus, eventBus, interaction, gameState } = this.options;
 
 		// Handle Undo/Redo (Ctrl+Z / Ctrl+Y or Shift+Ctrl+Z)
 		if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {

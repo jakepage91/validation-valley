@@ -158,6 +158,11 @@ export class GameView extends SignalWatcher(LitElement) {
 		const context = this.#getGameContext();
 
 		this.#setupGameMechanics(context);
+		// Update context with newly created controllers
+		context.interaction = this.interaction || undefined;
+		/** @type {any} */ (context).collision = this.collision;
+		/** @type {any} */ (context).zones = this.zones;
+
 		this.#setupInputHandlers(context);
 		this.#setupGameFlow(context);
 		this.#syncControllersToApp(context);
@@ -251,7 +256,8 @@ export class GameView extends SignalWatcher(LitElement) {
 	 * @param {import('../../core/game-context.js').IGameContext} context
 	 */
 	#setupKeyboard(context) {
-		this.keyboard = new KeyboardController(this, context, {
+		this.keyboard = new KeyboardController(this, {
+			...context,
 			speed: 2.5,
 		});
 	}

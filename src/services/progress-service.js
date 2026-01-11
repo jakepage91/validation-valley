@@ -1,5 +1,4 @@
 import * as DefaultRegistry from "../services/quest-registry-service.js";
-import { logger } from "./logger-service.js";
 import { LocalStorageAdapter } from "./storage-service.js";
 
 /** @typedef {import('./storage-service').StorageAdapter} StorageAdapter */
@@ -32,10 +31,16 @@ export class ProgressService {
 	/**
 	 * @param {StorageAdapter} [storage] - Storage adapter for persistence
 	 * @param {typeof import('../services/quest-registry-service.js')} [registry] - Quest registry for looking up quest data
+	 * @param {import('./logger-service.js').LoggerService} [logger] - Logger service
 	 */
-	constructor(storage = new LocalStorageAdapter(), registry = DefaultRegistry) {
+	constructor(
+		storage = new LocalStorageAdapter(),
+		registry = DefaultRegistry,
+		logger = undefined,
+	) {
 		this.storage = storage;
 		this.registry = registry;
+		this.logger = logger;
 		this.storageKey = "legacys-end-progress";
 		/** @type {ProgressState} */
 		this.progress = this.loadProgress() || this._getDefaultState();
@@ -69,14 +74,14 @@ export class ProgressService {
 	loadProgress() {
 		const data = this.storage.getItem(this.storageKey);
 		if (data) {
-			logger.info("💾 Loaded progress:", data);
+			this.logger?.info("💾 Loaded progress:", data);
 			/** @type {ProgressState} */
 			const typedData = /** @type {ProgressState} */ (data);
 			return typedData;
 		}
 
 		// Default progress for new players
-		logger.info("🆕 Creating new progress");
+		this.logger?.info("🆕 Creating new progress");
 		return null;
 	}
 
@@ -84,7 +89,7 @@ export class ProgressService {
 	 * Save current progress state to storage.
 	 */
 	saveProgress() {
-		logger.info("💾 Saving progress:", this.progress);
+		this.logger?.info("💾 Saving progress:", this.progress);
 		this.storage.setItem(this.storageKey, this.progress);
 	}
 
@@ -93,7 +98,7 @@ export class ProgressService {
 	 * Clears storage and memory.
 	 */
 	resetProgress() {
-		logger.warn("⚠️ Resetting progress (Game Over / New Game)");
+		this.logger?.warn("⚠️ Resetting progress (Game Over / New Game)");
 		this.progress = this._getDefaultState();
 		// Re-unlock first quest explicitely if needed, but default state implies empty?
 		// Actually the original code had: unlockedQuests: ["the-aura-of-sovereignty"]
@@ -114,7 +119,7 @@ export class ProgressService {
 	 * @param {string} questId
 	 */
 	resetQuestProgress(questId) {
-		logger.info(`🔄 Resetting progress for quest: ${questId}`);
+		this.logger?.info(`🔄 Resetting progress for quest: ${questId}`);
 		const quest = this.registry.getQuest(questId);
 
 		// Remove chapters belonging to this quest
@@ -178,7 +183,7 @@ export class ProgressService {
 
 			this.unlockNewQuests();
 			this.saveProgress();
-			logger.info(`✅ Quest completed: ${questId}`);
+			this.logger?.info(`✅ Quest completed: ${questId}`);
 		}
 	}
 
@@ -192,7 +197,7 @@ export class ProgressService {
 			this.progress.stats.chaptersCompleted++;
 			this.checkQuestCompletion();
 			this.saveProgress();
-			logger.info(`✅ Chapter completed: ${chapterId}`);
+			this.logger?.info(`✅ Chapter completed: ${chapterId}`);
 		}
 	}
 
@@ -223,7 +228,7 @@ export class ProgressService {
 		if (!this.progress.achievements.includes(achievementId)) {
 			this.progress.achievements.push(achievementId);
 			this.saveProgress();
-			logger.info(`🏆 Achievement unlocked: ${achievementId}`);
+			this.logger?.info(`🏆 Achievement unlocked: ${achievementId}`);
 		}
 	}
 
@@ -245,7 +250,7 @@ export class ProgressService {
 
 			if (!isLocked) {
 				this.progress.unlockedQuests.push(quest.id);
-				logger.info(`🔓 New quest unlocked: ${quest.id}`);
+				this.logger?.info(`🔓 New quest unlocked: ${quest.id}`);
 			}
 		}
 		this.saveProgress();

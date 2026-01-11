@@ -143,6 +143,14 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 				context.questController
 			);
 
+		// Initialize Router
+		this.router.init();
+
+		// Default redirect
+		if (window.location.pathname === "/" || window.location.pathname === "") {
+			this.router.navigate(ROUTES.HUB, true);
+		}
+
 		// Initial sync after loading
 		this.syncSessionState();
 		this.requestUpdate();
@@ -204,14 +212,6 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 				introDialog.open = true;
 			}
 		}, 1000);
-
-		// Initialize Router
-		this.router.init();
-
-		// Default redirect
-		if (window.location.pathname === "/" || window.location.pathname === "") {
-			this.router.navigate(ROUTES.HUB, true);
-		}
 	}
 
 	disconnectedCallback() {
@@ -219,6 +219,7 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 	}
 
 	applyTheme() {
+		if (!this.gameState) return;
 		const mode = this.gameState.themeMode.get();
 		this.classList.add("wa-theme-pixel");
 		this.classList.remove("wa-dark", "wa-light");
@@ -247,6 +248,7 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 		super.willUpdate(changedProperties);
 
 		// Apply theme only when it changes
+		if (!this.gameState) return;
 		const newThemeMode = this.gameState.themeMode.get();
 		if (this._lastThemeMode !== newThemeMode) {
 			this.applyTheme();

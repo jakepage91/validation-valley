@@ -49,7 +49,7 @@ describe("KeyboardController", () => {
 
 		// Initialize controller
 		// Passing context as 2nd argument (matching implementation)
-		controller = new KeyboardController(host, context, {});
+		controller = new KeyboardController(host, { ...context });
 		controller.hostConnected();
 	});
 
@@ -160,7 +160,8 @@ describe("KeyboardController", () => {
 	});
 
 	it("should use custom speed from options", () => {
-		const customController = new KeyboardController(host, context, {
+		const customController = new KeyboardController(host, {
+			...context,
 			speed: 5.0,
 		});
 		customController.hostConnected();

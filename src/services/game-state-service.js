@@ -51,7 +51,11 @@ import {
  * @implements {IGameStateService}
  */
 export class GameStateService {
-	constructor() {
+	/**
+	 * @param {import('./logger-service.js').LoggerService} [logger] - Logger service
+	 */
+	constructor(logger = undefined) {
+		this.logger = logger;
 		// Define signals for reactive state
 		this.heroPos = new Signal.State({ x: 50, y: 15 });
 		this.hasCollectedItem = new Signal.State(false);
@@ -223,7 +227,7 @@ export class GameStateService {
 	subscribe(_callback) {
 		// Warning: This is a hacky compatibility shim.
 		// We will maintain it for now until consumers are updated
-		console.warn(
+		this.logger?.warn(
 			"GameStateService.subscribe is deprecated. Use signals directly.",
 		);
 		return () => {};

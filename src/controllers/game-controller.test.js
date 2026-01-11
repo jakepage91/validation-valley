@@ -60,7 +60,7 @@ describe("GameController", () => {
 
 	it("should not enable debug mode by default", () => {
 		gameService = new GameService();
-		controller = new GameController(host, context, { gameService });
+		controller = new GameController(host, { ...context, gameService });
 		controller.hostConnected();
 
 		expect(controller.isEnabled).toBe(false);
@@ -71,7 +71,7 @@ describe("GameController", () => {
 	it("should enable debug mode when ?debug is in URL", () => {
 		window.history.replaceState({}, "", "/?debug");
 		gameService = new GameService({ setLevel, getState });
-		controller = new GameController(host, context, { gameService });
+		controller = new GameController(host, { ...context, gameService });
 		controller.hostConnected();
 
 		expect(controller.isEnabled).toBe(true);
@@ -80,7 +80,7 @@ describe("GameController", () => {
 	it("should NOT expose window.game even in debug mode", () => {
 		window.history.replaceState({}, "", "/?debug");
 		gameService = new GameService({ setLevel, getState });
-		controller = new GameController(host, context, { gameService });
+		controller = new GameController(host, { ...context, gameService });
 		controller.hostConnected();
 
 		// @ts-expect-error
@@ -92,7 +92,7 @@ describe("GameController", () => {
 		const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
 		gameService = new GameService({ getState });
-		controller = new GameController(host, context, { gameService });
+		controller = new GameController(host, { ...context, gameService });
 		controller.hostConnected();
 
 		expect(consoleSpy).toHaveBeenCalledWith(
@@ -105,13 +105,13 @@ describe("GameController", () => {
 
 	it("should throw if gameService is missing in options", () => {
 		expect(() => {
-			new GameController(host, context, /** @type {any} */ ({}));
+			new GameController(host, /** @type {any} */ ({}));
 		}).toThrow("GameController requires a gameService option");
 	});
 
 	it("should remove event listeners on disconnect", () => {
 		gameService = new GameService();
-		controller = new GameController(host, context, { gameService });
+		controller = new GameController(host, { ...context, gameService });
 		controller.hostConnected();
 
 		controller.hostDisconnected();
@@ -128,7 +128,7 @@ describe("GameController", () => {
 
 	it("should handle EXIT_ZONE_REACHED event by executing AdvanceChapterCommand", () => {
 		gameService = new GameService();
-		controller = new GameController(host, context, { gameService });
+		controller = new GameController(host, { ...context, gameService });
 		controller.hostConnected();
 
 		controller.handleExitZoneReached();
@@ -141,7 +141,7 @@ describe("GameController", () => {
 	describe("handleLevelCompleted", () => {
 		beforeEach(() => {
 			gameService = new GameService();
-			controller = new GameController(host, context, { gameService });
+			controller = new GameController(host, { ...context, gameService });
 			controller.hostConnected();
 		});
 

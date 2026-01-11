@@ -91,8 +91,12 @@ export class GameBootstrapper {
 	 */
 	#setupServices() {
 		const storageAdapter = new LocalStorageAdapter();
-		const gameState = new GameStateService();
-		const progressService = new ProgressService(storageAdapter);
+		const gameState = new GameStateService(logger);
+		const progressService = new ProgressService(
+			storageAdapter,
+			undefined,
+			logger,
+		);
 
 		const services = {
 			legacy: new LegacyUserService(),

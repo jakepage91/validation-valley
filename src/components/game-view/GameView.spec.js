@@ -44,6 +44,10 @@ function getMockApp(overrides = {}) {
 		masteryProvider: { setValue: vi.fn() },
 		serviceController: { loadUserData: vi.fn(), options: {} },
 		characterContexts: { options: {} },
+		interaction: {
+			isCloseToNpc: vi.fn(),
+			interact: vi.fn(),
+		},
 		gameService: {
 			setLevel: vi.fn(),
 			giveItem: vi.fn(),
@@ -52,7 +56,6 @@ function getMockApp(overrides = {}) {
 			setTheme: vi.fn(),
 			startQuest: vi.fn(),
 			completeQuest: vi.fn(),
-			completeChapter: vi.fn(),
 			returnToHub: vi.fn(),
 			listQuests: vi.fn(() => []),
 			getProgress: vi.fn(),
@@ -222,7 +225,7 @@ describe("GameView Component", () => {
 		it("should have interaction controller available in keyboard context", () => {
 			// Regression test for context initialization order
 			// KeyboardController needs interaction controller to execute InteractCommand
-			expect(el.keyboard?.context.interaction).toBeDefined();
+			expect(el.keyboard?.options.interaction).toBeDefined();
 		});
 
 		it("should emit LEVEL_COMPLETED event on level completion", () => {
