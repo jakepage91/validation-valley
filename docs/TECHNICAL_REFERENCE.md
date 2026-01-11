@@ -94,7 +94,7 @@ Services are pure logic classes that manage specific domains of the application 
 
 ### `LoggerService`
 **Purpose**: Centralized logging utility with log levels (`debug`, `info`, `warn`, `error`).
-**Usage**: Import singleton `logger`.
+**Usage**: Injected via `options.logger` (Controllers/Managers) or `@consume` (Components).
 
 ### `StorageService`
 **Purpose**: Abstract interface for data persistence.
@@ -118,7 +118,7 @@ Services are pure logic classes that manage specific domains of the application 
 Managers are high-level coordinators that orchestrate logic between multiple services and controllers.
 
 ### `GameSessionManager`
-**Purpose**: The central "brain" of the running game session. It bridges the gap between the `QuestController` (logic) and the `GameStateService` (data).
+**Purpose**: The central "brain" of the running game session. It bridges the gap between the `QuestController` (logic) and the `GameStateService` (data). Uses strict DI for all dependencies.
 
 *   **Responsibilities**:
     *   Orchestrates Quest Start/End lifecycles.
@@ -139,7 +139,7 @@ Managers are high-level coordinators that orchestrate logic between multiple ser
 The Command Pattern is used to encapsulate all state-changing game actions. This enables consistent execution, undo/redo capabilities (future), and safe macro recording.
 
 ### `CommandBus`
-**Purpose**: Central executor for all commands. Handles logging and execution.
+**Purpose**: Central executor for all commands. Handles logging (via injected logger) and execution.
 
 ### Key Commands
 *   `MoveHeroCommand`: Handles movement logic and side-effect triggers (checking zones/exits).
@@ -268,7 +268,7 @@ Controllers are specialized classes (often using Lit's Reactive Controller patte
 **Purpose**: Handles Web Speech API integration for voice commands with AI-powered natural language processing.
 **Type**: Lit Reactive Controller.
 **Inputs**:
-*   `VoiceControllerOptions`: Callbacks for movement, interaction, navigation, and context retrieval.
+*   `VoiceControllerOptions`: Injected `logger`, callbacks for movement, interaction, navigation, and context retrieval.
 *   Voice commands in English or Spanish (e.g., "move left", "interact", "go to NPC").
 **Outputs**:
 *   Movement callbacks (`onMove`, `onMoveToNpc`, `onMoveToExit`).
@@ -287,7 +287,7 @@ Controllers are specialized classes (often using Lit's Reactive Controller patte
 **Type**: Lit Reactive Controller.
 **Inputs**:
 *   `?debug` query parameter in URL (enables debug mode).
-*   `GameControllerOptions`: Injected `GameService` instance.
+*   `GameControllerOptions`: Injected `GameService` and `LoggerService`.
 **Outputs**:
 *   Console logs for state inspection.
 *   **Note**: `window.game` has been removed. Use `app.gameService` in the console for debugging if needed.
@@ -403,7 +403,7 @@ class MyNewComponent extends SignalWatcher(LitElement) {
 | `GameStateService` | `GameView`, `GameViewport`, `GameHud` | Rendering UI, Hero movement, Theme changes. |
 | `SessionManager` | `LegacysEndApp` | Controlling global flow (Home <-> Game). |
 | `ProgressService` | `QuestController`, `QuestHub` | Saving/Loading progress, unlocking chapters. |
-| `LoggerService` | `*` (Imported directly as util) | Debugging and logging throughout the app. |
+| `LoggerService` | `*` | Injected everywhere for unified logging. |
 
 ### How to Include a Service in a New Component
 To use an existing service (e.g., `GameStateService`) in a new component:

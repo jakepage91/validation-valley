@@ -60,6 +60,9 @@ This document outlines the mandatory architectural and coding standards for "Leg
 
 ### Dependency Injection
 *   Use **Lit Context** (`@lit/context`) to provide Services to Components.
+*   Use **Constructor Injection** for plain classes, Managers, and Controllers.
+    *   Pass dependencies in an `options` object.
+    *   Do not instantiate services inside other classes.
 *   Do not import and instantiate Services inside components directly (except for the Root App).
 
 ---
@@ -67,14 +70,15 @@ This document outlines the mandatory architectural and coding standards for "Leg
 ## 4. Logging
 
 *   **No Console Logs**: Do not use `console.log`, `console.warn`, etc. directly in production code.
-*   **Use LoggerService**: Always import the `logger` singleton.
+*   **Use LoggerService**: Inject the logger instance.
+    *   **Components**: Use `@consume({ context: loggerContext })`.
+    *   **Classes/Controllers**: Pass via constructor options.
     ```javascript
-    import { logger } from "./services/logger-service.js";
-    logger.debug("Player moved", { x, y });
-    logger.info("Quest started", { questId });
-    logger.warn("Invalid state", { state });
-    logger.error("Failed to load", error);
+    // In a class/controller
+    this.logger = options.logger;
+    this.logger.info("Quest started", { questId });
     ```
+    *   **Global Import**: Only allowed in `GameBootstrapper` (Composition Root).
 *   **Env Awareness**: The logger automatically silences debug logs in production/test unless forced.
 *   **Best Practices**:
     *   Use `logger.debug()` for development-only logs

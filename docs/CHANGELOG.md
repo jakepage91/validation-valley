@@ -1,5 +1,21 @@
 # Changelog - Recent Updates
 
+## 2026-01-11 - Logger Cleanup and Strict Dependency Injection
+
+### Architecture
+- **Strict Dependency Injection**: All Controllers (`GameController`, `VoiceController`) and Managers (`GameSessionManager`) now receive dependencies via constructor injection.
+- **Removed Global State**: Eliminated global `logger` imports in business logic classes. The `logger` singleton is only imported in the composition root (`GameBootstrapper`).
+- **Context Updates**: `IGameContext` now explicitly includes `logger`, exposed via `LegacysEndApp`.
+
+### Refactoring
+- **VoiceController**: Refactored to accept `logger` in options. Replaced `console.*` calls with `this.logger.*`.
+- **GameController**: Refactored to accept `logger` in options.
+- **GameSessionManager**: Removed fallback to global logger.
+
+### Testing
+- **Improved Isolation**: Unit tests now spy on the injected logger instance instead of the global `console` object, ensuring more reliable verification of logging behavior.
+- **Coverage**: Maintained 100% test passing rate with updated mocks.
+
 ## 2026-01-09 - State Management Refactor (Lit Signals)
 
 ### Core Refactoring
