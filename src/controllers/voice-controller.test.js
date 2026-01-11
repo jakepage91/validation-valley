@@ -78,6 +78,12 @@ describe("VoiceController", () => {
 			onDebugAction,
 			isEnabled,
 			language: "en-US",
+			logger: /** @type {any} */ ({
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
+				debug: vi.fn(),
+			}),
 		};
 
 		// Mock SpeechRecognition
@@ -358,15 +364,11 @@ describe("VoiceController", () => {
 					destroy: vi.fn(),
 				};
 				vi.spyOn(controller, "speak");
-				const consoleSpy = vi
-					.spyOn(console, "error")
-					.mockImplementation(() => {});
 
 				await controller.narrateDialogue("Hello");
 
-				expect(consoleSpy).toHaveBeenCalledWith(
+				expect(options.logger.error).toHaveBeenCalledWith(
 					expect.stringContaining("AI Narration error"),
-					expect.any(Error),
 				);
 				// Fallback to original text
 				expect(controller.speak).toHaveBeenCalledWith(
@@ -375,21 +377,18 @@ describe("VoiceController", () => {
 					"npc",
 					true,
 				);
-				consoleSpy.mockRestore();
 			});
 		});
 
 		describe("processCommand", () => {
 			it("should warn if AI session is missing", async () => {
 				controller.aiSession = null;
-				const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
 				await controller.processCommand("command");
 
-				expect(warnSpy).toHaveBeenCalledWith(
+				expect(options.logger.warn).toHaveBeenCalledWith(
 					expect.stringContaining("AI Session not available"),
 				);
-				warnSpy.mockRestore();
 			});
 
 			it("should parse successful AI response and execute action", async () => {
@@ -422,15 +421,12 @@ describe("VoiceController", () => {
 					prompt: vi.fn().mockResolvedValue("Invalid JSON"),
 					destroy: vi.fn(),
 				};
-				const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
 				await controller.processCommand("test");
 
-				expect(warnSpy).toHaveBeenCalledWith(
+				expect(options.logger.warn).toHaveBeenCalledWith(
 					expect.stringContaining("Failed to parse"),
-					expect.any(String),
 				);
-				warnSpy.mockRestore();
 			});
 
 			it("should handle AI interaction errors", async () => {
@@ -438,17 +434,12 @@ describe("VoiceController", () => {
 					prompt: vi.fn().mockRejectedValue(new Error("Network Error")),
 					destroy: vi.fn(),
 				};
-				const errorSpy = vi
-					.spyOn(console, "error")
-					.mockImplementation(() => {});
 
 				await controller.processCommand("test");
 
-				expect(errorSpy).toHaveBeenCalledWith(
+				expect(options.logger.error).toHaveBeenCalledWith(
 					expect.stringContaining("AI processing error"),
-					expect.any(Error),
 				);
-				errorSpy.mockRestore();
 			});
 		});
 	});
@@ -639,42 +630,41 @@ describe("VoiceController", () => {
 
 	describe("showHelp", () => {
 		it("should log help information to console", () => {
-			const consoleSpy = vi.spyOn(console, "log");
-
 			controller.showHelp();
 
-			expect(consoleSpy).toHaveBeenCalled();
-			const loggedText = consoleSpy.mock.calls[0][0];
+			expect(options.logger.info).toHaveBeenCalled();
+			const loggedText = options.logger.info.mock.calls[0][0];
 
 			expect(loggedText).toContain("VOICE COMMANDS");
 			expect(loggedText).toContain("MOVE");
 			expect(loggedText).toContain("APPROACH");
 			expect(loggedText).toContain("DIALOGUE");
 			expect(loggedText).toContain("ACTIONS");
-
-			consoleSpy.mockRestore();
 		});
 
 		it("should include multilingual commands", () => {
-			const consoleSpy = vi.spyOn(console, "log");
-
 			controller.showHelp();
 
-			const loggedText = consoleSpy.mock.calls[0][0];
+			const loggedText = options.logger.info.mock.calls[0][0];
 
 			// Should include both English and Spanish
 			expect(loggedText).toContain("Up/Arriba");
 			expect(loggedText).toContain("Next/Siguiente");
 			expect(loggedText).toContain("Interact/Interactúa");
-
-			consoleSpy.mockRestore();
 		});
 	});
 
 	describe("Internal Logic & Callbacks", () => {
 		it("should execute default callbacks cleanly", () => {
 			// Create controller without overrides to test defaults
-			const defaultController = new VoiceController(host);
+			const defaultController = new VoiceController(host, {
+				logger: /** @type {any} */ ({
+					info: vi.fn(),
+					warn: vi.fn(),
+					error: vi.fn(),
+					debug: vi.fn(),
+				}),
+			});
 			expect(() => defaultController.options.onMove?.(0, 0)).not.toThrow();
 			expect(() => defaultController.options.onInteract?.()).not.toThrow();
 			expect(() => defaultController.options.onPause?.()).not.toThrow();

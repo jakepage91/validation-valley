@@ -45,6 +45,8 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 	commandBus = /** @type {any} */ (null);
 	/** @type {import('../../core/event-bus.js').EventBus} */
 	eventBus = centralEventBus;
+	/** @type {import("../../services/logger-service.js").LoggerService} */
+	logger = /** @type {any} */ (null);
 
 	// Router
 	/** @type {import("../../utils/router.js").Router} */
@@ -122,6 +124,7 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 
 		// Map context to properties
 		this.eventBus = context.eventBus;
+		this.logger = context.logger;
 		this.progressService =
 			/** @type {import("../../services/progress-service.js").ProgressService} */ (
 				context.progressService

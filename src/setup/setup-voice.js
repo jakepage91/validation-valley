@@ -6,7 +6,6 @@ import { PrevDialogSlideCommand } from "../commands/prev-dialog-slide-command.js
 import { gameConfig } from "../config/game-configuration.js";
 import { EVENTS } from "../constants/events.js";
 import { VoiceController } from "../controllers/voice-controller.js";
-import { logger } from "../services/logger-service.js";
 
 /**
  * @typedef {import('lit').LitElement} LitElement
@@ -28,6 +27,7 @@ import { logger } from "../services/logger-service.js";
 export function setupVoice(host, context) {
 	/** @type {VoiceElement & { voice: VoiceController }} */ (host).voice =
 		new VoiceController(host, {
+			logger: context.logger,
 			onMove: (dx, dy) => {
 				if (context.eventBus) {
 					context.eventBus.emit(EVENTS.UI.HERO_MOVE_INPUT, { dx, dy });
@@ -91,7 +91,9 @@ export function setupVoice(host, context) {
 				const exitZone = currentChapter?.exitZone;
 				if (!exitZone) return;
 
-				logger.info(`🚪 Moving to exit at (${exitZone.x}, ${exitZone.y})`);
+				context.logger.info(
+					`🚪 Moving to exit at (${exitZone.x}, ${exitZone.y})`,
+				);
 				if (context.commandBus && context.eventBus) {
 					context.commandBus.execute(
 						new AutoMoveCommand(context.eventBus, exitZone.x, exitZone.y),

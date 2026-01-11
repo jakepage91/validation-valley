@@ -12,6 +12,7 @@ import { EVENTS } from "../constants/events.js";
  * @typedef {Object} GameControllerOptions
  * @property {GameService} gameService - Game service instance to use for game commands
  * @property {boolean} [exposeToConsole=true] - Whether to expose game service to console as window.game
+ * @property {import('../services/logger-service.js').LoggerService} [logger]
  */
 
 /**
@@ -31,6 +32,7 @@ export class GameController {
 	constructor(host, options) {
 		this.host = host;
 		this.options = options;
+		this.logger = options.logger;
 		this.isEnabled = new URLSearchParams(window.location.search).has("debug");
 
 		if (!options.gameService) {
@@ -91,17 +93,11 @@ export class GameController {
 		gameState?.setShowDialog(false);
 
 		// 2. Check if we should advance to next chapter
-		// Logic: If there is a next chapter, and we have collected the reward (or logic implies it), advance.
-		// In previous GameView logic:
-		// if (isRewardCollected && hasNextChapter) -> triggerLevelTransition
-		// else -> setCollectedItem(true)
-
-		// We need to check state.
 		const state = gameState?.getState();
 		const hasNext = questController?.hasNextChapter();
 
 		if (state?.isRewardCollected && hasNext) {
-			console.log("📖 Advancing to next chapter");
+			this.logger?.info("📖 Advancing to next chapter");
 			// Stop auto-move if any? (Handled by AdvanceChapterCommand presumably or logic)
 
 			if (commandBus && gameState && questController) {
@@ -114,13 +110,13 @@ export class GameController {
 			}
 		} else {
 			// Just mark item as collected/level complete state
-			console.log("✅ Level Goal Reached (Item Collected)");
+			this.logger?.info("✅ Level Goal Reached (Item Collected)");
 			gameState?.setCollectedItem(true);
 		}
 	};
 
 	enableDebugMode() {
-		console.log(`
+		this.logger?.info(`
 🎮 DEBUG MODE ENABLED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Type 'app.gameService.help()' for available commands

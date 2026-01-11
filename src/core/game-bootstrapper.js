@@ -143,7 +143,7 @@ export class GameBootstrapper {
 		// This pattern is used by the existing setup helper functions
 		const context = {
 			eventBus: this.eventBus,
-			logger: logger,
+			logger: servicesContext.sessionManager.logger,
 			gameState: servicesContext.gameState,
 			commandBus: servicesContext.commandBus,
 			sessionManager: servicesContext.sessionManager,

@@ -9,7 +9,6 @@ import {
 	NPC_SYSTEM_PROMPT,
 } from "../config/voice-training-prompts.js";
 import { aiService } from "../services/ai-service.js";
-import { logger } from "../services/logger-service.js";
 
 /**
  * @typedef {Object} SpeechRecognition
@@ -40,6 +39,7 @@ import { voiceSynthesisService } from "../services/voice-synthesis-service.js";
 
 /**
  * @typedef {Object} VoiceControllerOptions
+ * @property {import('../services/logger-service.js').LoggerService} logger - Logger service
  * @property {(dx: number, dy: number) => void} [onMove] - Movement callback
  * @property {() => void} [onInteract] - Interaction callback
  * @property {() => void} [onPause] - Pause callback
@@ -67,13 +67,13 @@ import { voiceSynthesisService } from "../services/voice-synthesis-service.js";
 export class VoiceController {
 	/**
 	 * @param {import('lit').ReactiveControllerHost} host
-	 * @param {Partial<VoiceControllerOptions>} [options]
+	 * @param {VoiceControllerOptions} options
 	 */
-	constructor(host, options = {}) {
+	constructor(host, options) {
 		/** @type {import('lit').ReactiveControllerHost} */
 		this.host = host;
-		/** @type {VoiceControllerOptions} */
 
+		/** @type {VoiceControllerOptions} */
 		this.options = {
 			onMove: (_dx, _dy) => {},
 			onInteract: () => {},
@@ -92,6 +92,9 @@ export class VoiceController {
 			...options,
 		};
 
+		/** @type {import('../services/logger-service.js').LoggerService} */
+		this.logger = this.options.logger;
+
 		/** @type {SpeechRecognition|null} */
 		this.recognition = null;
 		/** @type {boolean} */
@@ -102,7 +105,6 @@ export class VoiceController {
 		this.npcSession = null;
 		/** @type {number} */
 		this.restartAttempts = 0;
-		/** @type {number} */
 		/** @type {boolean} */
 		this.enabled = false;
 		/** @type {number} */
@@ -122,7 +124,9 @@ export class VoiceController {
 				this.isListening = true;
 				this.lastStartTime = Date.now();
 				if (this.recognition) {
-					logger.debug(`🎤 Voice control active (${this.recognition.lang}).`);
+					this.logger.debug(
+						`🎤 Voice control active (${this.recognition.lang}).`,
+					);
 				}
 				this.host.requestUpdate();
 			};
@@ -147,7 +151,7 @@ export class VoiceController {
 					// Exponential backoff: 100ms, 200ms, 400ms... max 3s
 					const delay = Math.min(100 * 2 ** this.restartAttempts, 3000);
 					if (this.restartAttempts > 2) {
-						logger.debug(
+						this.logger.debug(
 							`🎤 Restarting voice in ${delay}ms (Attempt ${this.restartAttempts})`,
 						);
 					}
@@ -161,7 +165,7 @@ export class VoiceController {
 				const errorEvent = /** @type {SpeechRecognitionErrorEvent} */ (
 					/** @type {unknown} */ (event)
 				);
-				console.error("❌ Voice recognition error:", errorEvent.error);
+				this.logger.error(`❌ Voice recognition error: ${errorEvent.error}`);
 				if (errorEvent.error === "not-allowed") {
 					this.isListening = false;
 					this.enabled = false; // Disable if permission denied
@@ -208,12 +212,12 @@ export class VoiceController {
 				this.aiSession = aiService.getSession("alarion");
 				this.npcSession = aiService.getSession("npc");
 
-				logger.info(
+				this.logger.info(
 					"🤖 Chrome Built-in AI initialized with Alarion's persona & NPC Persona.",
 				);
 			}
 		} catch (error) {
-			logger.warn("⚠️ Could not initialize Built-in AI:", error);
+			this.logger.warn(`⚠️ Could not initialize Built-in AI: ${error}`);
 		}
 	}
 
@@ -266,9 +270,9 @@ export class VoiceController {
 				const prompt = `${text} IMPORTANT: Reformulate this line for voice acting. Output MUST be in '${targetLang}'.`;
 				const response = await this.npcSession.prompt(prompt);
 				narration = response.replace(/```json|```/g, "").trim();
-				logger.info(`🤖 NPC (${targetLang}):`, narration);
+				this.logger.info(`🤖 NPC (${targetLang}): ${narration}`);
 			} catch (error) {
-				console.error("❌ AI Narration error:", error);
+				this.logger.error(`❌ AI Narration error: ${error}`);
 			}
 		}
 
@@ -328,7 +332,9 @@ export class VoiceController {
 		const last = event.results.length - 1;
 		const transcript = event.results[last][0].transcript.toLowerCase().trim();
 
-		console.log(`🗣️ Voice command [${this.recognition?.lang}]: "${transcript}"`);
+		this.logger.debug(
+			`🗣️ Voice command [${this.recognition?.lang}]: "${transcript}"`,
+		);
 		this.processCommand(transcript);
 	}
 
@@ -337,7 +343,7 @@ export class VoiceController {
 	 */
 	async processCommand(command) {
 		if (!this.aiSession) {
-			console.warn("⚠️ AI Session not available. Command ignored.");
+			this.logger.warn("⚠️ AI Session not available. Command ignored.");
 			return;
 		}
 
@@ -351,12 +357,12 @@ export class VoiceController {
 			const contextStr = `[Context: Dialog=${context.isDialogOpen ? "Open" : "Closed"}, Reward=${context.isRewardCollected ? "Collected" : "Not Collected"}]`;
 			const promptWithContext = `${contextStr} User command: "${command}". IMPORTANT: The 'lang' field in JSON MUST be '${targetLang}' and 'feedback' text MUST be in '${targetLang}'.`;
 
-			logger.debug("🤖 Prompt:", promptWithContext);
+			this.logger.debug(`🤖 Prompt: ${promptWithContext}`);
 			const response = await this.aiSession.prompt(promptWithContext);
 			const cleanedResponse = response.replace(/```json|```/g, "").trim();
 			try {
 				const result = JSON.parse(cleanedResponse);
-				logger.info("🤖 AI response:", result);
+				this.logger.info(`🤖 AI response: ${JSON.stringify(result)}`);
 
 				if (result.feedback) {
 					this.speak(result.feedback, result.lang);
@@ -366,10 +372,10 @@ export class VoiceController {
 					this.executeAction(result.action, result.value, result.lang);
 				}
 			} catch (_e) {
-				console.warn("⚠️ Failed to parse AI response as JSON:", response);
+				this.logger.warn(`⚠️ Failed to parse AI response as JSON: ${response}`);
 			}
 		} catch (error) {
-			console.error("❌ AI processing error:", error);
+			this.logger.error(`❌ AI processing error: ${error}`);
 		}
 	}
 
@@ -404,7 +410,7 @@ export class VoiceController {
 	}
 
 	showHelp() {
-		console.log(`
+		this.logger.info(`
 🎤 VOICE COMMANDS / COMANDOS DE VOZ:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 MOVE: 'Up/Arriba', 'Down/Abajo', 'Left/Izquierda', 'Right/Derecha'

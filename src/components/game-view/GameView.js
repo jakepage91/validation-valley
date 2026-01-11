@@ -238,6 +238,7 @@ export class GameView extends SignalWatcher(LitElement) {
 	#getGameContext() {
 		return {
 			eventBus: this.app.eventBus,
+			logger: this.app.logger,
 			gameState: this.app.gameState,
 			commandBus: this.app.commandBus,
 			sessionManager: this.app.sessionManager,

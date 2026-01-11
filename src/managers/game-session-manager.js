@@ -1,6 +1,5 @@
 import { EVENTS } from "../constants/events.js";
 import { ROUTES } from "../constants/routes.js";
-import { logger } from "../services/logger-service.js";
 import { ServiceType } from "../services/user-services.js";
 import { CompleteQuestUseCase } from "../use-cases/complete-quest.js";
 import { ContinueQuestUseCase } from "../use-cases/continue-quest.js";
@@ -68,7 +67,7 @@ export class GameSessionManager extends Observable {
 		this.router = this.options.router;
 		this.eventBus = this.options.eventBus;
 		/** @type {import('../services/logger-service.js').LoggerService} */
-		this.logger = this.options.logger || logger;
+		this.logger = this.options.logger;
 
 		// Controllers
 		this.keyboard = this.options.controllers.keyboard;

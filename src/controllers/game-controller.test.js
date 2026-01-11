@@ -43,6 +43,12 @@ describe("GameController", () => {
 			questController: {
 				hasNextChapter: vi.fn(),
 			},
+			logger: {
+				info: vi.fn(),
+				warn: vi.fn(),
+				error: vi.fn(),
+				debug: vi.fn(),
+			},
 		};
 
 		setLevel = vi.fn();
@@ -89,18 +95,15 @@ describe("GameController", () => {
 
 	it("should log instructions and call getState on enable", () => {
 		window.history.replaceState({}, "", "/?debug");
-		const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
 		gameService = new GameService({ getState });
 		controller = new GameController(host, { ...context, gameService });
 		controller.hostConnected();
 
-		expect(consoleSpy).toHaveBeenCalledWith(
+		expect(context.logger.info).toHaveBeenCalledWith(
 			expect.stringContaining("DEBUG MODE ENABLED"),
 		);
 		expect(getState).toHaveBeenCalled();
-
-		consoleSpy.mockRestore();
 	});
 
 	it("should throw if gameService is missing in options", () => {
