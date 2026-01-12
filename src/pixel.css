@@ -154,8 +154,8 @@
 		--wa-border-radius-m: calc(var(--wa-border-radius-scale) * 0.375rem);
 		--wa-border-radius-l: calc(var(--wa-border-radius-scale) * 0.75rem);
 
-		--wa-border-radius-pill: 9999px;
-		--wa-border-radius-circle: 50%;
+		--wa-border-radius-pill: 0;
+		--wa-border-radius-circle: 0;
 		--wa-border-radius-square: 0px;
 		/* #endregion */
 

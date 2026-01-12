@@ -122,7 +122,7 @@ export const levelDialogStyles = [
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 9999px;
+      border-radius: 0;
       font-size: var(--wa-font-size-xl);
       box-shadow: var(--wa-shadow-small);
       margin: 0 auto var(--wa-space-m) auto;
@@ -137,7 +137,7 @@ export const levelDialogStyles = [
       background-color: #faf5ff;
       padding: var(--wa-space-xs);
       border: 1px solid #f3e8ff;
-      border-radius: 0.25rem;
+      border-radius: 0;
     }
 
     .console {
@@ -247,7 +247,7 @@ export const levelDialogStyles = [
     .status-dot {
       width: var(--wa-space-s);
       height: var(--wa-space-s);
-      border-radius: 9999px;
+      border-radius: 0;
       background-color: var(--wa-color-neutral-20);
     }
 

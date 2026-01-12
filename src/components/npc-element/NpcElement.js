@@ -87,7 +87,7 @@ export class NpcElement extends LitElement {
       ${
 				!this.isRewardCollected
 					? html`
-        <wa-tag variant="neutral" size="small" pill class="npc-name-tag">${this.name}</wa-tag>
+        <wa-tag variant="neutral" size="small" class="npc-name-tag">${this.name}</wa-tag>
       `
 					: ""
 			}

@@ -25,7 +25,7 @@ export const victoryScreenStyles = [
 			padding: 2rem;
 			background-color: var(--wa-color-surface-default);
 			color: var(--wa-color-text-normal);
-			border-radius: var(--wa-border-radius-l);
+			border-radius: 0;
 			box-shadow: 0 0 50px rgba(251, 191, 36, 0.3);
 			border: 4px solid #fbbf24;
 		}

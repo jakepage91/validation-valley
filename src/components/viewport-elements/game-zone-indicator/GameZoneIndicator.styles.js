@@ -59,7 +59,7 @@ export const gameZoneIndicatorStyles = [
 			   New system uses dynamic height/top. 
 			   We assume layout is handled by inline styles. 
 			   We just apply the decorative styles here. */
-			border-radius: var(--wa-border-radius-circle); 
+			border-radius: 0; 
 			border: var(--wa-border-width-s) solid var(--wa-color-neutral-border-normal);
 		}
 

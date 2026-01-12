@@ -103,7 +103,7 @@ export class QuestHub extends LitElement {
 								</ul>
 							`
 									: html`
-								<wa-button @click="${this.#toggleDescription}" variant="neutral" pill>
+								<wa-button @click="${this.#toggleDescription}" variant="neutral">
 									Read More
 								</wa-button>
 							`

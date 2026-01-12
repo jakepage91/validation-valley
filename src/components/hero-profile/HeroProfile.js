@@ -143,7 +143,7 @@ export class HeroProfile extends LitElement {
 						: error
 							? html`<span class="error">${error}</span>`
 							: html`
-                  <wa-tag variant="neutral" size="small" pill class="name-tag">${name || "Alarion"}</wa-tag>
+                  <wa-tag variant="neutral" size="small" class="name-tag">${name || "Alarion"}</wa-tag>
                 `
 				}
     `;

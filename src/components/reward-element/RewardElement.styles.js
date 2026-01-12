@@ -15,7 +15,7 @@ export const rewardElementStyles = css`
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 9999px;
+      border-radius: 0;
       background-color: transparent;
       border-color: transparent;
       box-shadow: none;

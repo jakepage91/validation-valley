@@ -77,7 +77,7 @@ export const questHubStyles = [
 		.learning-objectives li {
 			padding: var(--wa-space-s);
 			background: var(--wa-color-neutral-50);
-			border-radius: var(--wa-border-radius-m);
+			border-radius: 0;
 			border: 1px solid var(--wa-color-neutral-200);
 		}
 

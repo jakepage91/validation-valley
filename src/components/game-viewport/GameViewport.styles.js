@@ -10,7 +10,7 @@ export const gameViewportStyles = [
 			right: var(--wa-space-m);
 			z-index: 10;
 			background-color: var(--wa-color-surface-default);
-			border-radius: var(--wa-border-radius-m);
+			border-radius: 0;
 			box-shadow: var(--wa-shadow-medium);
 			max-width: 200px;
 		}
