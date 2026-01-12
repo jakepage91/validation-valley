@@ -113,12 +113,12 @@ export class InteractionController {
 		if (!state) return;
 
 		const isClose = this.isCloseToNpc();
-		const { chapterData, hotSwitchState, hasCollectedItem } = state;
+		const { chapterData, hasCollectedItem } = state;
 
 		const result = this.options.interactWithNpcUseCase.execute({
 			isClose,
 			chapterData,
-			hotSwitchState: hotSwitchState || "legacy",
+			gameState: state,
 			hasCollectedItem,
 		});
 

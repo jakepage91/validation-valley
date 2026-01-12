@@ -19,6 +19,7 @@ function getMockApp(overrides = {}) {
 			hotSwitchState: { get: vi.fn(() => "new") },
 			hasCollectedItem: { get: vi.fn(() => false) },
 			isRewardCollected: { get: vi.fn(() => false) },
+			themeMode: { get: vi.fn(() => "light") },
 			lockedMessage: { get: vi.fn(() => null) },
 			getState: vi.fn(() => ({
 				ui: { isPaused: false },
@@ -127,9 +128,7 @@ describe("GameView Component", () => {
 		el.app = getMockApp();
 		el.gameState = /** @type {any} */ ({
 			config: {
-				canToggleTheme: true,
-				hasHotSwitch: true,
-				isFinalBoss: false,
+				zones: [],
 			},
 			hero: {
 				pos: { x: 0, y: 0 },
@@ -180,7 +179,7 @@ describe("GameView Component", () => {
 					lockedMessage: "",
 				},
 				hero: { pos: { x: 0, y: 0 }, isEvolving: false, hotSwitchState: null },
-				config: { hasHotSwitch: false },
+				config: { zones: [] },
 				quest: {
 					data: {},
 					chapterNumber: 0,

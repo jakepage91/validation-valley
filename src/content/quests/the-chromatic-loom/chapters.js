@@ -19,7 +19,26 @@ export const THE_CHROMATIC_LOOM_CHAPTERS = {
 			"The object symbolizing the variety of external Design Systems. Interacting reveals the need for CSS Custom Properties (Design Tokens) to achieve visual consistency and thematic adaptation (Dark Mode).",
 		problemTitle: "Rigid Structure",
 		problemDesc: "Start by selecting the element to inspect its styles.",
-		hasThemeZones: true,
+		zones: [
+			{
+				x: 0,
+				y: 0,
+				width: 100,
+				height: 25,
+				type: "THEME_CHANGE",
+				payload: "dark",
+				requiresItem: true,
+			},
+			{
+				x: 0,
+				y: 25,
+				width: 100,
+				height: 75,
+				type: "THEME_CHANGE",
+				payload: "light",
+				requiresItem: true,
+			},
+		],
 		codeSnippets: {
 			start: [
 				{

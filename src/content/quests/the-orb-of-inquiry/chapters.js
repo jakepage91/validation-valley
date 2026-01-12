@@ -343,8 +343,33 @@ export class ProductProviderMock extends LitElement {
 		title: "Liberated Battlefield",
 		description:
 			"The final structure blocking the way forward. Interacting triggers the final sequence: the Hot Switch (swapping the Legacy Crystal for the New Blue Crystal) and the demonstration of 100% Portability.",
-		hasHotSwitch: true,
-		isFinalBoss: true,
+		zones: [
+			{
+				x: 50,
+				y: 40,
+				width: 50,
+				height: 60,
+				type: "CONTEXT_CHANGE",
+				payload: "legacy",
+			},
+			{
+				x: 0,
+				y: 40,
+				width: 50,
+				height: 60,
+				type: "CONTEXT_CHANGE",
+				payload: "new",
+			},
+			{
+				x: 0,
+				y: 0,
+				width: 100,
+				height: 40,
+				type: "CONTEXT_CHANGE",
+				payload: null,
+			},
+		],
+
 		problemTitle: "Before: Static Configuration",
 		problemDesc:
 			"Changing the service implementation requires code changes and recompilation.",
@@ -389,6 +414,9 @@ export class ProductProviderMock extends LitElement {
 			icon: "eye",
 			image: "/assets/liberated-battlefield/npc.png",
 			position: { x: 50, y: 70 },
+			requirements: {
+				hotSwitchState: { value: "new", message: "REQ: NEW API" },
+			},
 		},
 		reward: {
 			name: "Key",

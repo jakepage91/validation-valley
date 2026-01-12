@@ -121,8 +121,14 @@ describe("InteractionController", () => {
 			it("should BLOCK interaction if API is LEGACY", () => {
 				getState.mockReturnValue({
 					heroPos: { x: 0, y: 0 },
-					hotSwitchState: null,
-					chapterData: { isFinalBoss: true }, // Important flag
+					hotSwitchState: "legacy",
+					chapterData: {
+						npc: {
+							requirements: {
+								hotSwitchState: { value: "new", message: "REQ: NEW API" },
+							},
+						},
+					}, // Important flag
 				});
 
 				controller.handleInteract();
@@ -136,7 +142,13 @@ describe("InteractionController", () => {
 				getState.mockReturnValue({
 					heroPos: { x: 0, y: 0 },
 					hotSwitchState: "new",
-					chapterData: { isFinalBoss: true },
+					chapterData: {
+						npc: {
+							requirements: {
+								hotSwitchState: { value: "new", message: "REQ: NEW API" },
+							},
+						},
+					},
 				});
 
 				controller.handleInteract();
@@ -180,8 +192,14 @@ describe("InteractionController", () => {
 			// Setup for locked state
 			getState.mockReturnValue({
 				heroPos: { x: 0, y: 0 },
-				hotSwitchState: null,
-				chapterData: { isFinalBoss: true },
+				hotSwitchState: "legacy",
+				chapterData: {
+					npc: {
+						requirements: {
+							hotSwitchState: { value: "new", message: "REQ: NEW API" },
+						},
+					},
+				},
 			});
 
 			controller.handleInteract();

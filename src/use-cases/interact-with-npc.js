@@ -8,9 +8,8 @@ export class InteractWithNpcUseCase {
 	/**
 	 * @typedef {Object} InteractParams
 	 * @property {boolean} isClose - Whether the hero is close to the NPC
-	 * @property {Object} [chapterData] - Current chapter configuration
-	 * @property {boolean} [chapterData.isFinalBoss] - Whether this is the final boss npc
-	 * @property {string} hotSwitchState - Current API state ('legacy' or 'new')
+	 * @property {import('../content/quests/quest-types.js').LevelConfig} [chapterData] - Current chapter configuration
+	 * @property {Record<string, any>} gameState - Full game state for requirement checking
 	 * @property {boolean} hasCollectedItem - Whether the item/reward has already been collected
 	 */
 
@@ -19,21 +18,28 @@ export class InteractWithNpcUseCase {
 	 * @param {InteractParams} params
 	 * @returns {{success: boolean, action: 'showDialog' | 'showLocked' | 'none', message?: string}}
 	 */
-	execute({ isClose, chapterData, hotSwitchState, hasCollectedItem }) {
+	execute({ isClose, chapterData, gameState, hasCollectedItem }) {
 		if (!isClose) {
 			return { success: false, action: "none" };
 		}
 
-		// Final Boss Victory condition check
-		if (chapterData?.isFinalBoss) {
-			if (hotSwitchState === "new") {
-				return { success: true, action: "showDialog" };
+		// Check NPC specific requirements
+		if (chapterData?.npc?.requirements) {
+			for (const [key, requirement] of Object.entries(
+				chapterData.npc.requirements,
+			)) {
+				const currentValue = gameState[key];
+				const { value, message } = requirement;
+
+				if (currentValue !== value) {
+					return {
+						success: false,
+						action: "showLocked",
+						message: message || `REQ: ${key} ${value}`,
+					};
+				}
 			}
-			return {
-				success: false,
-				action: "showLocked",
-				message: "REQ: NEW API",
-			};
+			return { success: true, action: "showDialog" };
 		}
 
 		// Regular interaction

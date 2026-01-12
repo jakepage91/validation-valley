@@ -14,10 +14,9 @@ import "../game-hud/game-hud.js";
 import "../hero-profile/hero-profile.js";
 import "../npc-element/npc-element.js";
 import "../reward-element/reward-element.js";
-import "../viewport-elements/game-context-zones/game-context-zones.js";
 import "../viewport-elements/game-controls/game-controls.js";
 import "../viewport-elements/game-exit-zone/game-exit-zone.js";
-import "../viewport-elements/game-theme-zones/game-theme-zones.js";
+import "../viewport-elements/game-zone-indicator/game-zone-indicator.js";
 import { gameViewportStyles } from "./GameViewport.styles.js";
 
 /**
@@ -113,6 +112,7 @@ export class GameViewport extends SignalWatcher(LitElement) {
 		const backgroundPath = extractAssetPath(backgroundStyle);
 
 		const hotSwitchState = stateService.hotSwitchState.get();
+		const themeMode = stateService.themeMode.get();
 		const hasCollectedItem = stateService.hasCollectedItem.get();
 
 		return html`
@@ -139,19 +139,24 @@ export class GameViewport extends SignalWatcher(LitElement) {
 				}
 				<game-controls .isVoiceActive="${this.isVoiceActive}"></game-controls>
 				
-				<game-theme-zones
-					?active="${config?.hasThemeZones || false}"
-				></game-theme-zones>
+				<game-zone-indicator
+					type="THEME_CHANGE"
+					.zones="${config?.zones || []}"
+					.currentState="${themeMode}"
+				></game-zone-indicator>
+
+				<game-zone-indicator
+					type="CONTEXT_CHANGE"
+					.zones="${config?.zones || []}"
+					.currentState="${hotSwitchState}"
+				></game-zone-indicator>
 
 				<game-exit-zone 
 					.zoneConfig="${config?.exitZone || {}}" 
 					.active="${hasCollectedItem}"
 				></game-exit-zone>
 
-				<game-context-zones 
-					?active="${config?.hasHotSwitch || false}"
-					.state="${hotSwitchState || "legacy"}"
-				></game-context-zones>
+
 
 				${this._renderNPC()}
 				${this._renderReward()}

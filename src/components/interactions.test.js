@@ -183,7 +183,18 @@ describe("GameView Integration", () => {
 	it("should re-dispatch 'complete' event from level-dialog", async () => {
 		element = new GameView();
 		element.gameState = /** @type {any} */ ({
-			config: { hasHotSwitch: true },
+			config: {
+				zones: [
+					{
+						x: 50,
+						y: 40,
+						width: 50,
+						height: 60,
+						type: "CONTEXT_CHANGE",
+						payload: "legacy",
+					},
+				],
+			},
 			hero: { pos: { x: 0, y: 0 }, isEvolving: false, hotSwitchState: null },
 			ui: {
 				showDialog: true,
@@ -227,7 +238,18 @@ describe("GameView Integration", () => {
 	it("should re-dispatch 'close-dialog' event from level-dialog close", async () => {
 		element = new GameView();
 		element.gameState = /** @type {any} */ ({
-			config: { hasHotSwitch: true },
+			config: {
+				zones: [
+					{
+						x: 50,
+						y: 40,
+						width: 50,
+						height: 60,
+						type: "CONTEXT_CHANGE",
+						payload: "legacy",
+					},
+				],
+			},
 			hero: { pos: { x: 0, y: 0 }, isEvolving: false, hotSwitchState: null },
 			ui: {
 				showDialog: true,

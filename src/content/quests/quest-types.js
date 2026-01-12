@@ -32,7 +32,7 @@ export const Difficulty = {
  */
 
 /**
- * @typedef {Rect & { label?: string, type?: string }} Zone
+ * @typedef {Rect & { label?: string, type?: string, payload?: any, requiresItem?: boolean }} Zone
  */
 
 /**
@@ -55,7 +55,7 @@ export const Difficulty = {
  */
 
 /**
- * @typedef {PlacedConfig & { name: string }} NpcConfig
+ * @typedef {PlacedConfig & { name: string, requirements?: Record<string, { value: any, message: string }> }} NpcConfig
  */
 
 /**
@@ -98,10 +98,7 @@ export const Difficulty = {
  * @property {NpcConfig} [npc]
  * @property {RewardConfig} [reward]
  * @property {HeroConfig} [hero]
- * @property {boolean} [canToggleTheme]
- * @property {boolean} [hasThemeZones]
- * @property {boolean} [hasHotSwitch]
- * @property {boolean} [isFinalBoss]
+ * @property {Zone[]} [zones]
  */
 
 /**

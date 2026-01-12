@@ -1,5 +1,3 @@
-import { GAME_CONFIG } from "../constants/game-config.js";
-
 /**
  * ProcessGameZoneInteractionUseCase
  *
@@ -22,67 +20,28 @@ export class ProcessGameZoneInteractionUseCase {
 	 * @returns {ZoneInteractionResult[]}
 	 */
 	execute({ x, y, chapter, hasCollectedItem }) {
-		if (!chapter) return [];
+		if (!chapter || !chapter.zones) return [];
 
 		/** @type {ZoneInteractionResult[]} */
 		const results = [];
 
-		// Theme Zones (Dark/Light based on Y position)
-		if (chapter.hasThemeZones && hasCollectedItem) {
-			const theme = this.getThemeForPosition(x, y);
-			results.push({ type: "THEME_CHANGE", payload: theme });
-		}
+		chapter.zones.forEach((zone) => {
+			// Skip if item required but not collected
+			if (zone.requiresItem && !hasCollectedItem) return;
 
-		// Context Zones (Legacy/New API)
-		if (chapter.hasHotSwitch) {
-			const context = this.getContextForPosition(x, y);
-			results.push({ type: "CONTEXT_CHANGE", payload: context });
-		}
+			if (
+				x >= zone.x &&
+				x <= zone.x + zone.width &&
+				y >= zone.y &&
+				y <= zone.y + zone.height
+			) {
+				results.push({
+					type: /** @type {any} */ (zone.type),
+					payload: zone.payload,
+				});
+			}
+		});
 
 		return results;
-	}
-
-	/**
-	 * Get theme mode based on position
-	 * @param {number} _x
-	 * @param {number} y
-	 * @returns {'dark' | 'light'}
-	 */
-	getThemeForPosition(_x, y) {
-		if (y <= GAME_CONFIG.VIEWPORT.ZONES.THEME.DARK_HEIGHT) {
-			return "dark";
-		}
-		return "light";
-	}
-
-	/**
-	 * Get context zone based on position
-	 * @param {number} x
-	 * @param {number} y
-	 * @returns {'legacy' | 'new' | null}
-	 */
-	getContextForPosition(x, y) {
-		const legacyZone = { xMin: 50, xMax: 100, yMin: 40, yMax: 100 };
-		const newZone = { xMin: 0, xMax: 50, yMin: 40, yMax: 100 };
-
-		if (
-			x >= legacyZone.xMin &&
-			x <= legacyZone.xMax &&
-			y >= legacyZone.yMin &&
-			y <= legacyZone.yMax
-		) {
-			return "legacy";
-		}
-
-		if (
-			x >= newZone.xMin &&
-			x < newZone.xMax &&
-			y >= newZone.yMin &&
-			y <= newZone.yMax
-		) {
-			return "new";
-		}
-
-		return null;
 	}
 }

@@ -10,6 +10,7 @@ export const npcElementStyles = css`
       width: 15%;
       aspect-ratio: 1/1;
       pointer-events: none; /* Prevent blocking clicks if needed, but interaction is usually via keyboard */
+      z-index: 20;
     }
 
     .npc-img {

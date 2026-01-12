@@ -1,5 +1,16 @@
 # Changelog - Recent Updates
 
+## 2026-01-12 - Data-Driven Zones & NPC Refactor
+
+### Refactoring
+- **Generic NPC Requirements**: Replaced hardcoded properties (`isFinalBoss`, `requiredContext`) with a generic `requirements` object in `NpcConfig`.
+- **Configurable Messages**: NPC requirements now support custom error messages `{ value: any, message: string }`.
+- **Zone Cleanup**: Fully removed legacy global constants (`GAME_CONFIG.VIEWPORT.ZONES`) and unused properties from `LevelConfig`.
+- **Codebase Consistency**: Verified removal of all stale references, ensuring a truly data-driven architecture.
+
+### Documentation
+- Updated `QUEST_DESIGN.md` to reflect the new `requirements` structure for NPCs and the data-driven zone approach.
+
 ## 2026-01-11 - Logger Cleanup and Strict Dependency Injection
 
 ### Architecture

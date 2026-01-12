@@ -1,5 +1,5 @@
 import { html, LitElement } from "lit";
-import { GAME_CONFIG } from "../../../constants/game-config.js";
+
 import { gameExitZoneStyles } from "./GameExitZone.styles.js";
 import "@awesome.me/webawesome/dist/components/tag/tag.js";
 
@@ -38,8 +38,8 @@ export class GameExitZone extends LitElement {
 		this.style.width = `${width}%`;
 		this.style.height = `${height}%`;
 		// Determine layout based on position relative to legacy/new zones
-		const isRight = x > GAME_CONFIG.VIEWPORT.ZONES.LEGACY.minX;
-		const isLeft = x < GAME_CONFIG.VIEWPORT.ZONES.NEW.maxX;
+		const isRight = x > 50;
+		const isLeft = x < 50;
 
 		this.style.justifyContent = isRight
 			? "flex-end"

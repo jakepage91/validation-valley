@@ -356,7 +356,7 @@ Every Quest follows a strict **"Refactoring Ark"**:
     *   Alarion enters a room...
     *   The "Monster" is the bug.
     *   The "Spell" is the code fix.
-15.  **Define the Data (`src/content/quests/`)**:
+5.  **Define the Data (`src/content/quests/`)**:
     *   Create a new directory for the quest.
     *   Define `QuestData` (ID, name, difficulty, concepts).
     *   Define levels (Chapters) with:
@@ -364,10 +364,17 @@ Every Quest follows a strict **"Refactoring Ark"**:
         *   `solutionTitle` / `solutionDesc`: The "Fixed" state.
         *   `codeSnippets`: Show the before/after code.
         *   `npc`: The mentor character.
+            *   `requirements`: Optional conditions to interact (e.g., `{ hotSwitchState: { value: "new", message: "REQ: NEW API" } }`).
         *   `reward`: The badge earned.
     *   Register it in `quests-data.js`.
 
-6.  **Implement Mechanics (Optional)**:
-    *   If the quest requires specific logic (e.g., locking input, special zones), add a `GameZoneController` hook or a `Zone` definition in the level config.
-    *   Use `hasHotSwitch: true` if demonstrating API migrations.
-    *   Use `canToggleTheme: true` if demonstrating CSS variables.
+6.  **Implement Mechanics (Data-Driven)**:
+    *   **Goal**: Better encapsulation. Avoid modifying core Controllers (`GameZoneController`) for specific Quest logic.
+    *   **Method**: Define **Generic Zones** in your `LevelConfig`:
+        ```javascript
+        zones: [
+            // Example: trigger a context switch when entering a region
+            { x: 0, y: 0, width: 100, height: 50, type: "CONTEXT_CHANGE", payload: "new" }
+        ]
+        ```
+    *   This adheres to the **Open/Closed Principle**: The engine is open for extension (via data) but closed for modification.
