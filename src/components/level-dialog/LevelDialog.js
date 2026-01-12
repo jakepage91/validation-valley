@@ -386,14 +386,13 @@ export class LevelDialog extends LitElement {
 				</div>
 
 				<!-- Footer -->
-				<div slot="footer" class="footer">
+				<div slot="footer" class="dialog-footer">
 					<wa-button 
 						.variant="${"neutral"}"
 						?disabled="${this.slideIndex === 0}"
 						@click="${() => this.slideIndex--}"
 					>
-						<wa-icon slot="start" name="arrow-left"></wa-icon>
-						PREV
+						<wa-icon slot="start" name="arrow-left"></wa-icon> PREV
 					</wa-button>
 					
 					<!-- Indicators -->
@@ -409,21 +408,22 @@ export class LevelDialog extends LitElement {
 						this.slideIndex === slides.length - 1
 							? html`
 							<wa-button 
+								id="evolve-btn"
 								.variant="${"brand"}"
+								class="complete-btn"
 								@click="${this.#dispatchComplete}"
 								style="--border-radius: 0; animation: bounce 1s infinite;"
 							>
-								EVOLVE
-								<wa-icon slot="end" name="arrow-right"></wa-icon>
+								<span>EVOLVE <wa-icon slot="end" name="arrow-right"></wa-icon></span>
 							</wa-button>
 						`
 							: html`
 							<wa-button 
+								id="next-btn"
 								.variant="${"brand"}"
 								@click="${() => this.slideIndex++}"
 							>
-								NEXT
-								<wa-icon slot="end" name="arrow-right"></wa-icon>
+								<span>NEXT <wa-icon slot="end" name="arrow-right"></wa-icon></span>
 							</wa-button>
 						`
 					}

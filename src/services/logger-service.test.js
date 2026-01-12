@@ -4,13 +4,12 @@ import { LoggerService } from "./logger-service.js";
 describe("LoggerService", () => {
 	/** @type {LoggerService} */
 	let logger;
-	const consoleDebug = vi.spyOn(console, "debug").mockImplementation(() => {});
-	const consoleInfo = vi.spyOn(console, "info").mockImplementation(() => {});
-	const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
-	const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
-
 	beforeEach(() => {
 		vi.resetAllMocks();
+		vi.spyOn(console, "debug").mockImplementation(() => {});
+		vi.spyOn(console, "info").mockImplementation(() => {});
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+		vi.spyOn(console, "error").mockImplementation(() => {});
 	});
 
 	it("should initialize with default 'info' level in development", () => {
@@ -44,28 +43,28 @@ describe("LoggerService", () => {
 
 		it("should log debug messages", () => {
 			logger.debug("debug msg");
-			expect(consoleDebug).toHaveBeenCalledWith("[DEBUG] debug msg");
+			expect(console.debug).toHaveBeenCalledWith("[DEBUG] debug msg");
 		});
 
 		it("should log info messages", () => {
 			logger.info("info msg", 123);
-			expect(consoleInfo).toHaveBeenCalledWith("[INFO] info msg", 123);
+			expect(console.info).toHaveBeenCalledWith("[INFO] info msg", 123);
 		});
 
 		it("should log warn messages", () => {
 			logger.warn("warn msg");
-			expect(consoleWarn).toHaveBeenCalledWith("[WARN] warn msg");
+			expect(console.warn).toHaveBeenCalledWith("[WARN] warn msg");
 		});
 
 		it("should log error messages", () => {
 			logger.error("error msg");
-			expect(consoleError).toHaveBeenCalledWith("[ERROR] error msg");
+			expect(console.error).toHaveBeenCalledWith("[ERROR] error msg");
 		});
 
 		it("should respect silent mode", () => {
 			logger = new LoggerService({ level: "silent", force: true });
 			logger.error("should not see this");
-			expect(consoleError).not.toHaveBeenCalled();
+			expect(console.error).not.toHaveBeenCalled();
 		});
 	});
 });

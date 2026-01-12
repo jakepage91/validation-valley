@@ -55,7 +55,7 @@ export const levelDialogStyles = [
       animation: fadeIn 0.3s ease-in-out;
     }
 
-    .footer {
+    .dialog-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;

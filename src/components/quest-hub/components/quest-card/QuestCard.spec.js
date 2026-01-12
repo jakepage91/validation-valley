@@ -58,7 +58,7 @@ describe("QuestCard Component", () => {
 		await el.updateComplete;
 
 		const button = el.shadowRoot?.querySelector(
-			'wa-button[slot="footer-actions"]',
+			".card-footer-actions wa-button",
 		);
 		expect(button?.textContent?.trim()).toContain("Start");
 	});
@@ -81,7 +81,7 @@ describe("QuestCard Component", () => {
 		await el.updateComplete;
 
 		const button = el.shadowRoot?.querySelector(
-			'wa-button[slot="footer-actions"]',
+			".card-footer-actions wa-button",
 		);
 		expect(button?.textContent?.trim()).toContain("Continue");
 	});
@@ -96,6 +96,7 @@ describe("QuestCard Component", () => {
 			progress: 100,
 			isCompleted: true,
 			isLocked: false,
+			inProgress: false, // Ensure inProgress is false for completed check logic if needed
 		};
 
 		render(html`<quest-card .quest=${quest}></quest-card>`, container);
@@ -103,7 +104,7 @@ describe("QuestCard Component", () => {
 		await el.updateComplete;
 
 		const button = el.shadowRoot?.querySelector(
-			'wa-button[slot="footer-actions"]',
+			".card-footer-actions wa-button",
 		);
 		expect(button?.textContent?.trim()).toContain("Restart");
 	});
@@ -125,7 +126,7 @@ describe("QuestCard Component", () => {
 		await el.updateComplete;
 
 		const button = el.shadowRoot?.querySelector(
-			'wa-button[slot="footer-actions"]',
+			".card-footer-actions wa-button",
 		);
 		expect(button?.textContent?.trim()).toContain("Locked");
 		expect(button?.hasAttribute("disabled")).toBe(true);
@@ -147,7 +148,10 @@ describe("QuestCard Component", () => {
 		const el = /** @type {QuestCard} */ (container.querySelector("quest-card"));
 		await el.updateComplete;
 
-		expect(el.shadowRoot?.textContent).toContain("Coming soon");
+		const button = el.shadowRoot?.querySelector(
+			".card-footer-actions wa-button",
+		);
+		expect(button?.textContent?.trim()).toContain("Coming Soon");
 	});
 
 	it("emits quest-select event when starting a quest", async () => {
@@ -169,7 +173,7 @@ describe("QuestCard Component", () => {
 		await el.updateComplete;
 
 		const button = /** @type {HTMLElement | null} */ (
-			el.shadowRoot?.querySelector('wa-button[slot="footer-actions"]')
+			el.shadowRoot?.querySelector(".card-footer-actions wa-button")
 		);
 		button?.click();
 
@@ -196,7 +200,7 @@ describe("QuestCard Component", () => {
 		await el.updateComplete;
 
 		const button = /** @type {HTMLElement | null} */ (
-			el.shadowRoot?.querySelector('wa-button[slot="footer-actions"]')
+			el.shadowRoot?.querySelector(".card-footer-actions wa-button")
 		);
 		button?.click();
 

@@ -132,6 +132,8 @@ describe("VoiceController", () => {
 		};
 		vi.stubGlobal("LanguageModel", LanguageModelMock);
 
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+
 		controller = new VoiceController(host, options);
 	});
 

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EVENTS } from "../constants/events.js";
+import { logger } from "../services/logger-service.js";
 import { GameView } from "./game-view/game-view.js";
 import { LevelDialog } from "./level-dialog/level-dialog.js"; // Mock child component
 
@@ -17,6 +18,7 @@ describe("LevelDialog Interactions", () => {
 	beforeEach(async () => {
 		container = document.createElement("div");
 		document.body.appendChild(container);
+		vi.spyOn(logger, "warn").mockImplementation(() => {});
 	});
 
 	afterEach(() => {
@@ -171,6 +173,7 @@ describe("GameView Integration", () => {
 	beforeEach(() => {
 		container = document.createElement("div");
 		document.body.appendChild(container);
+		vi.spyOn(logger, "warn").mockImplementation(() => {});
 	});
 
 	afterEach(() => {

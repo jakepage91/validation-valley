@@ -13,11 +13,7 @@ export const pauseMenuStyles = css`
 
 		/* Customizing the dialog header to match the game's pixel font style */
 		wa-dialog::part(title) {
-			font-family: var(--wa-font-family-heading);
-			font-size: var(--wa-font-size-m);
-			color: #ffffff;
 			text-align: center;
-			width: 100%;
 		}
 
 		/* Hide the close button since we have explicit actions */

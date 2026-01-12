@@ -7,6 +7,13 @@ describe("EventBus", () => {
 
 	beforeEach(() => {
 		bus = new EventBus();
+		// Clear all listeners and mocks before each test
+		bus.clear(); // Assuming eventBus.clear() in the instruction meant bus.clear()
+		vi.clearAllMocks();
+		vi.spyOn(console, "error").mockImplementation(() => {});
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+		vi.spyOn(console, "info").mockImplementation(() => {});
+		vi.spyOn(console, "debug").mockImplementation(() => {});
 	});
 
 	describe("on/emit", () => {

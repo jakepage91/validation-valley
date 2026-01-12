@@ -13,6 +13,10 @@ describe("EventBus Listeners", () => {
 		// Clear all event listeners before each test
 		eventBus.clear();
 		vi.clearAllMocks();
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+		vi.spyOn(console, "error").mockImplementation(() => {});
+		vi.spyOn(console, "info").mockImplementation(() => {});
+		vi.spyOn(console, "debug").mockImplementation(() => {});
 	});
 
 	describe("setupAnalyticsListeners", () => {

@@ -1,3 +1,5 @@
+import { logger } from "./logger-service.js";
+
 /**
  * @typedef {Object} GameServiceOptions
  * @property {function(string): void} [setLevel] - Callback to jump to a chapter
@@ -58,7 +60,7 @@ export class GameService {
 	 */
 	getState() {
 		const state = this.options.getState?.() || {};
-		console.table(state);
+		logger.info("Current Game State:", state);
 		return state;
 	}
 
@@ -113,8 +115,7 @@ export class GameService {
 	 */
 	getProgress() {
 		const progress = this.options.getProgress?.() || {};
-		console.log("📊 Quest Progress:");
-		console.table(progress);
+		logger.info("📊 Quest Progress:", progress);
 		return progress;
 	}
 
@@ -125,7 +126,7 @@ export class GameService {
 		if (this.options.resetProgress) {
 			if (confirm("⚠️ Reset all quest progress? This cannot be undone!")) {
 				this.options.resetProgress();
-				console.log("🔄 Progress reset!");
+				logger.info("🔄 Progress reset!");
 			}
 		}
 	}
@@ -134,7 +135,7 @@ export class GameService {
 	 * Show help in console
 	 */
 	help() {
-		console.log(`
+		logger.info(`
 🎮 Game Commands:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 LEVEL COMMANDS:

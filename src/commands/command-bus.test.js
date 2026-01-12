@@ -7,6 +7,7 @@ describe("CommandBus", () => {
 
 	beforeEach(() => {
 		commandBus = new CommandBus({ maxHistorySize: 5 });
+		vi.spyOn(console, "error").mockImplementation(() => {});
 	});
 
 	describe("execute", () => {

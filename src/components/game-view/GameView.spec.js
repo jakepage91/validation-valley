@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EVENTS } from "../../constants/events.js";
+import { logger } from "../../services/logger-service.js";
 import { GameView } from "./game-view.js";
 
 /**
@@ -113,6 +114,7 @@ function getMockApp(overrides = {}) {
 describe("GameView Component", () => {
 	beforeEach(() => {
 		document.body.innerHTML = "";
+		vi.spyOn(logger, "warn").mockImplementation(() => {});
 	});
 
 	it("renders loading state when no config is provided", async () => {

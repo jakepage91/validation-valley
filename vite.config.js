@@ -11,6 +11,17 @@ export default defineConfig(({ mode }) => {
 			port: 3000,
 			host: "0.0.0.0",
 		},
+		define: {
+			"process.env.NODE_ENV": JSON.stringify(
+				mode === "test" ? "production" : process.env.NODE_ENV,
+			),
+		},
+		resolve: {
+			alias: {
+				"node:module": new URL("./src/setup/empty-module.js", import.meta.url)
+					.pathname,
+			},
+		},
 		plugins: [
 			ViteImageOptimizer({
 				includePublic: true,
@@ -38,6 +49,9 @@ export default defineConfig(({ mode }) => {
 				headless: true,
 				provider: playwright(),
 				instances: [{ browser: "chromium" }],
+			},
+			env: {
+				NODE_ENV: "production",
 			},
 			coverage: {
 				provider: "v8",

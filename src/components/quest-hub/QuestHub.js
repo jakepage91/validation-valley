@@ -45,7 +45,7 @@ export class QuestHub extends LitElement {
 		/** @type {EnrichedQuest[]} */
 		this.comingSoonQuests = [];
 		this.showFullDescription = false;
-		this.isFullscreen = false;
+		this.isFullscreen = !!document.fullscreenElement;
 	}
 
 	connectedCallback() {
@@ -71,41 +71,55 @@ export class QuestHub extends LitElement {
 		this.isFullscreen = !!document.fullscreenElement;
 	}
 
+	/**
+	 * Toggles the full description visibility
+	 */
+	#toggleDescription() {
+		this.showFullDescription = !this.showFullDescription;
+	}
+
 	render() {
 		return html`
 			<div class="hub-container">
 				<header class="hub-header">
-					<h1 class="hub-title">LEGACY'S END</h1>
-					<p class="hub-subtitle">Tired of legacy code? It's time for transformation!</p>
-					<div class="hub-description">
-						<p>LEGACY'S END is your epic journey to master clean, portable, and maintainable frontend architecture. Join Alarion, the code acolyte, as he unlocks powerful architectural skills to turn chaos into mastery.</p>
-						<div ?hidden="${!this.showFullDescription}">
-							<p>Each chapter is an interactive mission where you'll refactor real code, learning to:</p>
-							<ul class="hub-description-list">
-								<li>🛡️ Encapsulate Your Code: Create autonomous components.</li>
-								<li>🎨 Dress Your App: Adapt your UI to any brand or theme.</li>
-								<li>🌐 Decouple Services: Connect your logic to any backend.</li>
-								<li>❤️ Manage State: Control the flow of reactive data.</li>
-								<li>🔒 Centralize Security: Protect your routes and users.</li>
-								<li>✅ Test Your Code: Build ultimate anti-regression shields.</li>
-								<li>🔥 Handle Errors: Transform chaos into intelligence.</li>
-								<li>🌍 Globalize Your App: Reach every language and market.</li>
-							</ul>
-							<p>Forge a code legacy that endures.</p>
-							<p style="font-weight: bold;">Start your adventure today and become a Master of Clean Code!</p>
+					<div class="header-content">
+						<h1 class="hub-title">LEGACY'S END</h1>
+						<p class="hub-subtitle">Tired of legacy code? It's time for transformation!</p>
+						
+						<div class="hub-description">
+							<p>LEGACY'S END is your epic journey to master clean, portable, and maintainable frontend architecture. Join Alarion, the code acolyte, as he unlocks powerful architectural skills to turn chaos into mastery.</p>
+							
+							${
+								this.showFullDescription
+									? html`
+								<p>Each chapter is an interactive mission where you'll refactor real code, learning to:</p>
+								<ul class="learning-objectives">
+									<li>🛡️ <strong>Encapsulate Your Code:</strong> Create autonomous components.</li>
+									<li>🎨 <strong>Dress Your App:</strong> Adapt your UI to any brand or theme.</li>
+									<li>🌐 <strong>Decouple Services:</strong> Connect your logic to any backend.</li>
+									<li>❤️ <strong>Manage State:</strong> Control the flow of reactive data.</li>
+									<li>🔒 <strong>Centralize Security:</strong> Protect your routes and users.</li>
+									<li>✅ <strong>Test Your Code:</strong> Build ultimate anti-regression shields.</li>
+								</ul>
+							`
+									: html`
+								<wa-button @click="${this.#toggleDescription}" variant="neutral" pill>
+									Read More
+								</wa-button>
+							`
+							}
 						</div>
-						<wa-button @click="${() => {
-							this.showFullDescription = !this.showFullDescription;
-						}}">
-							${this.showFullDescription ? "Read Less" : "Read More"}
-						</wa-button>
-						<wa-button variant="brand" @click="${this.#dispatchOpenAbout}">
-							<wa-icon slot="start" name="user"></wa-icon> About
-						</wa-button>
-						<wa-button @click="${this.#toggleFullscreen}">
-							<wa-icon name="${this.isFullscreen ? "compress" : "expand"}"></wa-icon>
-							<span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap;">Toggle Fullscreen</span>
-						</wa-button>
+
+						<div class="top-actions">
+							<wa-button variant="brand" @click="${this.#dispatchOpenAbout}">
+								<wa-icon slot="start" name="user"></wa-icon>
+								About
+							</wa-button>
+							<wa-button @click="${this.#toggleFullscreen}">
+								<wa-icon slot="start" name="${this.isFullscreen ? "compress" : "expand"}"></wa-icon>
+								${this.isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+							</wa-button>
+						</div>
 					</div>
 				</header>
 
@@ -137,7 +151,8 @@ export class QuestHub extends LitElement {
 
 				<footer class="hub-footer">
 					<wa-button variant="danger" @click="${this.#dispatchReset}">
-						<wa-icon slot="start" name="trash"></wa-icon> Reset Progress
+						<wa-icon slot="start" name="trash"></wa-icon>
+						Reset Progress
 					</wa-button>
 				</footer>
 				

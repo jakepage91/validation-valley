@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GameService } from "./game-service.js";
+import { logger } from "./logger-service.js";
 
 describe("GameService", () => {
 	/** @type {GameService} */
@@ -22,6 +23,10 @@ describe("GameService", () => {
 			getProgress: vi.fn().mockReturnValue({}),
 			resetProgress: vi.fn(),
 		};
+
+		// Mock logger
+		vi.spyOn(logger, "info").mockImplementation(() => {});
+
 		gameService = new GameService(options);
 	});
 
@@ -41,12 +46,12 @@ describe("GameService", () => {
 	});
 
 	it("should call getState callback and return state", () => {
-		const consoleSpy = vi.spyOn(console, "table").mockImplementation(() => {});
 		const state = gameService.getState();
 		expect(options.getState).toHaveBeenCalled();
 		expect(state).toEqual({ level: 1 });
-		expect(consoleSpy).toHaveBeenCalled();
-		consoleSpy.mockRestore();
+		expect(logger.info).toHaveBeenCalledWith("Current Game State:", {
+			level: 1,
+		});
 	});
 
 	it("should return empty object if getState is not provided", () => {
@@ -93,12 +98,10 @@ describe("GameService", () => {
 	});
 
 	it("should call getProgress callback and return progress", () => {
-		const consoleSpy = vi.spyOn(console, "table").mockImplementation(() => {});
 		const progress = gameService.getProgress();
 		expect(options.getProgress).toHaveBeenCalled();
 		expect(progress).toEqual({});
-		expect(consoleSpy).toHaveBeenCalled();
-		consoleSpy.mockRestore();
+		expect(logger.info).toHaveBeenCalledWith("📊 Quest Progress:", {});
 	});
 
 	it("should return empty object if getProgress is not provided", () => {
@@ -112,6 +115,7 @@ describe("GameService", () => {
 		gameService.resetProgress();
 		expect(confirmSpy).toHaveBeenCalled();
 		expect(options.resetProgress).toHaveBeenCalled();
+		expect(logger.info).toHaveBeenCalledWith("🔄 Progress reset!");
 		confirmSpy.mockRestore();
 	});
 

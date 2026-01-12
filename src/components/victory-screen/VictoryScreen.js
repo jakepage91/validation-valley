@@ -1,4 +1,5 @@
 import "@awesome.me/webawesome/dist/components/button/button.js";
+import "@awesome.me/webawesome/dist/components/icon/icon.js";
 import { html, LitElement } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { processImagePath } from "../../utils/process-assets.js";
@@ -71,6 +72,7 @@ export class VictoryScreen extends LitElement {
 					Ability gained: <b>"${this.quest?.reward?.ability}"</b>
 				</small></p>
 				<wa-button class="ng-btn" @click="${this.onReturn}">
+					<wa-icon slot="start" name="house"></wa-icon>
 					RETURN TO HUB
 				</wa-button>
 			</div>

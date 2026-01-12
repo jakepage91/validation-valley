@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AIService } from "./ai-service.js";
 
 describe("AIService", () => {
@@ -18,9 +18,21 @@ describe("AIService", () => {
 
 		// @ts-expect-error
 		window.LanguageModel = mockLanguageModel;
+
+		// Silence expected warnings/errors for these tests
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+		vi.spyOn(console, "error").mockImplementation(() => {});
+		vi.spyOn(console, "info").mockImplementation(() => {});
+		vi.spyOn(console, "debug").mockImplementation(() => {});
 	});
 
 	describe("checkAvailability", () => {
+		beforeEach(() => {});
+
+		afterEach(() => {
+			vi.restoreAllMocks();
+		});
+
 		it("should return 'readily' when AI is ready", async () => {
 			mockLanguageModel.availability.mockResolvedValue("readily");
 
@@ -141,6 +153,12 @@ describe("AIService", () => {
 	});
 
 	describe("downloadModel", () => {
+		beforeEach(() => {});
+
+		afterEach(() => {
+			vi.restoreAllMocks();
+		});
+
 		it("should download model and create session", async () => {
 			const mockSession = { prompt: vi.fn(), destroy: vi.fn() };
 			const mockMonitor = {

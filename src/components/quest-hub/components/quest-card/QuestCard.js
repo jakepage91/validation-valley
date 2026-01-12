@@ -91,8 +91,10 @@ export class QuestCard extends LitElement {
 				})}
 				.appearance="${completed ? "filled" : "outlined"}"
 			>
-				<h5 slot="header" class="quest-header">${this.quest.name}</h5>
-				<wa-icon slot="header-actions" .name="${this.quest.icon || "box"}"></wa-icon>
+				<div class="card-header">
+					<h5 class="quest-header">${this.quest.name}</h5>
+					<wa-icon .name="${this.quest.icon || "box"}"></wa-icon>
+				</div>
 
 				<div class="quest-content">
 					${
@@ -117,60 +119,62 @@ export class QuestCard extends LitElement {
 							: ""
 					}
 				</div>
-				<div slot="footer" class="wa-stack wa-gap-0">
-					<span class="quest-time">
-						<wa-icon name="clock"></wa-icon> ${this.quest.estimatedTime}
-					</span>
-					<wa-badge .variant="${getDifficultyVariant(this.quest.difficulty || "beginner")}">
-						${this.quest.difficulty}
-					</wa-badge>
+
+				<div class="card-footer wa-stack wa-gap-0">
+					<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--wa-space-s); padding: 0 var(--wa-space-m);">
+						<span class="quest-time">
+							<wa-icon name="clock" style="margin-right: var(--wa-space-2xs);"></wa-icon> ${this.quest.estimatedTime}
+						</span>
+						<wa-badge .variant="${getDifficultyVariant(this.quest.difficulty || "beginner")}">
+							${this.quest.difficulty}
+						</wa-badge>
+					</div>
+
+					<div class="card-footer-actions">
+						${
+							locked
+								? html`
+							${
+								this.isComingSoon
+									? html`
+									<wa-button ?disabled="${true}" .variant="${"neutral"}">
+										Coming Soon
+									</wa-button>
+								`
+									: html`
+									<wa-button .variant="${"neutral"}" ?disabled="${true}">
+										<wa-icon slot="start" name="lock"></wa-icon> Locked
+									</wa-button>
+								`
+							}
+						`
+								: nothing
+						}
+
+						${
+							!locked && completed
+								? html`
+							<wa-button .variant="${"success"}" @click="${this.#handleRestart}">
+								<wa-icon slot="start" name="rotate-right"></wa-icon> Restart
+							</wa-button>
+						`
+								: ""
+						}
+
+						${
+							!locked && !completed
+								? html`
+								<wa-button 
+									.variant="${"brand"}" 
+									@click="${this.#handleQuestAction}"
+								>
+									<wa-icon slot="start" name="play"></wa-icon> ${progress > 0 ? "Continue" : "Start"}
+								</wa-button>
+						`
+								: ""
+						}
+					</div>
 				</div>
-
-				
-				${
-					locked
-						? html`
-					${
-						this.isComingSoon
-							? html`
-							<p class="quest-desc">Coming soon in the next update!</p>
-							<wa-button slot="footer-actions" ?disabled="${true}" .variant="${"neutral"}">
-								Coming Soon
-							</wa-button>
-						`
-							: html`
-							<wa-button slot="footer-actions" .variant="${"neutral"}" ?disabled="${true}">
-								<wa-icon slot="start" name="lock"></wa-icon> Locked
-							</wa-button>
-						`
-					}
-				`
-						: nothing
-				}
-
-				${
-					!locked && completed
-						? html`
-					<wa-button slot="footer-actions" .variant="${"success"}" @click="${this.#handleRestart}">
-						<wa-icon slot="start" name="rotate-right"></wa-icon> Restart
-					</wa-button>
-				`
-						: ""
-				}
-
-				${
-					!locked && !completed
-						? html`
-						<wa-button 
-							slot="footer-actions" 
-							.variant="${"brand"}" 
-							@click="${this.#handleQuestAction}"
-						>
-							<wa-icon slot="start" name="play"></wa-icon> ${progress > 0 ? "Continue" : "Start"}
-						</wa-button>
-				`
-						: ""
-				}
 			</wa-card>
 		`;
 	}

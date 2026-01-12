@@ -140,13 +140,13 @@ export class GameViewport extends SignalWatcher(LitElement) {
 				<game-controls .isVoiceActive="${this.isVoiceActive}"></game-controls>
 				
 				<game-zone-indicator
-					type="THEME_CHANGE"
+					.type="${"THEME_CHANGE"}"
 					.zones="${config?.zones || []}"
 					.currentState="${themeMode}"
 				></game-zone-indicator>
 
 				<game-zone-indicator
-					type="CONTEXT_CHANGE"
+					.type="${"CONTEXT_CHANGE"}"
 					.zones="${config?.zones || []}"
 					.currentState="${hotSwitchState}"
 				></game-zone-indicator>

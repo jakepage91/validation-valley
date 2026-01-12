@@ -10,6 +10,12 @@ describe("VoiceSynthesisService", () => {
 	let SpeechSynthesisUtteranceMock;
 
 	beforeEach(() => {
+		// Silence expected warnings/errors for these tests
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+		vi.spyOn(console, "error").mockImplementation(() => {});
+		vi.spyOn(console, "info").mockImplementation(() => {});
+		vi.spyOn(console, "debug").mockImplementation(() => {});
+
 		// Mock speechSynthesis
 		speechSynthesisMock = {
 			speak: vi.fn(),

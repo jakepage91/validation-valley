@@ -63,4 +63,27 @@ export const questCardStyles = css`
 		align-items: center;
 		gap: var(--wa-space-2xs);
 	}
+
+	.card-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: var(--wa-space-m);
+		border-bottom: var(--wa-card-border-width, 1px) solid var(--wa-card-border-color, var(--wa-color-neutral-200));
+	}
+
+	.quest-header {
+		margin: 0;
+		font-size: var(--wa-font-size-m);
+		font-weight: var(--wa-font-weight-bold);
+		line-height: var(--wa-line-height-m);
+	}
+	
+	.card-footer-actions {
+		display: flex;
+		justify-content: flex-end;
+		padding: var(--wa-space-m);
+		border-top: var(--wa-card-border-width, 1px) solid var(--wa-card-border-color, var(--wa-color-neutral-200));
+		gap: var(--wa-space-s);
+	}
 `;
