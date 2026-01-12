@@ -11,7 +11,7 @@ import { eventBus as centralEventBus } from "../../core/event-bus.js";
 import { GameBootstrapper } from "../../core/game-bootstrapper.js";
 import { ContextMixin } from "../../mixins/context-mixin.js";
 import { logger } from "../../services/logger-service.js";
-import { getComingSoonQuests } from "../../services/quest-registry-service.js";
+// import { getComingSoonQuests } from "../../services/quest-registry-service.js"; // Removed dynamic import conflict
 import { legacysEndAppStyles } from "./LegacysEndApp.styles.js";
 
 import "@awesome.me/webawesome/dist/components/spinner/spinner.js";
@@ -116,7 +116,8 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 
 		// Initialize Bootstrapper
 		this.bootstrapper = new GameBootstrapper();
-		this.initGame();
+		/** @type {Promise<void>} */
+		this.gameInitialized = this.initGame();
 	}
 
 	async initGame() {
@@ -381,7 +382,7 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 		return html`
 			<quest-hub
 				.quests="${this.getEnrichedQuests()}"
-				.comingSoonQuests="${getComingSoonQuests()}"
+				.comingSoonQuests="${this.questController?.getComingSoonQuests() || []}"
 				@quest-select="${(/** @type {CustomEvent} */ e) => this.#handleQuestSelect(e.detail.questId)}"
 				@quest-continue="${(/** @type {CustomEvent} */ e) => this.#handleContinueQuest(e.detail.questId)}"
 				@reset-progress="${() => this.#handleResetProgress()}"

@@ -1,4 +1,3 @@
-import * as DefaultRegistry from "../services/quest-registry-service.js";
 import { LocalStorageAdapter } from "./storage-service.js";
 
 /** @typedef {import('./storage-service').StorageAdapter} StorageAdapter */
@@ -30,16 +29,20 @@ import { LocalStorageAdapter } from "./storage-service.js";
 export class ProgressService {
 	/**
 	 * @param {StorageAdapter} [storage] - Storage adapter for persistence
-	 * @param {typeof import('../services/quest-registry-service.js')} [registry] - Quest registry for looking up quest data
+	 * @param {typeof import('../services/quest-registry-service.js')} [registry] - Quest registry
 	 * @param {import('./logger-service.js').LoggerService} [logger] - Logger service
 	 */
 	constructor(
 		storage = new LocalStorageAdapter(),
-		registry = DefaultRegistry,
+		registry = undefined,
 		logger = undefined,
 	) {
+		if (!registry) throw new Error("Registry is required");
 		this.storage = storage;
-		this.registry = registry;
+		this.registry =
+			/** @type {typeof import('../services/quest-registry-service.js')} */ (
+				registry
+			);
 		this.logger = logger;
 		this.storageKey = "legacys-end-progress";
 		/** @type {ProgressState} */

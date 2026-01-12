@@ -68,7 +68,7 @@ export class GameBootstrapper {
 		logger.info("GameBootstrapper: Starting initialization...");
 
 		// 1. Initialize Services
-		const servicesContext = this.#setupServices();
+		const servicesContext = await this.#setupServices();
 
 		// 2. Initialize Router
 		const router = new Router();
@@ -87,14 +87,18 @@ export class GameBootstrapper {
 	}
 
 	/**
-	 * @returns {ServicesContext}
+	 * @returns {Promise<ServicesContext>}
 	 */
-	#setupServices() {
+	async #setupServices() {
 		const storageAdapter = new LocalStorageAdapter();
 		const gameState = new GameStateService(logger);
+
+		// Dynamic import to avoid chunking warning
+		const registry = await import("../services/quest-registry-service.js");
+
 		const progressService = new ProgressService(
 			storageAdapter,
-			undefined,
+			registry,
 			logger,
 		);
 

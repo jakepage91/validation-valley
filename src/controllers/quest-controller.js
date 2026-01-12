@@ -55,7 +55,11 @@ export class QuestController {
 		};
 
 		this.progressService =
-			this.options.progressService || new ProgressService();
+			this.options.progressService ||
+			new ProgressService(
+				undefined,
+				/** @type {any} */ (this.options.registry),
+			);
 		/** @type {import('../core/event-bus.js').EventBus} */
 		this.eventBus = /** @type {any} */ (options).eventBus || eventBus;
 		/** @type {import('../services/logger-service.js').LoggerService} */
@@ -450,6 +454,14 @@ export class QuestController {
 	 */
 	getQuestProgress(questId) {
 		return this.progressService.getQuestProgress(questId);
+	}
+
+	/**
+	 * Get list of quests coming soon
+	 * @returns {Array<import('../content/quests/quest-types.js').QuestData>}
+	 */
+	getComingSoonQuests() {
+		return this.options.registry?.getComingSoonQuests() || [];
 	}
 
 	/**

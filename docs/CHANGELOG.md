@@ -3,6 +3,7 @@
 ## 2026-01-12 - Data-Driven Zones & NPC Refactor
 
 ### Refactoring
+- **Optimization**: Resolved Vite chunk loading warning by ensuring `QuestRegistryService` is dynamically imported and injected, improving code splitting.
 - **Generic NPC Requirements**: Replaced hardcoded properties (`isFinalBoss`, `requiredContext`) with a generic `requirements` object in `NpcConfig`.
 - **Configurable Messages**: NPC requirements now support custom error messages `{ value: any, message: string }`.
 - **Zone Cleanup**: Fully removed legacy global constants (`GAME_CONFIG.VIEWPORT.ZONES`) and unused properties from `LevelConfig`.

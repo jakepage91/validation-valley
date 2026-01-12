@@ -24,7 +24,9 @@ describe("LegacysEndApp Integration", () => {
 			document.createElement("legacys-end-app")
 		);
 		document.body.appendChild(element);
+		// Wait for updates
 		await element.updateComplete;
+		await element.gameInitialized;
 	});
 
 	afterEach(() => {
