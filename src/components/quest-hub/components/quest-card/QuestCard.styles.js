@@ -7,30 +7,12 @@ export const questCardStyles = css`
 
 	.quest-card {
 		height: 100%;
+		--spacing: var(--wa-space-m);
 	}
 
 	.quest-card.locked {
 		cursor: not-allowed;
 		opacity: 0.6;
-	}
-
-	/* Variants */
-	.quest-card.variant-brand {
-		--wa-card-border-color: var(--wa-color-brand-600);
-		--wa-card-border-top-width: 4px;
-	}
-	
-	.quest-card.variant-success {
-		--wa-card-border-color: #10b981;
-		--wa-card-border-top-width: 4px;
-	}
-	
-	.quest-card.variant-neutral {
-		--wa-card-border-color: #6b7280;
-	}
-
-	.quest-card.completed {
-		--wa-card-border-color: #10b981;
 	}
 
 	.quest-content {
@@ -42,6 +24,7 @@ export const questCardStyles = css`
 
 	.quest-description {
 		flex: 1;
+		margin-bottom: var(--wa-space-m);
 	}
 
 	.quest-subtitle {
@@ -50,11 +33,32 @@ export const questCardStyles = css`
 		margin: 0;
 	}
 
-	.quest-meta {
+	.progress-info {
+		display: flex;
+		justify-content: space-between;
+		font-size: var(--wa-font-size-2xs);
+		margin-bottom: var(--wa-space-3xs);
+	}
+
+	.card-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+	}
+
+	.quest-header {
+		margin: 0;
+		font-size: var(--wa-font-size-m);
+		font-weight: var(--wa-font-weight-bold);
+		line-height: var(--wa-line-height-condensed);
+	}
+
+	.card-footer {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		font-size: var(--wa-font-size-2xs);
+		width: 100%;
 	}
 
 	.quest-time {
@@ -62,28 +66,13 @@ export const questCardStyles = css`
 		display: flex;
 		align-items: center;
 		gap: var(--wa-space-2xs);
+		font-size: var(--wa-font-size-xs);
 	}
 
-	.card-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: var(--wa-space-m);
-		border-bottom: var(--wa-card-border-width, 1px) solid var(--wa-card-border-color, var(--wa-color-neutral-200));
-	}
-
-	.quest-header {
-		margin: 0;
-		font-size: var(--wa-font-size-m);
-		font-weight: var(--wa-font-weight-bold);
-		line-height: var(--wa-line-height-m);
-	}
-	
 	.card-footer-actions {
 		display: flex;
 		justify-content: flex-end;
-		padding: var(--wa-space-m);
-		border-top: var(--wa-card-border-width, 1px) solid var(--wa-card-border-color, var(--wa-color-neutral-200));
 		gap: var(--wa-space-s);
+		width: 100%;
 	}
 `;
