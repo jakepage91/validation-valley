@@ -1,12 +1,13 @@
 import { Difficulty } from "./quest-types.js";
-import { THE_ACCESSIBILITY_ECHOES_QUEST } from "./the-accessibility-echoes/index.js";
 import { THE_AURA_OF_SOVEREIGNTY_QUEST } from "./the-aura-of-sovereignty/index.js";
 import { TOKEN_OF_AGNOSTICISM_QUEST } from "./the-chromatic-loom/index.js";
 import { THE_SCRYING_POOL_OF_CHAOS_QUEST } from "./the-crimson-altar/index.js";
 import { STATE_MANAGEMENT_RAID_QUEST } from "./the-flowing-heartstone/index.js";
 import { THE_MIRROR_OF_VERACITY_QUEST } from "./the-mirror-of-veracity/index.js";
+import { THE_ORACLE_OF_SILICON_QUEST } from "./the-oracle-of-silicon/index.js";
 import { THE_ORB_OF_INQUIRY_QUEST } from "./the-orb-of-inquiry/index.js";
 import { THE_SCROLL_OF_TONGUES_QUEST } from "./the-scroll-of-tongues/index.js";
+import { THE_UNSEEN_HARMONY_QUEST } from "./the-unseen-harmony/index.js";
 import { GATE_OF_IDENTITY_QUEST } from "./the-watchers-bastion/index.js";
 
 // Re-export types for convenience
@@ -33,5 +34,6 @@ export const QUESTS = {
 	[THE_MIRROR_OF_VERACITY_QUEST.id]: THE_MIRROR_OF_VERACITY_QUEST,
 	[THE_SCRYING_POOL_OF_CHAOS_QUEST.id]: THE_SCRYING_POOL_OF_CHAOS_QUEST,
 	[THE_SCROLL_OF_TONGUES_QUEST.id]: THE_SCROLL_OF_TONGUES_QUEST,
-	[THE_ACCESSIBILITY_ECHOES_QUEST.id]: THE_ACCESSIBILITY_ECHOES_QUEST,
+	[THE_UNSEEN_HARMONY_QUEST.id]: THE_UNSEEN_HARMONY_QUEST,
+	[THE_ORACLE_OF_SILICON_QUEST.id]: THE_ORACLE_OF_SILICON_QUEST,
 };

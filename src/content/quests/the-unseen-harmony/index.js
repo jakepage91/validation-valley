@@ -1,24 +1,24 @@
 import { Difficulty } from "../quest-types.js";
-import { THE_ACCESSIBILITY_ECHOES_CHAPTERS } from "./chapters.js";
+import { THE_UNSEEN_HARMONY_CHAPTERS } from "./chapters.js";
 
 /**
- * The Accessibility Echoes Quest Metadata
+ * The Unseen Harmony Quest Metadata
  *
  * Teaches A11y, ARIA, and Focus Management.
  */
 /** @type {import("../quest-types.js").Quest} */
-export const THE_ACCESSIBILITY_ECHOES_QUEST = {
-	id: "the-accessibility-echoes",
-	name: "The Accessibility Echoes",
+export const THE_UNSEEN_HARMONY_QUEST = {
+	id: "the-unseen-harmony",
+	name: "The Unseen Harmony",
 	subtitle: "Navigating the Invisible Realm",
 	description:
-		"A magical fog has blinded the realm. Your eyes are useless here. You must learn to navigate the world using the Echoes (ARIA), guiding those who perceive the code differently safely through the interface. **Accessibility is not optional**.",
+		"A magical fog has blinded the realm. Your eyes are useless here. You must learn to navigate the world through the Resonant Echoes, guiding those who perceive the code differently safely through the interface. Find logic where there is no sight.",
 	legacyProblem:
 		"Inaccessible application, keyboard traps, lack of screen reader support.",
 	prerequisites: ["the-aura-of-sovereignty"],
 	shortcuts: [],
 	difficulty: Difficulty.INTERMEDIATE,
-	icon: "eye-off",
+	icon: "universal-access",
 	estimatedTime: "25-35 min",
 	concepts: [
 		"ARIA Live Regions",
@@ -32,7 +32,7 @@ export const THE_ACCESSIBILITY_ECHOES_QUEST = {
 	chapterIds: ["fog-of-silence", "echo-chamber"],
 
 	// Chapter data
-	chapters: THE_ACCESSIBILITY_ECHOES_CHAPTERS,
+	chapters: THE_UNSEEN_HARMONY_CHAPTERS,
 
 	reward: {
 		badge: "Blindseer's Lens",

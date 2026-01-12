@@ -143,6 +143,14 @@ export class QuestHub extends LitElement {
 										<div slot="header">🏎️ High Performance</div>
 										Minimize rendering cycles and optimize bundles for a lightning-fast experience.
 									</wa-card>
+									<wa-card appearance="filled">
+										<div slot="header">🤖 Built-in AI</div>
+										Leverage the power of the browser's 1st-class AI APIs for natural interaction.
+									</wa-card>
+									<wa-card appearance="filled">
+										<div slot="header">♿ Accessibility</div>
+										Master ARIA and focus management to build inclusive experiences for all.
+									</wa-card>
 								</div>
 							`
 									: html`

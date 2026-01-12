@@ -12,7 +12,7 @@ export const THE_AURA_OF_SOVEREIGNTY_QUEST = {
 	name: "The Aura of Sovereignty",
 	subtitle: "Forging the Immutable Component Shield",
 	description:
-		"Before Alarion can connect with others, he must learn to exist without being corrupted by them. In the Toxic Swamp of Global Scope, he must find an umbrella to protect his styles and DOM from the chaotic environment. **Encapsulate Your Code**.",
+		"Before Alarion can connect with others, he must learn to exist without being corrupted by them. In the Toxic Swamp of Global Scope, he must find an umbrella to protect his styles and DOM from the chaotic environment. Encapsulate your code.",
 	legacyProblem:
 		"Component styles bleed into global scope, and global styles break components. Lack of isolation.",
 	prerequisites: /** @type {any[]} */ ([]),
