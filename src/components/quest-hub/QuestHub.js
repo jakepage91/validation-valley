@@ -106,14 +106,44 @@ export class QuestHub extends LitElement {
 								this.showFullDescription
 									? html`
 								<p>Each chapter is an interactive mission where you'll refactor real code, learning to:</p>
-								<ul class="learning-objectives">
-									<li>🛡️ <strong>Encapsulate Your Code:</strong> Create autonomous components.</li>
-									<li>🎨 <strong>Dress Your App:</strong> Adapt your UI to any brand or theme.</li>
-									<li>🌐 <strong>Decouple Services:</strong> Connect your logic to any backend.</li>
-									<li>❤️ <strong>Manage State:</strong> Control the flow of reactive data.</li>
-									<li>🔒 <strong>Centralize Security:</strong> Protect your routes and users.</li>
-									<li>✅ <strong>Test Your Code:</strong> Build ultimate anti-regression shields.</li>
-								</ul>
+								<div class="learning-objectives">
+									<wa-card appearance="filled">
+										<div slot="header">🛡️ Encapsulate Code</div>
+										Master Web Components and Shadow DOM to build truly autonomous UI elements.
+									</wa-card>
+									<wa-card appearance="filled">
+										<div slot="header">🎨 Themeable UI</div>
+										Architect flexible design systems using CSS Tokens that adapt to any brand.
+									</wa-card>
+									<wa-card appearance="filled">
+										<div slot="header">🌐 Decouple Services</div>
+										Isolate business logic from infrastructure to enable seamless backend swaps.
+									</wa-card>
+									<wa-card appearance="filled">
+										<div slot="header">❤️ Reactive State</div>
+										Control data flow with modern signals and observers for predictable updates.
+									</wa-card>
+									<wa-card appearance="filled">
+										<div slot="header">🔒 Robust Security</div>
+										Centralize authentication and authorization to keep your application resilient.
+									</wa-card>
+									<wa-card appearance="filled">
+										<div slot="header">✅ Ultimate Testing</div>
+										Implement anti-regression shields with unit, integration, and E2E tests.
+									</wa-card>
+									<wa-card appearance="filled">
+										<div slot="header">🧩 Scalable Patterns</div>
+										Master Dependency Injection and Command patterns for enterprise-grade code.
+									</wa-card>
+									<wa-card appearance="filled">
+										<div slot="header">📝 Self-Documentation</div>
+										Leverage JSDoc and standard conventions to keep your codebase readable.
+									</wa-card>
+									<wa-card appearance="filled">
+										<div slot="header">🏎️ High Performance</div>
+										Minimize rendering cycles and optimize bundles for a lightning-fast experience.
+									</wa-card>
+								</div>
 							`
 									: html`
 								<wa-button @click="${this.#toggleDescription}" variant="neutral">

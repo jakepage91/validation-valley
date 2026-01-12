@@ -77,25 +77,16 @@ export const questHubStyles = [
 			font-size: var(--wa-font-size-s);
 			line-height: 1.6;
 			color: var(--wa-color-text-quiet);
-			max-width: 800px;
 		}
 
 		.learning-objectives {
-			list-style: none;
-			padding: 0;
 			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+			grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 			gap: var(--wa-space-m);
 			margin-top: var(--wa-space-l);
 			text-align: left;
 		}
 
-		.learning-objectives li {
-			padding: var(--wa-space-s);
-			background: var(--wa-color-neutral-50);
-			border-radius: 0;
-			border: 1px solid var(--wa-color-neutral-200);
-		}
 
 		.hub-footer {
 			margin-top: var(--wa-space-4xl);
