@@ -333,10 +333,33 @@ describe("GameSessionManager", () => {
 	});
 
 	describe("startQuest", () => {
-		it("should start a quest successfully", async () => {
+		it("should start a quest successfully (event-driven)", async () => {
+			// Mock EventBus to capture listeners
+			/** @type {Object<string, Function>} */
+			const listeners = {};
+			mockEventBus.on.mockImplementation(
+				(/** @type {string} */ evt, /** @type {Function} */ cb) => {
+					listeners[evt] = cb;
+					return () => {};
+				},
+			);
+
+			// Setup listeners
+			manager.setupEventListeners();
+
+			// Mock Controller to emit event
+			mockQuestController.startQuest.mockImplementation(async () => {
+				if (listeners[EVENTS.QUEST.STARTED]) {
+					listeners[EVENTS.QUEST.STARTED]({
+						quest: { id: "test-quest", name: "Test Quest" },
+					});
+				}
+			});
+
 			await manager.startQuest("test-quest");
 
 			expect(mockQuestController.startQuest).toHaveBeenCalledWith("test-quest");
+			// State should be updated via the event handler
 			expect(manager.isInHub.get()).toBe(false);
 			expect(manager.currentQuest.get()).toEqual({
 				id: "test-quest",
@@ -345,16 +368,54 @@ describe("GameSessionManager", () => {
 		});
 
 		it("should handle loading state", async () => {
+			// Mock EventBus to capture listeners
+			/** @type {Object<string, Function>} */
+			const listeners = {};
+			mockEventBus.on.mockImplementation(
+				(/** @type {string} */ evt, /** @type {Function} */ cb) => {
+					listeners[evt] = cb;
+					return () => {};
+				},
+			);
+			manager.setupEventListeners();
+
+			// Mock Controller to emit event to clear loading
+			mockQuestController.startQuest.mockImplementation(async () => {
+				// Simulate event
+				if (listeners[EVENTS.QUEST.STARTED]) {
+					listeners[EVENTS.QUEST.STARTED]({
+						quest: { id: "test-quest", name: "Test Quest" },
+					});
+				}
+			});
+
 			await manager.startQuest("test-quest");
 			expect(manager.isLoading.get()).toBe(false);
-			// We can't query the transient "true" state easily without a deferred mock, but we verified the flow in previous tests.
-			// With Fakes, it's harder to interject in the middle unlike spies unless we subclass the fake to delay.
-			// For now, checking final state is behaviorally correct.
 		});
 	});
 
 	describe("continueQuest", () => {
-		it("should continue a quest from last checkpoint", async () => {
+		it("should continue a quest from last checkpoint (event-driven)", async () => {
+			// Mock EventBus
+			/** @type {Object<string, Function>} */
+			const listeners = {};
+			mockEventBus.on.mockImplementation(
+				(/** @type {string} */ evt, /** @type {Function} */ cb) => {
+					listeners[evt] = cb;
+					return () => {};
+				},
+			);
+			manager.setupEventListeners();
+
+			// Mock Controller to emit event
+			mockQuestController.continueQuest.mockImplementation(async () => {
+				if (listeners[EVENTS.QUEST.STARTED]) {
+					listeners[EVENTS.QUEST.STARTED]({
+						quest: { id: "test-quest", name: "Test Quest" },
+					});
+				}
+			});
+
 			await manager.continueQuest("test-quest");
 
 			expect(mockQuestController.continueQuest).toHaveBeenCalledWith(

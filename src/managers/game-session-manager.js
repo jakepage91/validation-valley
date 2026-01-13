@@ -120,9 +120,9 @@ export class GameSessionManager {
 	 * @param {import('../services/quest-registry-service').Quest} payload.quest
 	 */
 	#handleQuestStart({ quest }) {
-		this.isLoading.set(false);
 		this.currentQuest.set(quest);
 		this.isInHub.set(false);
+		this.isLoading.set(false);
 		this.logger.info(`🎮 Started quest: ${quest.name}`);
 		// Navigation handled by signal observation in App
 	}
@@ -322,9 +322,7 @@ export class GameSessionManager {
 		const result = await this._startQuestUseCase.execute(questId);
 
 		if (result.success) {
-			this.currentQuest.set(result.quest);
-			this.isInHub.set(false);
-			// Navigation implicit
+			// State updated via QUEST_STARTED event
 		}
 
 		this.#setLoadingState(false);
@@ -339,9 +337,7 @@ export class GameSessionManager {
 		const result = await this._continueQuestUseCase.execute(questId);
 
 		if (result.success) {
-			this.currentQuest.set(result.quest);
-			this.isInHub.set(false);
-			// Navigation implicit
+			// State updated via QUEST_STARTED event
 		}
 
 		this.#setLoadingState(false);
