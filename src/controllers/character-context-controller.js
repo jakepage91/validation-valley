@@ -21,7 +21,9 @@
  * @property {Object} [powerProvider]
  * @property {Object} [masteryProvider]
  * @property {import('../mixins/context-mixin.js').ContextProvider<any>} [characterProvider] - Combined provider if used
- * @property {function(): CharacterContextState} getState
+ * @property {import('../services/game-state-service.js').GameStateService} gameState
+ * @property {import('./quest-controller.js').QuestController} questController
+ * @property {import('../mixins/context-mixin.js').ContextProvider<any>} [characterProvider] - Combined provider if used
  */
 
 /**
@@ -58,17 +60,14 @@ export class CharacterContextController {
 	 * Update all character contexts based on current game state
 	 */
 	hostUpdate() {
-		const state = this.options.getState();
+		const state = this.options.gameState.getState();
+		const currentChapter = this.options.questController.currentChapter;
 
 		// Calculate derived values
-		const {
-			level,
-			chapterData,
-			isRewardCollected,
-			hasCollectedItem,
-			hotSwitchState,
-			themeMode,
-		} = state;
+		const level = currentChapter?.id || "";
+		const chapterData = currentChapter;
+		const { isRewardCollected, hasCollectedItem, hotSwitchState, themeMode } =
+			state;
 
 		const suit = {
 			image: chapterData?.hero

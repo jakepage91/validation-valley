@@ -1,3 +1,4 @@
+import { Signal } from "@lit-labs/signals";
 import { EVENTS } from "../constants/events.js";
 import { ServiceType } from "../services/user-services.js";
 import { CompleteQuestUseCase } from "../use-cases/complete-quest.js";
@@ -5,7 +6,6 @@ import { ContinueQuestUseCase } from "../use-cases/continue-quest.js";
 import { InteractWithNpcUseCase } from "../use-cases/interact-with-npc.js";
 import { ReturnToHubUseCase } from "../use-cases/return-to-hub.js";
 import { StartQuestUseCase } from "../use-cases/start-quest.js";
-import { Observable } from "../utils/observable.js";
 
 /**
  * GameSessionManager
@@ -20,12 +20,10 @@ import { Observable } from "../utils/observable.js";
  * - 'state-change': Game state has changed
  * - 'navigation': Navigation event (quest start, hub return)
  * - 'loading': Loading state changed
- * @extends {Observable<Object>}
+ * Emits events via Signals for view updates.
  */
-export class GameSessionManager extends Observable {
+export class GameSessionManager {
 	constructor(options = {}) {
-		super();
-
 		/**
 		 * @type {{
 		 *   gameState: import('../services/game-state-service').GameStateService;
@@ -74,10 +72,15 @@ export class GameSessionManager extends Observable {
 		this.collision = this.options.controllers.collision;
 		this.zones = this.options.controllers.zones;
 
-		// Session state
-		this.isLoading = false;
-		this.isInHub = true;
-		this.currentQuest = null;
+		// Session state (Signals)
+		this.isLoading = new Signal.State(false);
+		this.isInHub = new Signal.State(true);
+		this.currentQuest = new Signal.State(
+			/** @type {import('../services/quest-registry-service').Quest|null} */ (
+				null
+			),
+		);
+
 		this._isReturningToHub = false;
 	}
 
@@ -117,11 +120,11 @@ export class GameSessionManager extends Observable {
 	 * @param {import('../services/quest-registry-service').Quest} payload.quest
 	 */
 	#handleQuestStart({ quest }) {
-		this.isLoading = false;
-		this.currentQuest = quest;
-		this.isInHub = false;
+		this.isLoading.set(false);
+		this.currentQuest.set(quest);
+		this.isInHub.set(false);
 		this.logger.info(`🎮 Started quest: ${quest.name}`);
-		this.notify({ type: "navigation", location: "quest", questId: quest.id });
+		// Navigation handled by signal observation in App
 	}
 
 	/**
@@ -166,12 +169,7 @@ export class GameSessionManager extends Observable {
 			`📖 Chapter ${index + 1}/${chapter.total}: ${chapterData?.name || chapter.id}`,
 		);
 
-		this.notify({
-			type: "chapter-change",
-			chapter,
-			index,
-			questId: this.currentQuest?.id,
-		});
+		// Reactivity: App observes QuestController.currentChapter or events
 	}
 
 	/**
@@ -183,10 +181,7 @@ export class GameSessionManager extends Observable {
 		this.logger.info(`✅ Completed quest: ${quest.name}`);
 		this.logger.info(`🏆 Earned badge: ${quest.reward?.badge}`);
 		this.gameState.setQuestCompleted(true);
-		this.notify({
-			type: "quest-complete",
-			quest,
-		});
+		// Reactivity: App observes gameState.isQuestCompleted
 	}
 
 	/**
@@ -312,9 +307,9 @@ export class GameSessionManager extends Observable {
 		const state = this.gameState?.getState() || {};
 		return {
 			...state,
-			isLoading: this.isLoading,
-			isInHub: this.isInHub,
-			currentQuest: this.currentQuest,
+			isLoading: this.isLoading.get(),
+			isInHub: this.isInHub.get(),
+			currentQuest: this.currentQuest.get(),
 			currentChapter: this.questController?.currentChapter,
 			chapterId: this.questController?.currentChapter?.id,
 		};
@@ -329,13 +324,9 @@ export class GameSessionManager extends Observable {
 		const result = await this._startQuestUseCase.execute(questId);
 
 		if (result.success) {
-			this.currentQuest = result.quest;
-			this.isInHub = false;
-			this.notify({
-				type: "navigation",
-				location: "quest",
-				questId,
-			});
+			this.currentQuest.set(result.quest);
+			this.isInHub.set(false);
+			// Navigation implicit
 		}
 
 		this.#setLoadingState(false);
@@ -350,13 +341,9 @@ export class GameSessionManager extends Observable {
 		const result = await this._continueQuestUseCase.execute(questId);
 
 		if (result.success) {
-			this.currentQuest = result.quest;
-			this.isInHub = false;
-			this.notify({
-				type: "navigation",
-				location: "quest",
-				questId,
-			});
+			this.currentQuest.set(result.quest);
+			this.isInHub.set(false);
+			// Navigation implicit
 		}
 
 		this.#setLoadingState(false);
@@ -369,11 +356,11 @@ export class GameSessionManager extends Observable {
 		try {
 			const success = this.questController.jumpToChapter(chapterId);
 			if (!success) {
-				this.notify({ type: "loading", isLoading: false });
+				this.notifyLoading(false);
 			}
 			return success;
 		} catch {
-			this.notify({ type: "loading", isLoading: false });
+			this.notifyLoading(false);
 			return false;
 		}
 	}
@@ -385,12 +372,13 @@ export class GameSessionManager extends Observable {
 		/** @type {string} */ questId,
 		/** @type {string} */ chapterId,
 	) {
-		this.isLoading = true;
-		this.notify({ type: "loading", isLoading: true });
+		this.isLoading.set(true);
+		this.notifyLoading(true);
 
 		try {
 			// If quest not active, load it first
-			if (!this.currentQuest || this.currentQuest.id !== questId) {
+			const currentQuest = this.currentQuest.get();
+			if (!currentQuest || currentQuest.id !== questId) {
 				if (!this.progressService.isQuestAvailable(questId)) {
 					this.logger.warn(
 						`🚫 Quest ${questId} not available. Redirecting to hub.`,
@@ -410,13 +398,13 @@ export class GameSessionManager extends Observable {
 				await this.questController.continueQuest(questId);
 			}
 
-			this.currentQuest = this.questController.currentQuest;
-			this.isInHub = false;
+			this.currentQuest.set(this.questController.currentQuest);
+			this.isInHub.set(false);
 		} catch (error) {
 			this.logger.error("Failed to load chapter:", error);
 		} finally {
-			this.isLoading = false;
-			this.notify({ type: "loading", isLoading: false });
+			this.isLoading.set(false);
+			this.notifyLoading(false);
 		}
 	}
 
@@ -434,16 +422,12 @@ export class GameSessionManager extends Observable {
 		const result = this._completeQuestUseCase.execute();
 
 		if (result.success) {
-			// Quest completed, notify observers
-			this.notify({
-				type: "quest-complete",
-				questId: result.questId,
-			});
+			// Quest completed, notify observers via signals if needed, mostly App handles it
 		}
 	}
 
 	returnToHub(replace = false) {
-		if (this.isInHub && !this.currentQuest) return;
+		if (this.isInHub.get() && !this.currentQuest.get()) return;
 
 		// Guard against infinite recursion
 		if (this._isReturningToHub) return;
@@ -453,12 +437,9 @@ export class GameSessionManager extends Observable {
 			const result = this._returnToHubUseCase.execute(replace);
 
 			if (result.success) {
-				this.currentQuest = null;
-				this.isInHub = true;
-				this.notify({
-					type: "navigation",
-					location: "hub",
-				});
+				this.currentQuest.set(null);
+				this.isInHub.set(true);
+				// Navigation implicit
 			}
 		} finally {
 			this._isReturningToHub = false;
@@ -493,11 +474,19 @@ export class GameSessionManager extends Observable {
 	 * @param {boolean} isLoading
 	 */
 	#setLoadingState(isLoading) {
-		this.isLoading = isLoading;
+		this.isLoading.set(isLoading);
 		if (isLoading) {
 			this.gameState.setQuestCompleted(false);
 			this.gameState.setPaused(false);
 		}
-		this.notify({ type: "loading", isLoading });
+		this.notifyLoading(isLoading);
+	}
+
+	/**
+	 * @param {boolean} _isLoading
+	 */
+	notifyLoading(_isLoading) {
+		// Temporary shim if something still listens to notify? No, we removed Observable.
+		// Leaving this empty or using it for logger
 	}
 }

@@ -2,6 +2,7 @@
  * @typedef {import('lit').ReactiveController} ReactiveController
  */
 
+import { Task, TaskStatus } from "@lit/task";
 import { EVENTS } from "../constants/events.js";
 import { eventBus } from "../core/event-bus.js";
 
@@ -70,6 +71,26 @@ export class QuestController {
 		this.currentChapter = null;
 		/** @type {number} */
 		this.currentChapterIndex = 0;
+		// Initialize Task for loading quest data
+		this.loadQuestTask = new Task(this.host, {
+			task: async ([questId], { signal: _signal }) => {
+				if (!questId) return null;
+				// Pass signal if registry supports it, or just load
+				const quest = await this.registry.loadQuestData(questId);
+				if (!quest) throw new Error(`Quest not found: ${questId}`);
+
+				// Validate availability
+				if (!this.progressService.isQuestAvailable(questId)) {
+					throw new Error(`Quest not available: ${questId}`);
+				}
+
+				return quest;
+			},
+			args: () => [this._targetQuestId], // Reactive arg
+		});
+
+		/** @type {string|null} */
+		this._targetQuestId = null;
 
 		host.addController(this);
 	}
@@ -110,46 +131,46 @@ export class QuestController {
 	 */
 	async startQuest(questId) {
 		const start = performance.now();
-		const quest = await this.registry.loadQuestData(questId);
-		const loadTime = Math.round(performance.now() - start);
-		this.logger.debug(
-			`[Perf] 📚 Loaded quest data for ${questId} in ${loadTime}ms`,
-		);
 
-		if (!quest) {
-			this.logger.error(`Quest not found: ${questId}`);
-			return;
-		}
+		try {
+			await this.loadQuest(questId);
+			const quest = this.loadQuestTask.value;
 
-		// Check if quest is available
-		if (!this.progressService.isQuestAvailable(questId)) {
-			this.logger.warn(`Quest not available: ${questId}`);
-			return;
-		}
+			if (!quest) return;
 
-		// Reset progress for this quest (handles restarts)
-		this.progressService.resetQuestProgress(questId);
-
-		this.currentQuest = quest;
-		this.currentChapterIndex = 0;
-		this.currentChapter = this.getCurrentChapterData();
-
-		// Save progress
-		const chapterId = quest.chapterIds?.[0] ?? null;
-		this.progressService.setCurrentQuest(questId, chapterId);
-
-		// Emit global event
-		this.#emitQuestEvents({ started: true });
-
-		// Log memory usage if available
-		if (window.performance && /** @type {any} */ (window.performance).memory) {
-			const mem = /** @type {any} */ (window.performance).memory;
+			const loadTime = Math.round(performance.now() - start);
 			this.logger.debug(
-				`[Perf] 🧠 Heap used: ${Math.round(mem.usedJSHeapSize / 1024 / 1024)}MB`,
+				`[Perf] 📚 Loaded quest data for ${questId} in ${loadTime}ms`,
 			);
-		}
 
-		this.host.requestUpdate();
+			// Reset progress for this quest (handles restarts)
+			this.progressService.resetQuestProgress(questId);
+
+			this.currentChapterIndex = 0;
+			this.currentChapter = this.getCurrentChapterData();
+
+			// Save progress
+			const chapterId = quest.chapterIds?.[0] ?? null;
+			this.progressService.setCurrentQuest(questId, chapterId);
+
+			// Emit global event
+			this.#emitQuestEvents({ started: true });
+
+			// Log memory usage if available
+			if (
+				window.performance &&
+				/** @type {any} */ (window.performance).memory
+			) {
+				const mem = /** @type {any} */ (window.performance).memory;
+				this.logger.debug(
+					`[Perf] 🧠 Heap used: ${Math.round(mem.usedJSHeapSize / 1024 / 1024)}MB`,
+				);
+			}
+
+			this.host.requestUpdate();
+		} catch (e) {
+			this.logger.error("Failed to start quest", e);
+		}
 	}
 
 	/**
@@ -157,19 +178,35 @@ export class QuestController {
 	 * @param {string} questId
 	 */
 	async loadQuest(questId) {
-		const quest = await this.registry.loadQuestData(questId);
-		if (!quest) {
-			this.logger.error(`Quest not found: ${questId}`);
+		this._targetQuestId = questId;
+		// Trigger update to run task
+		this.host.requestUpdate();
+		await this.host.updateComplete;
+
+		// If task is async, updateComplete might strictly wait for render, but Task might still be pending?
+		// @lit/task runs automatically.
+		// We can await the task promise if we had access to it, or poll.
+		// Actually, we can run the task function manually to get the promise?
+		// No, `this.loadQuestTask.run()` returns a Promise.
+		// NOTE: @lit/task 1.0 `run` method takes args.
+		try {
+			await this.loadQuestTask.run([questId]);
+		} catch (e) {
+			this.logger.error(`Failed to load Quest ${questId}`, e);
 			return false;
 		}
 
-		// Check if quest is available (unlocked)
-		if (!this.progressService.isQuestAvailable(questId)) {
-			this.logger.warn(`Quest not available: ${questId}`);
+		if (this.loadQuestTask.status === TaskStatus.ERROR) {
+			this.logger.error(
+				`Quest not found or error: ${questId}`,
+				this.loadQuestTask.error,
+			);
 			return false;
 		}
 
-		this.currentQuest = quest;
+		const quest = this.loadQuestTask.value;
+		this.currentQuest = quest || null;
+
 		// Do not force chapter index to 0 here; let jumpToChapter handle it or default to 0
 		if (
 			this.currentChapterIndex === null ||

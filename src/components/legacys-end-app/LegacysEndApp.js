@@ -90,24 +90,20 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 
 	static properties = {
 		chapterId: { type: String },
-		currentQuest: { type: Object },
-		isInHub: { type: Boolean },
 		hasSeenIntro: { type: Boolean },
-		isLoading: { type: Boolean },
 	};
 
 	constructor() {
 		super();
 		// UI State
-		this.isLoading = true;
 		this.hasSeenIntro = false;
 		this.showQuestCompleteDialog = false;
 
 		// Initialize process
 
 		// Initialize Quest System
-		this.currentQuest = null;
-		this.isInHub = false;
+		// this.currentQuest = null; // Derived from signal
+		// this.isInHub = false; // Derived from signal
 
 		// Initialize Bootstrapper
 		this.bootstrapper = new GameBootstrapper();
@@ -153,13 +149,9 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 		}
 
 		// Initial sync after loading
-		this.syncSessionState();
 		this.requestUpdate();
 
 		// Subscribe to session manager notifications for routing
-		this.sessionManager.subscribe((/** @type {any} */ notification) =>
-			this.#handleSessionNotification(notification),
-		);
 
 		// Controllers implicit on this, but good to keep references if needed
 		// this.serviceController = context.serviceController;
@@ -167,36 +159,6 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 
 		/** @type {import('../../services/game-state-service').HotSwitchState} */
 		this._lastHotSwitchState = null;
-	}
-
-	/**
-	 * Handles notifications from GameSessionManager
-	 * @param {any} notification
-	 */
-	#handleSessionNotification(notification) {
-		if (notification.type === "navigation") {
-			if (notification.location === "hub") {
-				this.router.navigate(ROUTES.HUB);
-			} else if (notification.location === "quest" && notification.questId) {
-				const currentPath = window.location.pathname;
-				const targetPath = ROUTES.QUEST(notification.questId);
-				// Avoid redundant navigation/history entry if already there (e.g. started via URL)
-				if (!currentPath.includes(notification.questId)) {
-					this.router.navigate(targetPath);
-				}
-			}
-		} else if (notification.type === "chapter-change") {
-			if (notification.questId && notification.chapter?.id) {
-				const targetPath = ROUTES.CHAPTER(
-					notification.questId,
-					notification.chapter.id,
-				);
-				// Avoid redundant navigation if we are already at the target chapter (e.g. detailed route load)
-				if (window.location.pathname !== targetPath) {
-					this.router.navigate(targetPath, false); // Push
-				}
-			}
-		}
 	}
 
 	// Deleted #setupServices
@@ -221,10 +183,10 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 		this.applyTheme();
 
 		// Initial sync
-		this.syncSessionState();
+		// Initial sync (removed)
 
 		// Always show hub on start
-		this.isInHub = true;
+		// derived from sessionManager default
 	}
 
 	firstUpdated() {
@@ -280,22 +242,36 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 			this._lastHotSwitchState = newHotSwitchState;
 		}
 
-		// Keep internal synchronous state in sync with session manager
-		this.syncSessionState();
-	}
+		// React directly to session signals for routing
+		if (this.sessionManager) {
+			const isInHub = this.sessionManager.isInHub.get();
+			const currentQuest = this.sessionManager.currentQuest.get();
 
-	syncSessionState() {
-		if (!this.sessionManager) return;
-		const sessionState = this.sessionManager.getGameState();
-		this.isLoading = sessionState.isLoading;
-		this.isInHub = sessionState.isInHub;
-		this.currentQuest = sessionState.currentQuest;
-		this.chapterId = sessionState.chapterId;
+			if (isInHub && window.location.pathname !== ROUTES.HUB) {
+				this.router.navigate(ROUTES.HUB);
+			} else if (currentQuest && !isInHub) {
+				const chapterId = this.questController?.currentChapter?.id;
+				// If we have a quest and chapter, ensure route matches
+				if (chapterId) {
+					const targetPath = ROUTES.CHAPTER(currentQuest.id, chapterId);
+					if (window.location.pathname !== targetPath) {
+						this.router.navigate(targetPath, false);
+					}
+				} else {
+					// Just quest root? Or wait for chapter?
+					const targetPath = ROUTES.QUEST(currentQuest.id);
+					if (!window.location.pathname.includes(currentQuest.id)) {
+						this.router.navigate(targetPath);
+					}
+				}
+			}
+		}
 	}
 
 	getChapterData(/** @type {string} */ levelId) {
-		if (!this.currentQuest || !this.currentQuest.chapters) return null;
-		return this.currentQuest.chapters[levelId] || null;
+		const currentQuest = this.sessionManager?.currentQuest.get();
+		if (!currentQuest || !currentQuest.chapters) return null;
+		return currentQuest.chapters[levelId] || null;
 	}
 
 	togglePause() {
@@ -309,8 +285,9 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 	}
 
 	#handleRestartQuest() {
-		if (this.currentQuest) {
-			this.sessionManager.startQuest(this.currentQuest.id);
+		const currentQuest = this.sessionManager?.currentQuest.get();
+		if (currentQuest) {
+			this.sessionManager.startQuest(currentQuest.id);
 		}
 	}
 
@@ -354,7 +331,9 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 	}
 
 	getActiveService() {
-		const chapterData = this.getChapterData(this.chapterId || "");
+		// Use optional chaining as questController or currentChapter might be null during init
+		const chapterId = this.questController?.currentChapter?.id;
+		const chapterData = this.getChapterData(chapterId || "");
 		return this.serviceController.getActiveService(
 			chapterData?.serviceType,
 			this.gameState.hotSwitchState.get() || null,
@@ -363,9 +342,24 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 
 	static styles = legacysEndAppStyles;
 
+	get isLoading() {
+		return this.sessionManager?.isLoading.get() || false;
+	}
+
+	get isInHub() {
+		return this.sessionManager?.isInHub.get() || false;
+	}
+
+	get currentQuest() {
+		return this.sessionManager?.currentQuest.get() || null;
+	}
+
 	render() {
-		// Reactions to isLoading, isInHub, etc., happen via willUpdate sync
-		if (this.isLoading) {
+		// Reactions to isLoading, isInHub, etc., happen via SignalWatcher
+		const isLoading = this.sessionManager?.isLoading.get() || false;
+		const isInHub = this.sessionManager?.isInHub.get() || false;
+
+		if (isLoading) {
 			return html`
 				<div class="loading-overlay">
 					<wa-spinner></wa-spinner>
@@ -373,7 +367,7 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 				</div>
 			`;
 		}
-		if (this.isInHub) {
+		if (isInHub) {
 			return this.renderHub();
 		}
 		return this.renderGame();
@@ -427,7 +421,12 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 	}
 
 	renderGame() {
-		const currentConfig = this.getChapterData(this.chapterId || "");
+		const currentQuest = this.sessionManager?.currentQuest.get();
+		// Fallback for chapterId: derive from controller or router?
+		// Ideally QuestController is the source of truth for chapterId
+		const chapterId = this.questController?.currentChapter?.id;
+
+		const currentConfig = this.getChapterData(chapterId || "");
 		if (!currentConfig) {
 			return html`<div>Loading level data...</div>`;
 		}
@@ -452,11 +451,11 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 				lockedMessage: stateSnapshot.lockedMessage || "",
 			},
 			quest: {
-				data: this.currentQuest,
+				data: currentQuest,
 				chapterNumber: this.questController?.getCurrentChapterNumber() || 0,
 				totalChapters: this.questController?.getTotalChapters() || 0,
 				isLastChapter: isLastChapter,
-				levelId: this.chapterId,
+				levelId: chapterId,
 			},
 			hero: {
 				pos: stateSnapshot.heroPos,

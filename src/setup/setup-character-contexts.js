@@ -17,21 +17,8 @@ export function setupCharacterContexts(host, context) {
 			gearProvider: undefined,
 			powerProvider: undefined,
 			masteryProvider: undefined,
-			getState: () => {
-				const state = context.gameState.getState();
-				const currentChapter = context.questController.currentChapter;
-				return {
-					level: currentChapter?.id || "",
-					chapterData: /** @type {any} */ (currentChapter),
-					themeMode: state.themeMode,
-					hotSwitchState: /** @type {string|undefined} */ (
-						state.hotSwitchState || undefined
-					),
-					hasCollectedItem: state.hasCollectedItem,
-					userData: /** @type {any} */ (context).userData, // Still some loose ends
-					activeService: context.serviceController?.getActiveService(),
-				};
-			},
+			gameState: context.gameState,
+			questController: context.questController,
 		},
 	);
 }

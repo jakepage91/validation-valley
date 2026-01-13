@@ -9,7 +9,9 @@ describe("CharacterContextController", () => {
 	/** @type {any} */
 	let characterProvider;
 	/** @type {any} */
-	let getStateMock;
+	let mockGameState;
+	/** @type {any} */
+	let mockQuestController;
 
 	beforeEach(() => {
 		host = {
@@ -19,11 +21,28 @@ describe("CharacterContextController", () => {
 			updateComplete: Promise.resolve(true),
 		};
 		characterProvider = { setValue: vi.fn() };
-		getStateMock = vi.fn();
+
+		mockGameState = {
+			getState: vi.fn().mockReturnValue({
+				themeMode: "light",
+				hotSwitchState: "legacy",
+				hasCollectedItem: false,
+				isRewardCollected: false,
+			}),
+		};
+
+		mockQuestController = {
+			currentChapter: {
+				id: "level1",
+				hero: { image: "hero.png", reward: "hero-reward.png" },
+				reward: { image: "item.png" },
+			},
+		};
 
 		controller = new CharacterContextController(/** @type {any} */ (host), {
+			gameState: mockGameState,
+			questController: mockQuestController,
 			characterProvider,
-			getState: getStateMock,
 		});
 	});
 
@@ -33,16 +52,13 @@ describe("CharacterContextController", () => {
 
 	describe("update", () => {
 		it("should update suit context based on level and reward", () => {
-			getStateMock.mockReturnValue({
-				level: "level_1",
-				chapterData: {
-					hero: {
-						image: "/assets/level_1/hero.png",
-						reward: "/assets/level_1/hero-reward.png",
-					},
+			mockQuestController.currentChapter = {
+				id: "level_1",
+				hero: {
+					image: "/assets/level_1/hero.png",
+					reward: "/assets/level_1/hero-reward.png",
 				},
-				isRewardCollected: false,
-			});
+			};
 
 			controller.hostUpdate();
 
@@ -54,14 +70,14 @@ describe("CharacterContextController", () => {
 		});
 
 		it("should update suit context with reward image when evolved", () => {
-			getStateMock.mockReturnValue({
-				level: "level_1",
-				chapterData: {
-					hero: {
-						image: "/assets/level_1/hero.png",
-						reward: "/assets/level_1/hero-reward.png",
-					},
+			mockQuestController.currentChapter = {
+				id: "level_1",
+				hero: {
+					image: "/assets/level_1/hero.png",
+					reward: "/assets/level_1/hero-reward.png",
 				},
+			};
+			mockGameState.getState.mockReturnValue({
 				isRewardCollected: true,
 			});
 
@@ -75,11 +91,11 @@ describe("CharacterContextController", () => {
 		});
 
 		it("should update gear context when item is collected", () => {
-			getStateMock.mockReturnValue({
-				level: "level_2",
-				chapterData: {
-					reward: { image: "/assets/level_2/reward.png" },
-				},
+			mockQuestController.currentChapter = {
+				id: "level_2",
+				reward: { image: "/assets/level_2/reward.png" },
+			};
+			mockGameState.getState.mockReturnValue({
 				hasCollectedItem: true,
 			});
 
@@ -93,11 +109,11 @@ describe("CharacterContextController", () => {
 		});
 
 		it("should clear gear context when item is not collected", () => {
-			getStateMock.mockReturnValue({
-				level: "level_2",
-				chapterData: {
-					reward: { image: "/assets/level_2/reward.png" },
-				},
+			mockQuestController.currentChapter = {
+				id: "level_2",
+				reward: { image: "/assets/level_2/reward.png" },
+			};
+			mockGameState.getState.mockReturnValue({
 				hasCollectedItem: false,
 			});
 
@@ -111,8 +127,8 @@ describe("CharacterContextController", () => {
 		});
 
 		it("should update power context based on hot switch state", () => {
-			getStateMock.mockReturnValue({
-				hotSwitchState: null,
+			mockGameState.getState.mockReturnValue({
+				hotSwitchState: "new",
 				themeMode: "dark",
 			});
 
@@ -121,18 +137,18 @@ describe("CharacterContextController", () => {
 			expect(characterProvider.setValue).toHaveBeenCalledWith(
 				expect.objectContaining({
 					power: {
-						effect: "glitch",
+						effect: "stable",
 						intensity: "high",
 					},
 				}),
 			);
 		});
+
 		it("should not crash if characterProvider is missing", () => {
 			controller = new CharacterContextController(/** @type {any} */ (host), {
-				getState: getStateMock,
+				gameState: mockGameState,
+				questController: mockQuestController,
 			});
-
-			getStateMock.mockReturnValue({ level: "1" });
 
 			expect(() => controller.hostUpdate()).not.toThrow();
 		});
