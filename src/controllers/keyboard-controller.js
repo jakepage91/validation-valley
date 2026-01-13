@@ -58,7 +58,7 @@ export class KeyboardController {
 	 * @param {KeyboardEvent} e
 	 */
 	handleKeyDown(e) {
-		const { commandBus, eventBus, interaction, gameState } = this.options;
+		const { commandBus, interaction, gameState } = this.options;
 
 		// Handle Undo/Redo (Ctrl+Z / Ctrl+Y or Shift+Ctrl+Z)
 		if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
