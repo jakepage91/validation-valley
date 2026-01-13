@@ -150,7 +150,7 @@ export const levelDialogStyles = [
 
     .complete-btn {
       display: block;
-      margin: var(--wa-space-m) auto 0 auto;
+      margin: 0;
       animation: bounce 1s infinite;
       --border-radius: 0;
     }
