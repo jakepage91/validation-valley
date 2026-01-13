@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { FakeGameStateService } from "../services/fakes/fake-game-state-service.js";
 import { CharacterContextController } from "./character-context-controller.js";
 
 describe("CharacterContextController", () => {
@@ -8,8 +9,8 @@ describe("CharacterContextController", () => {
 	let controller;
 	/** @type {any} */
 	let characterProvider;
-	/** @type {any} */
-	let mockGameState;
+	/** @type {FakeGameStateService} */
+	let fakeGameState;
 	/** @type {any} */
 	let mockQuestController;
 
@@ -22,14 +23,13 @@ describe("CharacterContextController", () => {
 		};
 		characterProvider = { setValue: vi.fn() };
 
-		mockGameState = {
-			getState: vi.fn().mockReturnValue({
-				themeMode: "light",
-				hotSwitchState: "legacy",
-				hasCollectedItem: false,
-				isRewardCollected: false,
-			}),
-		};
+		// Use FakeGameStateService instead of mock
+		fakeGameState = new FakeGameStateService();
+		// Set default test state
+		fakeGameState.themeMode.set("light");
+		fakeGameState.hotSwitchState.set("legacy");
+		fakeGameState.hasCollectedItem.set(false);
+		fakeGameState.isRewardCollected.set(false);
 
 		mockQuestController = {
 			currentChapter: {
@@ -40,7 +40,7 @@ describe("CharacterContextController", () => {
 		};
 
 		controller = new CharacterContextController(/** @type {any} */ (host), {
-			gameState: mockGameState,
+			gameState: fakeGameState,
 			questController: mockQuestController,
 			characterProvider,
 		});
@@ -77,9 +77,7 @@ describe("CharacterContextController", () => {
 					reward: "/assets/level_1/hero-reward.png",
 				},
 			};
-			mockGameState.getState.mockReturnValue({
-				isRewardCollected: true,
-			});
+			fakeGameState.isRewardCollected.set(true);
 
 			controller.hostUpdate();
 
@@ -95,9 +93,7 @@ describe("CharacterContextController", () => {
 				id: "level_2",
 				reward: { image: "/assets/level_2/reward.png" },
 			};
-			mockGameState.getState.mockReturnValue({
-				hasCollectedItem: true,
-			});
+			fakeGameState.hasCollectedItem.set(true);
 
 			controller.hostUpdate();
 
@@ -113,9 +109,7 @@ describe("CharacterContextController", () => {
 				id: "level_2",
 				reward: { image: "/assets/level_2/reward.png" },
 			};
-			mockGameState.getState.mockReturnValue({
-				hasCollectedItem: false,
-			});
+			fakeGameState.hasCollectedItem.set(false);
 
 			controller.hostUpdate();
 
@@ -127,10 +121,8 @@ describe("CharacterContextController", () => {
 		});
 
 		it("should update power context based on hot switch state", () => {
-			mockGameState.getState.mockReturnValue({
-				hotSwitchState: "new",
-				themeMode: "dark",
-			});
+			fakeGameState.hotSwitchState.set("new");
+			fakeGameState.themeMode.set("dark");
 
 			controller.hostUpdate();
 
@@ -146,7 +138,7 @@ describe("CharacterContextController", () => {
 
 		it("should not crash if characterProvider is missing", () => {
 			controller = new CharacterContextController(/** @type {any} */ (host), {
-				gameState: mockGameState,
+				gameState: fakeGameState,
 				questController: mockQuestController,
 			});
 

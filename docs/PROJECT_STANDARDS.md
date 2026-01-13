@@ -50,10 +50,25 @@ This document outlines the mandatory architectural and coding standards for "Leg
     *   Example:
         ```javascript
         it("should have no accessibility violations", async () => {
-            const results = await axe.run(element);
-            expect(results.violations).toEqual([]);
         });
         ```
+
+### Behavior-Driven Testing Strategy
+To avoid brittle tests that break with implementation changes:
+*   **Fakes over Mocks**: Prefer using "Fakes" (lightweight in-memory implementations) over "Mocks" (spies on internal calls) for stateful services.
+    *   *Why*: Mocks couple tests to *how* something is done (e.g., "was `setTheme` called?"). Fakes verify *what* happened (e.g., "is the theme now 'dark'?").
+*   **Behavioral Assertions**: Assert on public state changes or public side effects, not on internal method calls.
+    *   *Bad*: `expect(service.setInternalFlag).toHaveBeenCalled()`
+    *   *Good*: `expect(service.state.flag.get()).toBe(true)`
+*   **Example**:
+    ```javascript
+    // Instead of mocking GameStateService and checking calls:
+    const fakeGameState = new FakeGameStateService(); // Implements same interface, stores state in memory
+    const manager = new GameSessionManager({ gameState: fakeGameState });
+    
+    manager.changeTheme('dark');
+    expect(fakeGameState.themeMode.get()).toBe('dark'); // Robust against refactors
+    ```
 
 ---
 

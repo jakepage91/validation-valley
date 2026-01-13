@@ -1,46 +1,43 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { FakeGameStateService } from "../services/fakes/fake-game-state-service.js";
 import { ToggleHotSwitchCommand } from "./toggle-hot-switch-command.js";
 
 describe("ToggleHotSwitchCommand", () => {
-	/** @type {any} */
-	let mockGameState;
+	/** @type {FakeGameStateService} */
+	let fakeGameState;
 	/** @type {ToggleHotSwitchCommand} */
 	let command;
 
 	beforeEach(() => {
-		mockGameState = {
-			getState: vi.fn(),
-			setHotSwitchState: vi.fn(),
-		};
+		fakeGameState = new FakeGameStateService();
 	});
 
 	it("should toggle from legacy to new", () => {
-		mockGameState.getState.mockReturnValue({ hotSwitchState: "legacy" });
-		command = new ToggleHotSwitchCommand({ gameState: mockGameState });
+		fakeGameState.hotSwitchState.set("legacy");
+		command = new ToggleHotSwitchCommand({ gameState: fakeGameState });
 
 		command.execute();
 
-		expect(mockGameState.setHotSwitchState).toHaveBeenCalledWith("new");
+		expect(fakeGameState.hotSwitchState.get()).toBe("new");
 	});
 
 	it("should toggle from new to legacy", () => {
-		mockGameState.getState.mockReturnValue({ hotSwitchState: "new" });
-		command = new ToggleHotSwitchCommand({ gameState: mockGameState });
+		fakeGameState.hotSwitchState.set("new");
+		command = new ToggleHotSwitchCommand({ gameState: fakeGameState });
 
 		command.execute();
 
-		expect(mockGameState.setHotSwitchState).toHaveBeenCalledWith("legacy");
+		expect(fakeGameState.hotSwitchState.get()).toBe("legacy");
 	});
 
 	it("should undo to previous state", () => {
-		mockGameState.getState.mockReturnValue({ hotSwitchState: "legacy" });
-		command = new ToggleHotSwitchCommand({ gameState: mockGameState });
+		fakeGameState.hotSwitchState.set("legacy");
+		command = new ToggleHotSwitchCommand({ gameState: fakeGameState });
 
 		command.execute();
-		mockGameState.setHotSwitchState.mockClear();
+		// State is "new"
 
 		command.undo();
-
-		expect(mockGameState.setHotSwitchState).toHaveBeenCalledWith("legacy");
+		expect(fakeGameState.hotSwitchState.get()).toBe("legacy");
 	});
 });

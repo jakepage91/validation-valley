@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EVENTS } from "../constants/events.js";
+import { FakeGameStateService } from "../services/fakes/fake-game-state-service.js";
 import { GameService } from "../services/game-service.js";
 import { GameController } from "./game-controller.js";
 
@@ -17,6 +18,8 @@ describe("GameController", () => {
 
 	/** @type {any} */
 	let context;
+	/** @type {FakeGameStateService} */
+	let fakeGameState;
 
 	beforeEach(() => {
 		host = {
@@ -26,17 +29,15 @@ describe("GameController", () => {
 			updateComplete: Promise.resolve(true),
 		};
 
+		fakeGameState = new FakeGameStateService();
+
 		context = {
 			eventBus: {
 				on: vi.fn(),
 				off: vi.fn(),
 				emit: vi.fn(),
 			},
-			gameState: {
-				setShowDialog: vi.fn(),
-				setCollectedItem: vi.fn(),
-				getState: vi.fn(() => ({ isRewardCollected: false })),
-			},
+			gameState: fakeGameState,
 			commandBus: {
 				execute: vi.fn().mockResolvedValue(undefined),
 			},
@@ -149,19 +150,21 @@ describe("GameController", () => {
 		});
 
 		it("should mark item as collected if NOT yet collected", () => {
-			// Mock state: Reward NOT collected
-			context.gameState.getState.mockReturnValue({ isRewardCollected: false });
+			// Fake state: Reward NOT collected
+			fakeGameState.isRewardCollected.set(false);
 			context.questController.hasNextChapter.mockReturnValue(true);
 
 			controller.handleLevelCompleted();
 
-			expect(context.gameState.setCollectedItem).toHaveBeenCalledWith(true);
+			expect(fakeGameState.hasCollectedItem.get()).toBe(true);
+			// commandBus not executed because we didn't meet advance condition?
+			// Logic: (!isCurrentLevelCompleted) -> setCollectedItem(true); return;
 			expect(context.commandBus.execute).not.toHaveBeenCalled();
 		});
 
 		it("should advance chapter if reward IS collected AND has next chapter", () => {
-			// Mock state: Reward COLLECTED + Has Next Chapter
-			context.gameState.getState.mockReturnValue({ isRewardCollected: true });
+			// Fake state: Reward COLLECTED
+			fakeGameState.isRewardCollected.set(true);
 			context.questController.hasNextChapter.mockReturnValue(true);
 
 			controller.handleLevelCompleted();
@@ -172,14 +175,17 @@ describe("GameController", () => {
 		});
 
 		it("should mark item as collected if reward collected but NO next chapter (Fallback/Last Level)", () => {
-			// Mock state: Reward COLLECTED + NO Next Chapter
-			context.gameState.getState.mockReturnValue({ isRewardCollected: true });
+			// Fake state: Reward COLLECTED + NO Next Chapter
+			fakeGameState.isRewardCollected.set(true);
 			context.questController.hasNextChapter.mockReturnValue(false);
 
 			controller.handleLevelCompleted();
 
-			// Should fall through to "just mark collected" path which logs "Level Goal Reached"
-			expect(context.gameState.setCollectedItem).toHaveBeenCalledWith(true);
+			// Should fall through to "just mark collected" path
+			// In original test it expected setCollectedItem(true).
+			// If isRewardCollected is already true, setting it to true again is idempotent.
+			// The crucial thing is that it does NOT execute AdvanceChapterCommand.
+			expect(fakeGameState.hasCollectedItem.get()).toBe(true);
 			expect(context.commandBus.execute).not.toHaveBeenCalled();
 		});
 	});

@@ -1,38 +1,33 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { FakeGameStateService } from "../services/fakes/fake-game-state-service.js";
 import { MoveHeroCommand } from "./move-hero-command.js";
 
 describe("MoveHeroCommand", () => {
-	/** @type {any} */
-	let mockGameState;
+	/** @type {FakeGameStateService} */
+	let fakeGameState;
 	/** @type {MoveHeroCommand} */
 	let command;
 
 	beforeEach(() => {
-		mockGameState = {
-			getState: vi.fn().mockReturnValue({
-				heroPos: { x: 50, y: 50 },
-				isPaused: false,
-				isEvolving: false,
-			}),
-			setHeroPosition: vi.fn(),
-		};
+		fakeGameState = new FakeGameStateService();
+		fakeGameState.heroPos.set({ x: 50, y: 50 });
 	});
 
 	it("should move hero by delta", () => {
 		command = new MoveHeroCommand({
-			gameState: mockGameState,
+			gameState: fakeGameState,
 			dx: 5,
 			dy: 0,
 		});
 
 		command.execute();
 
-		expect(mockGameState.setHeroPosition).toHaveBeenCalledWith(55, 50);
+		expect(fakeGameState.heroPos.get()).toEqual({ x: 55, y: 50 });
 	});
 
 	it("should save previous position", () => {
 		command = new MoveHeroCommand({
-			gameState: mockGameState,
+			gameState: fakeGameState,
 			dx: 5,
 			dy: 3,
 		});
@@ -44,28 +39,24 @@ describe("MoveHeroCommand", () => {
 
 	it("should undo move to previous position", () => {
 		command = new MoveHeroCommand({
-			gameState: mockGameState,
+			gameState: fakeGameState,
 			dx: 5,
 			dy: 3,
 		});
 
 		command.execute();
-		mockGameState.setHeroPosition.mockClear();
+		// State is {55, 53}
 
 		command.undo();
 
-		expect(mockGameState.setHeroPosition).toHaveBeenCalledWith(50, 50);
+		expect(fakeGameState.heroPos.get()).toEqual({ x: 50, y: 50 });
 	});
 
 	it("should not execute when paused", () => {
-		mockGameState.getState.mockReturnValue({
-			heroPos: { x: 50, y: 50 },
-			isPaused: true,
-			isEvolving: false,
-		});
+		fakeGameState.isPaused.set(true);
 
 		command = new MoveHeroCommand({
-			gameState: mockGameState,
+			gameState: fakeGameState,
 			dx: 5,
 			dy: 0,
 		});
@@ -74,14 +65,10 @@ describe("MoveHeroCommand", () => {
 	});
 
 	it("should not execute when evolving", () => {
-		mockGameState.getState.mockReturnValue({
-			heroPos: { x: 50, y: 50 },
-			isPaused: false,
-			isEvolving: true,
-		});
+		fakeGameState.isEvolving.set(true);
 
 		command = new MoveHeroCommand({
-			gameState: mockGameState,
+			gameState: fakeGameState,
 			dx: 5,
 			dy: 0,
 		});
@@ -91,7 +78,7 @@ describe("MoveHeroCommand", () => {
 
 	it("should execute when not paused or evolving", () => {
 		command = new MoveHeroCommand({
-			gameState: mockGameState,
+			gameState: fakeGameState,
 			dx: 5,
 			dy: 0,
 		});
@@ -101,7 +88,7 @@ describe("MoveHeroCommand", () => {
 
 	it("should have correct metadata", () => {
 		command = new MoveHeroCommand({
-			gameState: mockGameState,
+			gameState: fakeGameState,
 			dx: 5,
 			dy: 3,
 		});
@@ -112,20 +99,20 @@ describe("MoveHeroCommand", () => {
 
 	it("should handle negative deltas", () => {
 		command = new MoveHeroCommand({
-			gameState: mockGameState,
+			gameState: fakeGameState,
 			dx: -5,
 			dy: -3,
 		});
 
 		command.execute();
 
-		expect(mockGameState.setHeroPosition).toHaveBeenCalledWith(45, 47);
+		expect(fakeGameState.heroPos.get()).toEqual({ x: 45, y: 47 });
 	});
 
 	it("should trigger onMove callback during execute", () => {
 		const onMove = vi.fn();
 		command = new MoveHeroCommand({
-			gameState: mockGameState,
+			gameState: fakeGameState,
 			dx: 5,
 			dy: 0,
 			onMove,
@@ -139,7 +126,7 @@ describe("MoveHeroCommand", () => {
 	it("should trigger onMove callback during undo", () => {
 		const onMove = vi.fn();
 		command = new MoveHeroCommand({
-			gameState: mockGameState,
+			gameState: fakeGameState,
 			dx: 5,
 			dy: 0,
 			onMove,
@@ -156,7 +143,7 @@ describe("MoveHeroCommand", () => {
 	it("should emit HERO_MOVED event on execute", () => {
 		const eventBus = { emit: vi.fn() };
 		command = new MoveHeroCommand({
-			gameState: mockGameState,
+			gameState: fakeGameState,
 			dx: 5,
 			dy: 0,
 			eventBus: /** @type {any} */ (eventBus),
@@ -165,16 +152,16 @@ describe("MoveHeroCommand", () => {
 		command.execute();
 
 		expect(eventBus.emit).toHaveBeenCalledWith("hero-moved", {
-			x: 50, // Mock returns 50 even after setHeroPosition
+			x: 55,
 			y: 50,
-			hasCollectedItem: undefined,
+			hasCollectedItem: false,
 		});
 	});
 
 	it("should emit HERO_MOVED event on undo", () => {
 		const eventBus = { emit: vi.fn() };
 		command = new MoveHeroCommand({
-			gameState: mockGameState,
+			gameState: fakeGameState,
 			dx: 5,
 			dy: 0,
 			eventBus: /** @type {any} */ (eventBus),
@@ -188,7 +175,7 @@ describe("MoveHeroCommand", () => {
 		expect(eventBus.emit).toHaveBeenCalledWith("hero-moved", {
 			x: 50,
 			y: 50,
-			hasCollectedItem: undefined,
+			hasCollectedItem: false,
 		});
 	});
 });

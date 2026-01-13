@@ -1,55 +1,47 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { FakeGameStateService } from "../services/fakes/fake-game-state-service.js";
 import { PauseGameCommand } from "./pause-game-command.js";
 
 describe("PauseGameCommand", () => {
-	/** @type {any} */
-	let mockGameState;
+	/** @type {FakeGameStateService} */
+	let fakeGameState;
 	/** @type {PauseGameCommand} */
 	let command;
 
 	beforeEach(() => {
-		mockGameState = {
-			getState: vi.fn().mockReturnValue({
-				isPaused: false,
-			}),
-			setPaused: vi.fn(),
-		};
-
-		command = new PauseGameCommand({ gameState: mockGameState });
+		fakeGameState = new FakeGameStateService();
+		fakeGameState.isPaused.set(false);
+		command = new PauseGameCommand({ gameState: fakeGameState });
 	});
 
 	it("should toggle pause state from false to true", () => {
 		command.execute();
-
-		expect(mockGameState.setPaused).toHaveBeenCalledWith(true);
+		expect(fakeGameState.isPaused.get()).toBe(true);
 	});
 
 	it("should toggle pause state from true to false", () => {
-		mockGameState.getState.mockReturnValue({ isPaused: true });
-		command = new PauseGameCommand({ gameState: mockGameState });
+		fakeGameState.isPaused.set(true);
+		command = new PauseGameCommand({ gameState: fakeGameState });
 
 		command.execute();
-
-		expect(mockGameState.setPaused).toHaveBeenCalledWith(false);
+		expect(fakeGameState.isPaused.get()).toBe(false);
 	});
 
 	it("should save previous pause state", () => {
 		command.execute();
-
 		expect(command.previousPauseState).toBe(false);
 	});
 
 	it("should undo to previous pause state", () => {
 		command.execute();
+		expect(fakeGameState.isPaused.get()).toBe(true);
 
 		command.undo();
-
-		expect(mockGameState.setPaused).toHaveBeenCalledWith(false);
+		expect(fakeGameState.isPaused.get()).toBe(false);
 	});
 
 	it("should update metadata with new state", () => {
 		command.execute();
-
 		expect(/** @type {any} */ (command.metadata).newState).toBe(true);
 	});
 

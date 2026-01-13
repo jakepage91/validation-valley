@@ -26,16 +26,19 @@ vi.mock("../services/user-services.js", () => ({
 }));
 
 import { EVENTS } from "../constants/events.js";
+// Fakes
+import { FakeGameStateService } from "../services/fakes/fake-game-state-service.js";
+import { FakeProgressService } from "../services/fakes/fake-progress-service.js";
 import { ServiceType } from "../services/user-services.js";
 import { GameSessionManager } from "./game-session-manager.js";
 
 describe("GameSessionManager", () => {
 	/** @type {GameSessionManager} */
 	let manager;
-	/** @type {any} */
-	let mockGameState;
-	/** @type {any} */
-	let mockProgressService;
+	/** @type {FakeGameStateService} */
+	let fakeGameState;
+	/** @type {FakeProgressService} */
+	let fakeProgressService;
 	/** @type {any} */
 	let mockQuestController;
 	/** @type {any} */
@@ -46,45 +49,24 @@ describe("GameSessionManager", () => {
 	let mockLogger;
 
 	beforeEach(() => {
-		// Mock GameStateService
-		mockGameState = {
-			getState: vi.fn().mockReturnValue({
-				heroPos: { x: 50, y: 50 },
-				hasCollectedItem: false,
-				isPaused: false,
-				isEvolving: false,
-				hotSwitchState: "new",
-			}),
-			subscribe: vi.fn(),
-			setHeroPosition: vi.fn(),
-			setPaused: vi.fn(),
-			setEvolving: vi.fn(),
-			hotSwitchState: { get: vi.fn(() => "new") },
-			isPaused: { get: vi.fn(() => false) },
-			isQuestCompleted: { get: vi.fn(() => false) },
-			showDialog: { get: vi.fn(() => false) },
-			heroPos: { get: vi.fn(() => ({ x: 50, y: 50 })) },
-			hasCollectedItem: { get: vi.fn(() => false) },
-			isRewardCollected: { get: vi.fn(() => false) },
-			isEvolving: { get: vi.fn(() => false) },
-			lockedMessage: { get: vi.fn(() => null) },
-			setCollectedItem: vi.fn(),
-			setRewardCollected: vi.fn(),
-			setQuestCompleted: vi.fn(),
-			resetChapterState: vi.fn(),
-			setThemeMode: vi.fn(),
-			setHotSwitchState: vi.fn(),
-			setShowDialog: vi.fn(),
-			setLockedMessage: vi.fn(),
-		};
+		// Use Fakes
+		fakeGameState = new FakeGameStateService();
 
-		// Mock ProgressService
-		mockProgressService = {
-			isQuestAvailable: vi.fn().mockReturnValue(true),
-			getChapterState: vi.fn().mockReturnValue({}),
+		// Setup mock registry for FakeProgressService
+		const mockRegistry = {
+			getQuest: vi.fn(),
+			getAllQuests: vi.fn().mockReturnValue([]),
+			isQuestLocked: vi.fn().mockReturnValue(false),
 		};
+		fakeProgressService = new FakeProgressService(
+			/** @type {any} */ (mockRegistry),
+		);
 
-		// Mock QuestController
+		// Mock dependency methods that are not purely state management if needed
+		// For Progress, we might want to pre-seed some state
+		vi.spyOn(fakeProgressService, "isQuestAvailable").mockReturnValue(true);
+
+		// Mock QuestController (Still mocked as it has complex logic/side effects)
 		mockQuestController = {
 			startQuest: vi.fn().mockResolvedValue(undefined),
 			continueQuest: vi.fn().mockResolvedValue(undefined),
@@ -129,8 +111,8 @@ describe("GameSessionManager", () => {
 		};
 
 		manager = new GameSessionManager({
-			gameState: mockGameState,
-			progressService: mockProgressService,
+			gameState: fakeGameState,
+			progressService: fakeProgressService,
 			questController: mockQuestController,
 			controllers: mockControllers,
 			eventBus: mockEventBus,
@@ -146,7 +128,7 @@ describe("GameSessionManager", () => {
 		});
 	});
 
-	describe("Regression Tests", () => {
+	describe("Regression Tests (Behavior-Driven)", () => {
 		it("should subscribe to event bus events when setupEventListeners is called", () => {
 			manager.setupEventListeners();
 			expect(mockEventBus.on).toHaveBeenCalledWith(
@@ -175,7 +157,8 @@ describe("GameSessionManager", () => {
 
 			completeCallback({ quest: { name: "Test Quest", reward: {} } });
 
-			expect(mockGameState.setQuestCompleted).toHaveBeenCalledWith(true);
+			// Assertion on state, NOT on method call
+			expect(fakeGameState.isQuestCompleted.get()).toBe(true);
 		});
 
 		it("should reset hero position on chapter change", () => {
@@ -192,11 +175,14 @@ describe("GameSessionManager", () => {
 
 			chapterChangeCallback({ chapter: mockChapter, index: 1 });
 
-			expect(mockGameState.setHeroPosition).toHaveBeenCalledWith(10, 10);
+			// Assertion on state
+			expect(fakeGameState.heroPos.get()).toEqual({ x: 10, y: 10 });
 		});
 
 		it("should clear completion state when returning to hub", () => {
-			mockGameState.getState.mockReturnValue({ isQuestCompleted: true });
+			// Setup with direct state manipulation
+			fakeGameState.isQuestCompleted.set(true);
+
 			manager.setupEventListeners();
 			const returnCallback = mockEventBus.on.mock.calls.find(
 				(/** @type {any} */ call) => call[0] === "return-to-hub",
@@ -204,8 +190,9 @@ describe("GameSessionManager", () => {
 
 			returnCallback();
 
-			expect(mockGameState.setQuestCompleted).toHaveBeenCalledWith(false);
-			expect(mockGameState.setPaused).toHaveBeenCalledWith(false);
+			// Assertion on state
+			expect(fakeGameState.isQuestCompleted.get()).toBe(false);
+			expect(fakeGameState.isPaused.get()).toBe(false);
 		});
 
 		it("should handle theme-changed event", () => {
@@ -216,13 +203,13 @@ describe("GameSessionManager", () => {
 
 			themeCallback({ theme: "dark" });
 
-			expect(mockGameState.setThemeMode).toHaveBeenCalledWith("dark");
+			// Assertion on state
+			expect(fakeGameState.themeMode.get()).toBe("dark");
 		});
 
 		it("should handle context-changed event", () => {
 			manager.setupEventListeners();
-			// Mock initial state to be different (Signals)
-			mockGameState.hotSwitchState.get.mockReturnValue("legacy");
+			fakeGameState.hotSwitchState.set("legacy");
 
 			const contextCallback = mockEventBus.on.mock.calls.find(
 				(/** @type {any} */ call) => call[0] === "context-changed",
@@ -230,7 +217,8 @@ describe("GameSessionManager", () => {
 
 			contextCallback({ context: "new" });
 
-			expect(mockGameState.setHotSwitchState).toHaveBeenCalledWith("new");
+			// Assertion on state
+			expect(fakeGameState.hotSwitchState.get()).toBe("new");
 		});
 
 		it("should handle dialog-opened event", () => {
@@ -241,7 +229,8 @@ describe("GameSessionManager", () => {
 
 			dialogCallback();
 
-			expect(mockGameState.setShowDialog).toHaveBeenCalledWith(true);
+			// Assertion on state
+			expect(fakeGameState.showDialog.get()).toBe(true);
 		});
 
 		it("should handle interaction-locked event", () => {
@@ -252,7 +241,8 @@ describe("GameSessionManager", () => {
 
 			lockedCallback({ message: "Locked!" });
 
-			expect(mockGameState.setLockedMessage).toHaveBeenCalledWith("Locked!");
+			// Assertion on state
+			expect(fakeGameState.lockedMessage.get()).toBe("Locked!");
 		});
 
 		it("should set hotSwitchState to 'mock' when entering a chapter with MOCK service type", () => {
@@ -269,11 +259,14 @@ describe("GameSessionManager", () => {
 
 			chapterChangeCallback({ chapter: mockChapter, index: 2 });
 
-			expect(mockGameState.setHotSwitchState).toHaveBeenCalledWith("mock");
+			// Assertion on state
+			expect(fakeGameState.hotSwitchState.get()).toBe("mock");
 		});
 
 		it("should clear hotSwitchState when entering a chapter with null service type", () => {
 			manager.setupEventListeners();
+			fakeGameState.hotSwitchState.set("mock"); // Pre-condition
+
 			const chapterChangeCallback = mockEventBus.on.mock.calls.find(
 				(/** @type {any} */ call) => call[0] === EVENTS.QUEST.CHAPTER_CHANGED,
 			)[1];
@@ -286,11 +279,14 @@ describe("GameSessionManager", () => {
 
 			chapterChangeCallback({ chapter: mockChapter, index: 3 });
 
-			expect(mockGameState.setHotSwitchState).toHaveBeenCalledWith(null);
+			// Assertion on state
+			expect(fakeGameState.hotSwitchState.get()).toBeNull();
 		});
 
 		it("should handle serviceType mapping fallbacks", () => {
 			manager.setupEventListeners();
+			fakeGameState.hotSwitchState.set("mock"); // Pre-condition
+
 			const chapterChangeCallback = mockEventBus.on.mock.calls.find(
 				(/** @type {any} */ call) => call[0] === EVENTS.QUEST.CHAPTER_CHANGED,
 			)[1];
@@ -303,19 +299,23 @@ describe("GameSessionManager", () => {
 
 			chapterChangeCallback({ chapter: mockChapter, index: 4 });
 
-			// Should map to null via (mapping[...] || null)
-			expect(mockGameState.setHotSwitchState).toHaveBeenCalledWith(null);
+			// Assertion on state
+			expect(fakeGameState.hotSwitchState.get()).toBeNull();
 		});
 
 		it("should not set hero position if startPos is missing", () => {
 			manager.setupEventListeners();
+			const initialPos = { x: 50, y: 50 }; // Default
+			fakeGameState.heroPos.set(initialPos);
+
 			const callback = mockEventBus.on.mock.calls.find(
 				(/** @type {any} */ c) => c[0] === EVENTS.QUEST.CHAPTER_CHANGED,
 			)[1];
 
 			callback({ chapter: { id: "no-pos" }, index: 0 });
 
-			expect(mockGameState.setHeroPosition).not.toHaveBeenCalled();
+			// Assertion: State remains same
+			expect(fakeGameState.heroPos.get()).toEqual(initialPos);
 		});
 	});
 
@@ -324,7 +324,7 @@ describe("GameSessionManager", () => {
 			const state = manager.getGameState();
 
 			expect(state).toMatchObject({
-				heroPos: { x: 50, y: 50 },
+				heroPos: { x: 50, y: 15 }, // Default from Service
 				isLoading: false,
 				isInHub: true,
 				currentQuest: null,
@@ -345,12 +345,11 @@ describe("GameSessionManager", () => {
 		});
 
 		it("should handle loading state", async () => {
-			// Since startQuest is async, we can't easily catch the intermediate loading=true state
-			// without observing side effects or using a delayed mock.
-			// However, we verify that it ends up false.
 			await manager.startQuest("test-quest");
-
 			expect(manager.isLoading.get()).toBe(false);
+			// We can't query the transient "true" state easily without a deferred mock, but we verified the flow in previous tests.
+			// With Fakes, it's harder to interject in the middle unlike spies unless we subclass the fake to delay.
+			// For now, checking final state is behaviorally correct.
 		});
 	});
 
@@ -379,12 +378,6 @@ describe("GameSessionManager", () => {
 			mockQuestController.jumpToChapter.mockReturnValue(false);
 
 			manager.jumpToChapter("chapter-2");
-
-			// We only called notifyLoading(false) which is a shim.
-			// But the goal is to ensure it returns false.
-			// To verify loading state reset, we might check spy on notifyLoading if it existed,
-			// or just trust the integration.
-			// Here we verify result.
 		});
 	});
 
@@ -403,16 +396,17 @@ describe("GameSessionManager", () => {
 	describe("loadChapter", () => {
 		it("should load quest if not current and jump to chapter", async () => {
 			manager.currentQuest.set(null);
-			mockProgressService.isQuestAvailable.mockReturnValue(true);
+			// fakeProgress is already seeded to return true for available
 			mockQuestController.jumpToChapter.mockReturnValue(true);
-			// Update mock controller to match current quest after load
 			mockQuestController.currentQuest = { id: "test-quest" };
 
 			await manager.loadChapter("test-quest", "chapter-2");
 
-			expect(mockProgressService.isQuestAvailable).toHaveBeenCalledWith(
+			// Ensure service was queried ( spy on the fake method if we really care about the call interactions, but behavior is key)
+			expect(fakeProgressService.isQuestAvailable).toHaveBeenCalledWith(
 				"test-quest",
 			);
+
 			expect(mockQuestController.loadQuest).toHaveBeenCalledWith("test-quest");
 			expect(mockQuestController.jumpToChapter).toHaveBeenCalledWith(
 				"chapter-2",
@@ -422,7 +416,7 @@ describe("GameSessionManager", () => {
 
 		it("should redirect to hub if quest not available", async () => {
 			manager.currentQuest.set(null);
-			mockProgressService.isQuestAvailable.mockReturnValue(false);
+			vi.spyOn(fakeProgressService, "isQuestAvailable").mockReturnValue(false);
 			const returnSpy = vi.spyOn(manager, "returnToHub");
 
 			await manager.loadChapter("test-quest", "chapter-1");
@@ -432,7 +426,6 @@ describe("GameSessionManager", () => {
 		});
 
 		it("should fallback to continueQuest if jumpToChapter fails", async () => {
-			// Setup current quest to avoid loadQuest call
 			manager.currentQuest.set(/** @type {any} */ ({ id: "test-quest" }));
 			mockQuestController.jumpToChapter.mockReturnValue(false);
 
