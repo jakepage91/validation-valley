@@ -14,8 +14,9 @@ import { logger } from "../../services/logger-service.js";
 import { legacysEndAppStyles } from "./LegacysEndApp.styles.js";
 import "@awesome.me/webawesome/dist/components/spinner/spinner.js";
 import "@awesome.me/webawesome/dist/styles/webawesome.css"; // Keeping this as the instruction's snippet was malformed and didn't clearly replace it.
-import "../game-view/game-view.js";
-import "../quest-hub/quest-hub.js";
+// Dynamic imports for code splitting:
+// - game-view.js loaded when entering a quest
+// - quest-hub.js loaded when in hub
 import "../../pixel.css";
 
 /**
@@ -110,6 +111,10 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 		this.bootstrapper = new GameBootstrapper();
 		/** @type {Promise<void>} */
 		this.gameInitialized = this.initGame();
+
+		// Track loaded components for code splitting
+		/** @type {Set<string>} */
+		this._loadedComponents = new Set();
 	}
 
 	async initGame() {
@@ -249,6 +254,9 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 			const isInHub = this.sessionManager.isInHub.get();
 			const currentQuest = this.sessionManager.currentQuest.get();
 
+			// Lazy load components based on route
+			this._ensureComponentLoaded(isInHub ? "quest-hub" : "game-view");
+
 			if (isInHub && window.location.pathname !== ROUTES.HUB) {
 				this.router.navigate(ROUTES.HUB);
 			} else if (currentQuest && !isInHub) {
@@ -331,6 +339,32 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 	#handleResetProgress() {
 		this.gameService.resetProgress();
 		this.requestUpdate();
+	}
+
+	/**
+	 * Dynamically load a component if not already loaded
+	 * @param {'quest-hub' | 'game-view'} componentName
+	 */
+	async _ensureComponentLoaded(componentName) {
+		if (this._loadedComponents.has(componentName)) {
+			return; // Already loaded
+		}
+
+		this._loadedComponents.add(componentName);
+
+		try {
+			if (componentName === "quest-hub") {
+				await import("../quest-hub/quest-hub.js");
+				this.logger?.info("🎯 Lazy loaded: quest-hub");
+			} else if (componentName === "game-view") {
+				await import("../game-view/game-view.js");
+				this.logger?.info("🎮 Lazy loaded: game-view");
+			}
+		} catch (error) {
+			this.logger?.error(`❌ Failed to load ${componentName}:`, error);
+			// Remove from loaded set so it can be retried
+			this._loadedComponents.delete(componentName);
+		}
 	}
 
 	getActiveService() {
