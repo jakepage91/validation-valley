@@ -55,8 +55,6 @@ export function setupDebugListeners() {
 		GameEvents.HERO_MOVE,
 		GameEvents.ITEM_COLLECT,
 		GameEvents.REWARD_COLLECT,
-		GameEvents.DIALOG_OPEN,
-		GameEvents.DIALOG_CLOSE,
 		GameEvents.PAUSE,
 		GameEvents.RESUME,
 		GameEvents.NAVIGATE_HUB,

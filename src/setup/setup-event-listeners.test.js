@@ -79,10 +79,9 @@ describe("EventBus Listeners", () => {
 			const logSpy = vi.spyOn(logger, "debug");
 			setupDebugListeners();
 
-			eventBus.emit(GameEvents.DIALOG_OPEN, { dialogId: "test" });
 			eventBus.emit(GameEvents.PAUSE, {});
 
-			expect(logSpy).toHaveBeenCalledTimes(2);
+			expect(logSpy).toHaveBeenCalledTimes(1);
 		});
 	});
 

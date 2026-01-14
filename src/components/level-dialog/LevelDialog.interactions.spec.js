@@ -305,40 +305,6 @@ describe("GameView Integration", () => {
 		expect(closeSpy).toHaveBeenCalled();
 	});
 
-	it("should handle 'hero-auto-move' event payload correctly", async () => {
-		element = new GameView();
-		element.gameState = /** @type {any} */ ({
-			ui: { showDialog: false },
-		});
-
-		/** @type {((data: {x: number, y: number}) => void) | undefined} */
-		let autoMoveCallback;
-		const mockEventBus = {
-			on: vi.fn((event, cb) => {
-				if (event === GameEvents.HERO_AUTO_MOVE) autoMoveCallback = cb;
-			}),
-			off: vi.fn(),
-			emit: vi.fn(),
-		};
-
-		element.app = getMockApp({ eventBus: mockEventBus });
-
-		// Spy on moveTo
-		element.moveTo = vi.fn();
-
-		container.appendChild(element);
-		await element.updateComplete;
-
-		expect(autoMoveCallback).toBeDefined();
-
-		// Trigger with plain object payload (NOT CustomEvent)
-		if (autoMoveCallback) {
-			autoMoveCallback({ x: 123, y: 456 });
-		}
-
-		expect(element.moveTo).toHaveBeenCalledWith(123, 456);
-	});
-
 	it("should ignore global interaction when dialog is open", async () => {
 		element = new GameView();
 		element.gameState = /** @type {any} */ ({

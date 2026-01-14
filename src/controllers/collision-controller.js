@@ -1,5 +1,3 @@
-import { GameEvents } from "../core/event-bus.js";
-
 /**
  * @typedef {import("lit").ReactiveController} ReactiveController
  * @typedef {import("lit").ReactiveControllerHost} ReactiveControllerHost
@@ -20,52 +18,48 @@ import { GameEvents } from "../core/event-bus.js";
  */
 
 /**
- * CollisionController - Handles collision detection
+ * CollisionController - Handles collision detection and exit zones
  *
- * Handles:
- * - AABB (Axis-Aligned Bounding Box) collision detection
- * - Exit zone collision for level transitions
+ * Checks:
+ * - AABB collisions with obstacles (via checkCollision)
+ * - Exit zone entry (via checkExitZone)
  *
- * @implements {ReactiveController}
+ * ReactiveController pattern:
+ * - Checks exit zone on host update via heroPos signal
  */
 export class CollisionController {
 	/**
 	 * @param {ReactiveControllerHost} host
 	 * @param {IGameContext} context
-	 * @param {CollisionOptions} [options]
+	 * @param {{ heroSize?: number }} [config]
 	 */
-	constructor(host, context, options = {}) {
+	constructor(host, context, config = {}) {
 		this.host = host;
 		this.context = context;
-		/** @type {Required<CollisionOptions>} */
-		this.options = {
-			heroSize: 2.5, // Half-size of hero hitbox
-			...options,
+		this.config = {
+			heroSize: 2.5,
+			...config,
 		};
-
 		host.addController(this);
 	}
 
-	/**
-	 * Called when the host is connected to the DOM
-	 */
-	hostConnected() {
-		this.context.eventBus.on(GameEvents.HERO_MOVED, this.handleHeroMoved);
-	}
+	hostConnected() {}
 
-	hostDisconnected() {
-		this.context.eventBus.off(GameEvents.HERO_MOVED, this.handleHeroMoved);
-	}
+	hostDisconnected() {}
 
-	/**
-	 * @param {{x: number, y: number, hasCollectedItem: boolean}} data
-	 */
-	handleHeroMoved = ({ x, y, hasCollectedItem }) => {
+	hostUpdate() {
+		const pos = this.context.gameState.heroPos.get();
+		const hasCollectedItem = this.context.gameState.hasCollectedItem.get();
 		const currentChapter = this.context.questController?.currentChapter;
 		if (currentChapter?.exitZone) {
-			this.checkExitZone(x, y, currentChapter.exitZone, hasCollectedItem);
+			this.checkExitZone(
+				pos.x,
+				pos.y,
+				currentChapter.exitZone,
+				hasCollectedItem,
+			);
 		}
-	};
+	}
 
 	/**
 	 * Check if hero collides with exit zone
@@ -80,7 +74,7 @@ export class CollisionController {
 			return false;
 		}
 
-		const heroHalfSize = this.options.heroSize;
+		const heroHalfSize = this.config.heroSize;
 
 		// Hero bounding box
 		const hLeft = x - heroHalfSize;

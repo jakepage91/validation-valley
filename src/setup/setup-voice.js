@@ -1,4 +1,3 @@
-import { AutoMoveCommand } from "../commands/auto-move-command.js";
 import { InteractCommand } from "../commands/interact-command.js";
 import { NextDialogSlideCommand } from "../commands/next-dialog-slide-command.js";
 import { PauseGameCommand } from "../commands/pause-game-command.js";
@@ -14,6 +13,7 @@ import { GameEvents } from "../core/event-bus.js";
  * @property {import('../controllers/interaction-controller.js').InteractionController} interaction
  * @property {ShadowRoot} shadowRoot
  * @property {() => void} [handleLevelComplete]
+ * @property {(x: number, y: number) => void} [moveTo]
  */
 /**
  * @typedef {LitElement & VoiceHost} VoiceElement
@@ -81,14 +81,9 @@ export function setupVoice(host, context) {
 				// Use host.moveTo as it's the component's internal helper for interpolation
 				const interactionDistance =
 					(gameConfig?.gameplay?.interactionDistance || 10) - 2;
-				if (context.commandBus && context.eventBus) {
-					context.commandBus.execute(
-						new AutoMoveCommand(
-							context.eventBus,
-							npcPos.x - interactionDistance,
-							npcPos.y,
-						),
-					);
+
+				if (host.moveTo) {
+					host.moveTo(npcPos.x - interactionDistance, npcPos.y);
 				}
 			},
 			onMoveToExit: () => {
@@ -99,10 +94,8 @@ export function setupVoice(host, context) {
 				context.logger.info(
 					`🚪 Moving to exit at (${exitZone.x}, ${exitZone.y})`,
 				);
-				if (context.commandBus && context.eventBus) {
-					context.commandBus.execute(
-						new AutoMoveCommand(context.eventBus, exitZone.x, exitZone.y),
-					);
+				if (host.moveTo) {
+					host.moveTo(exitZone.x, exitZone.y);
 				}
 			},
 			onCompleteLevel: () => {

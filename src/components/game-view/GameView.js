@@ -97,12 +97,9 @@ export class GameView extends SignalWatcher(LitElement) {
 
 		// Bind handlers
 
-		this.#boundHandleAutoMove = this.#handleAutoMove.bind(this);
 		this.#boundHandleMoveInput = this.#handleMoveInput.bind(this);
 	}
 
-	/** @type {(data: any) => void} */
-	#boundHandleAutoMove;
 	/** @type {(data: any) => void} */
 	#boundHandleMoveInput;
 
@@ -117,10 +114,6 @@ export class GameView extends SignalWatcher(LitElement) {
 		// Subscribe to global events via eventBus
 		if (this.app?.eventBus) {
 			this.app.eventBus.on(
-				GameEvents.HERO_AUTO_MOVE,
-				this.#boundHandleAutoMove,
-			);
-			this.app.eventBus.on(
 				GameEvents.HERO_MOVE_INPUT,
 				this.#boundHandleMoveInput,
 			);
@@ -130,10 +123,6 @@ export class GameView extends SignalWatcher(LitElement) {
 	disconnectedCallback() {
 		super.disconnectedCallback();
 		if (this.app?.eventBus) {
-			this.app.eventBus.off(
-				GameEvents.HERO_AUTO_MOVE,
-				this.#boundHandleAutoMove,
-			);
 			this.app.eventBus.off(
 				GameEvents.HERO_MOVE_INPUT,
 				this.#boundHandleMoveInput,
@@ -287,7 +276,6 @@ export class GameView extends SignalWatcher(LitElement) {
 			this.app.commandBus.execute(
 				new MoveHeroCommand({
 					gameState: this.app.gameState,
-					eventBus: this.app.eventBus,
 					dx,
 					dy,
 				}),
@@ -422,15 +410,6 @@ export class GameView extends SignalWatcher(LitElement) {
 		if (this.app?.gameState) {
 			this.app.gameState.setCurrentDialogText(e.detail.text);
 		}
-	}
-
-	/**
-	 * Handles auto-move events
-	 * @param {{x: number, y: number}} data - Target position
-	 */
-	#handleAutoMove(data) {
-		const { x, y } = data;
-		this.moveTo(x, y);
 	}
 
 	/**

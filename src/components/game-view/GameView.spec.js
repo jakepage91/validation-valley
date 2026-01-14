@@ -224,9 +224,6 @@ describe("GameView Component", () => {
 			const command = mockApp.commandBus.execute.mock.calls[0][0];
 			expect(command.name).toBe("MoveHero");
 			expect(command.metadata).toEqual({ dx: 1, dy: 0 });
-			// Verify eventBus is passed
-			expect(command.eventBus).toBeDefined();
-			expect(command.eventBus).toBe(mockApp.eventBus);
 		});
 
 		it("should initialize keyboard with correct speed", () => {

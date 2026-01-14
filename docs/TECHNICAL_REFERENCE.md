@@ -251,27 +251,20 @@ Controllers are specialized classes (often using Lit's Reactive Controller patte
 *   **Final Boss**: Special logic blocks interaction if `hotSwitchState` is 'legacy' (requires 'new' context).
 
 ### `CollisionController`
-**Purpose**: Handles AABB (Axis-Aligned Bounding Box) collision detection.
+**Purpose**: Handles AABB (Axis-Aligned Bounding Box) collision detection and exit zone triggers.
 **Type**: Lit Reactive Controller.
-**Inputs**:
-*   `checkExitZone(x, y, exitZone, collected)`: `exitZone` must match `{x, y, width, height}` (`Box` type).
-**Outputs**:
-*   Calls `host.gameController.handleExitZoneReached()` directly when conditions are met.
 **Key Logic**:
-*   `checkExitZone()`: Determines if the player has entered the level exit area (only active if item is collected).
+*   **Signal Observation**: In `hostUpdate()`, it reads `gameState.heroPos` and `gameState.hasCollectedItem` to react to position changes.
+*   `checkExitZone()`: Determines if the player has entered the level exit area (only active if item is collected). Calls `host.gameController.handleExitZoneReached()` directly.
 *   `checkAABB(box1, box2)`: Generic collision utility.
 
 ### `GameZoneController`
 **Purpose**: Detects special zones within a level based on player position.
 **Type**: Lit Reactive Controller.
 **Architecture**: Delegates zone logic to `ProcessGameZoneInteractionUseCase`.
-**Inputs**:
-*   `checkZones(x, y)`: Player position (0-100%).
-*   `GameZoneOptions`: Callbacks for state changes.
-**Outputs**:
-*   `onThemeChange(mode: ThemeMode)`: Triggers when crossing Y-thresholds (Level 2).
-*   `onContextChange(state: HotSwitchState)`: Triggers when entering legacy/new zones (Level 6).
 **Key Logic**:
+*   **Signal Observation**: In `hostUpdate()`, it reads `gameState.heroPos` to trigger zone checks.
+*   **Direct State Update**: Updates `themeMode` or `hotSwitchState` in `GameStateService` based on use case results.
 *   **Theme Zones**: Switches between 'dark' (bottom) and 'light' (top) if `hasThemeZones` is active.
 *   **Context Zones**: Switches API context (`legacy` vs `new`) based on X/Y quadrants.
 

@@ -212,10 +212,6 @@ export const GameEvents = {
 	// Hero/Movement events
 	/** @type {'hero:move'} */
 	HERO_MOVE: "hero:move",
-	/** @type {'hero-moved'} */
-	HERO_MOVED: "hero-moved",
-	/** @type {'hero-auto-move'} */
-	HERO_AUTO_MOVE: "hero-auto-move",
 	/** @type {'hero-move-input'} */
 	HERO_MOVE_INPUT: "hero-move-input",
 
@@ -226,11 +222,6 @@ export const GameEvents = {
 	REWARD_COLLECT: "reward:collect",
 
 	// Dialog/UI events
-	/** @type {'dialog:open'} */
-	DIALOG_OPEN: "dialog:open",
-	/** @type {'dialog:close'} */
-	DIALOG_CLOSE: "dialog:close",
-
 	/** @type {'slide-changed'} */
 	SLIDE_CHANGED: "slide-changed",
 

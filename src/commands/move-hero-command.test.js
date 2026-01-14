@@ -86,15 +86,16 @@ describe("MoveHeroCommand", () => {
 		expect(command.canExecute()).toBe(true);
 	});
 
-	it("should have correct metadata", () => {
+	it("should set properties correctly", () => {
 		command = new MoveHeroCommand({
 			gameState: fakeGameState,
 			dx: 5,
-			dy: 3,
+			dy: 0,
 		});
-
 		expect(command.name).toBe("MoveHero");
-		expect(command.metadata).toEqual({ dx: 5, dy: 3 });
+		expect(command.dx).toBe(5);
+		expect(command.dy).toBe(0);
+		expect(command.metadata).toEqual({ dx: 5, dy: 0 });
 	});
 
 	it("should handle negative deltas", () => {
@@ -138,45 +139,6 @@ describe("MoveHeroCommand", () => {
 		command.undo();
 
 		expect(onMove).toHaveBeenCalled();
-	});
-
-	it("should emit HERO_MOVED event on execute", () => {
-		const eventBus = { emit: vi.fn() };
-		command = new MoveHeroCommand({
-			gameState: fakeGameState,
-			dx: 5,
-			dy: 0,
-			eventBus: /** @type {any} */ (eventBus),
-		});
-
-		command.execute();
-
-		expect(eventBus.emit).toHaveBeenCalledWith("hero-moved", {
-			x: 55,
-			y: 50,
-			hasCollectedItem: false,
-		});
-	});
-
-	it("should emit HERO_MOVED event on undo", () => {
-		const eventBus = { emit: vi.fn() };
-		command = new MoveHeroCommand({
-			gameState: fakeGameState,
-			dx: 5,
-			dy: 0,
-			eventBus: /** @type {any} */ (eventBus),
-		});
-
-		command.execute();
-		eventBus.emit.mockClear();
-
-		command.undo();
-
-		expect(eventBus.emit).toHaveBeenCalledWith("hero-moved", {
-			x: 50,
-			y: 50,
-			hasCollectedItem: false,
-		});
 	});
 
 	it("should clamp x and y to 0", () => {

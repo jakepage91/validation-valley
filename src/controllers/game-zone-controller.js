@@ -1,76 +1,62 @@
-import { GameEvents } from "../core/event-bus.js";
-
 /**
- * @typedef {import("lit").ReactiveController} ReactiveController
+/**
  * @typedef {import("lit").ReactiveControllerHost} ReactiveControllerHost
- * @typedef {import("../services/game-state-service.js").ThemeMode} ThemeMode
- * @typedef {import("../services/game-state-service.js").HotSwitchState} HotSwitchState
- * @typedef {import("../content/quests/quest-types.js").LevelConfig} LevelConfig
- * @typedef {import("../core/event-bus.js").EventBus} EventBus
  * @typedef {import("../core/game-context.js").IGameContext} IGameContext
  */
 
 /**
- * @typedef {Object} GameZoneOptions
- * @property {import('../use-cases/process-game-zone-interaction.js').ProcessGameZoneInteractionUseCase} processGameZoneInteraction - Use case
- */
-
-/**
- * GameZoneController - Lit Reactive Controller for zone detection
+ * GameZoneController - Handles theme and context zone changes
  *
- * Handles:
- * - Theme zones (dark/light based on Y position) - if chapter.hasThemeZones
- * - Context zones (legacy/new based on position) - if chapter.hasHotSwitch
+ * Logic:
+ * - Defines zones (start, middle, end) based on Chapter ID
+ * - Updates theme mode based on hero position
+ * - Updates character context (hot switch) based on zones
  *
- * @implements {ReactiveController}
+ * ReactiveController pattern:
+ * - Checks zones on host update via heroPos signal
  */
 export class GameZoneController {
 	/**
 	 * @param {ReactiveControllerHost} host
 	 * @param {IGameContext} context
-	 * @param {GameZoneOptions} [options]
+	 * @param {{ processGameZoneInteraction: any }} useCases
 	 */
-	/**
-	 * @param {ReactiveControllerHost} host
-	 * @param {IGameContext} context
-	 * @param {GameZoneOptions} options
-	 */
-	constructor(host, context, options) {
+	constructor(host, context, useCases) {
 		this.host = host;
 		this.context = context;
-		this.host = host;
-		this.context = context;
-		if (!options || !options.processGameZoneInteraction) {
-			throw new Error(
-				"GameZoneController requires processGameZoneInteraction option",
-			);
-		}
-
-		/** @type {Required<GameZoneOptions>} */
-		this.options = /** @type {Required<GameZoneOptions>} */ (options);
-
+		this.useCases = useCases;
+		/** @type {{x: number, y: number, hasCollectedItem: boolean} | null} */
+		this.lastPos = null;
 		host.addController(this);
 	}
 
-	/**
-	 * Lifecycle method called when host connects to the DOM
-	 */
-	hostConnected() {
-		this.context.eventBus.on(GameEvents.HERO_MOVED, this.handleHeroMoved);
-	}
+	hostConnected() {}
 
-	/**
-	 * Lifecycle method called when host disconnects from DOM
-	 */
-	hostDisconnected() {
-		this.context.eventBus.off(GameEvents.HERO_MOVED, this.handleHeroMoved);
+	hostDisconnected() {}
+
+	hostUpdate() {
+		const pos = this.context.gameState.heroPos.get();
+		const hasCollectedItem = this.context.gameState.hasCollectedItem.get();
+
+		// Prevent redundant checks if position hasn't changed
+		if (
+			this.lastPos &&
+			this.lastPos.x === pos.x &&
+			this.lastPos.y === pos.y &&
+			this.lastPos.hasCollectedItem === hasCollectedItem
+		) {
+			return;
+		}
+
+		this.lastPos = { x: pos.x, y: pos.y, hasCollectedItem };
+		this.checkZones(pos.x, pos.y, hasCollectedItem);
 	}
 
 	/**
 	 * @param {{x: number, y: number, hasCollectedItem: boolean}} data
 	 */
 	handleHeroMoved = ({ x, y, hasCollectedItem }) => {
-		this.checkZones(x, y, hasCollectedItem);
+		this.hostUpdate();
 	};
 
 	/**
@@ -83,19 +69,33 @@ export class GameZoneController {
 		const chapter = this.context.questController?.currentChapter;
 		if (!chapter) return;
 
-		const results = this.options.processGameZoneInteraction.execute({
+		const results = this.useCases.processGameZoneInteraction.execute({
 			x,
 			y,
 			chapter,
 			hasCollectedItem,
 		});
 
-		results.forEach((result) => {
-			if (result.type === "THEME_CHANGE") {
-				this.context.gameState.setThemeMode(result.payload);
-			} else if (result.type === "CONTEXT_CHANGE") {
-				this.context.gameState.setHotSwitchState(result.payload);
+		// Handle THEME_CHANGE (Last one wins if multiple)
+		const themeChange = results.findLast(
+			(/** @type {any} */ r) => r.type === "THEME_CHANGE",
+		);
+		if (themeChange) {
+			const currentTheme = this.context.gameState.themeMode.get();
+			if (currentTheme !== themeChange.payload) {
+				this.context.gameState.setThemeMode(themeChange.payload);
 			}
-		});
+		}
+
+		// Handle CONTEXT_CHANGE (Last one wins if multiple)
+		const contextChange = results.findLast(
+			(/** @type {any} */ r) => r.type === "CONTEXT_CHANGE",
+		);
+		if (contextChange) {
+			const currentContext = this.context.gameState.hotSwitchState.get();
+			if (currentContext !== contextChange.payload) {
+				this.context.gameState.setHotSwitchState(contextChange.payload);
+			}
+		}
 	}
 }

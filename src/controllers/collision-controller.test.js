@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { GameEvents } from "../core/event-bus.js";
+import { FakeGameStateService } from "../services/fakes/fake-game-state-service.js";
 import { CollisionController } from "./collision-controller.js";
 
 describe("CollisionController", () => {
@@ -9,6 +9,8 @@ describe("CollisionController", () => {
 	let controller;
 	/** @type {any} */
 	let context;
+	/** @type {FakeGameStateService} */
+	let fakeGameState;
 
 	beforeEach(() => {
 		host = {
@@ -17,6 +19,10 @@ describe("CollisionController", () => {
 			requestUpdate: vi.fn(),
 			updateComplete: Promise.resolve(true),
 		};
+
+		fakeGameState = new FakeGameStateService();
+		fakeGameState.heroPos.set({ x: 50, y: 50 });
+		fakeGameState.hasCollectedItem.set(true);
 
 		context = {
 			eventBus: {
@@ -29,6 +35,7 @@ describe("CollisionController", () => {
 					exitZone: { x: 50, y: 50, width: 10, height: 10 },
 				},
 			},
+			gameState: fakeGameState,
 		};
 
 		controller = new CollisionController(host, context, {
@@ -36,37 +43,33 @@ describe("CollisionController", () => {
 		});
 	});
 
-	it("should initialize and add controller to host", () => {
-		expect(host.addController).toHaveBeenCalledWith(controller);
-	});
+	it("should check exit zone on hostUpdate", () => {
+		const spy = vi.spyOn(controller, "checkExitZone");
 
-	it("should subscribe to HERO_MOVED on hostConnected", () => {
-		controller.hostConnected();
-		expect(context.eventBus.on).toHaveBeenCalledWith(
-			GameEvents.HERO_MOVED,
-			controller.handleHeroMoved,
+		// Set initial state
+		fakeGameState.heroPos.set({ x: 50, y: 50 });
+		fakeGameState.hasCollectedItem.set(true);
+
+		controller.hostUpdate();
+
+		expect(spy).toHaveBeenCalledWith(
+			50,
+			50,
+			context.questController.currentChapter.exitZone,
+			true,
 		);
-	});
 
-	it("should unsubscribe from HERO_MOVED on hostDisconnected", () => {
-		controller.hostDisconnected();
-		expect(context.eventBus.off).toHaveBeenCalledWith(
-			GameEvents.HERO_MOVED,
-			controller.handleHeroMoved,
+		// Update signal and call hostUpdate again
+		spy.mockClear();
+		fakeGameState.heroPos.set({ x: 52, y: 52 });
+		controller.hostUpdate();
+
+		expect(spy).toHaveBeenCalledWith(
+			52,
+			52,
+			context.questController.currentChapter.exitZone,
+			true,
 		);
-	});
-
-	describe("handleHeroMoved", () => {
-		it("should check exit zone when hero moves", () => {
-			const spy = vi.spyOn(controller, "checkExitZone");
-			controller.handleHeroMoved({ x: 50, y: 50, hasCollectedItem: true });
-			expect(spy).toHaveBeenCalledWith(
-				50,
-				50,
-				context.questController.currentChapter.exitZone,
-				true,
-			);
-		});
 	});
 
 	describe("checkAABB", () => {
