@@ -34,6 +34,9 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
 
+      - name: Build locales
+        run: npm run localize:build
+
       - name: Lint Code
         run: npm run lint
 
