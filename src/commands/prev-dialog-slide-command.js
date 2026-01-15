@@ -3,7 +3,7 @@
  */
 export class PrevDialogSlideCommand {
 	/**
-	 * @param {import('../components/game-view/GameView.js').GameView} gameView
+	 * @param {import('../components/quest-view/QuestView.js').QuestView} gameView
 	 */
 	constructor(gameView) {
 		this.gameView = gameView;

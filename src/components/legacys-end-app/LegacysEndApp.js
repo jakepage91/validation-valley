@@ -254,7 +254,7 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 			const currentQuest = this.sessionManager.currentQuest.get();
 
 			// Lazy load components based on route
-			this._ensureComponentLoaded(isInHub ? "quest-hub" : "game-view");
+			this._ensureComponentLoaded(isInHub ? "quest-hub" : "quest-view");
 
 			if (isInHub && window.location.pathname !== ROUTES.HUB) {
 				this.router.navigate(ROUTES.HUB);
@@ -342,7 +342,7 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 
 	/**
 	 * Dynamically load a component if not already loaded
-	 * @param {'quest-hub' | 'game-view'} componentName
+	 * @param {'quest-hub' | 'quest-view'} componentName
 	 */
 	async _ensureComponentLoaded(componentName) {
 		if (this._loadedComponents.has(componentName)) {
@@ -355,9 +355,9 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 			if (componentName === "quest-hub") {
 				await import("../quest-hub/quest-hub.js");
 				this.logger?.info("🎯 Lazy loaded: quest-hub");
-			} else if (componentName === "game-view") {
-				await import("../game-view/game-view.js");
-				this.logger?.info("🎮 Lazy loaded: game-view");
+			} else if (componentName === "quest-view") {
+				await import("../quest-view/quest-view.js");
+				this.logger?.info("🎮 Lazy loaded: quest-view");
 			}
 		} catch (error) {
 			this.logger?.error(`❌ Failed to load ${componentName}:`, error);
@@ -513,7 +513,7 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 		};
 
 		return html`
-			<game-view
+			<quest-view
 				.gameState="${gameState}"
 				.app="${this}"
 				@resume="${() => this.#handleResume()}"
@@ -523,7 +523,7 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 				@toggle-hot-switch="${() => this.#handleToggleHotSwitch()}"
 				@reward-collected="${() => this.#handleRewardCollected()}"
 				@return-to-hub="${() => this.#handleReturnToHub()}"
-			></game-view>
+			></quest-view>
 		`;
 	}
 

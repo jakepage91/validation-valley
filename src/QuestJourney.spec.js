@@ -56,7 +56,7 @@ describe("Quest Journey E2E", () => {
 
 		// 3. Verify Game View is loaded
 		await new Promise((resolve) => setTimeout(resolve, 1000));
-		const gameView = app.shadowRoot.querySelector("game-view");
+		const gameView = app.shadowRoot.querySelector("quest-view");
 		expect(gameView).toBeTruthy();
 		expect(app.sessionManager.isInHub.get()).toBe(false);
 
@@ -90,11 +90,13 @@ describe("Quest Journey E2E", () => {
 
 		// 6. Transition to Chapter 2
 		// Simulate reaching exit zone
-		if (gameView.gameController) {
-			gameView.gameController.handleExitZoneReached();
+		const viewportFirst = gameView.shadowRoot?.querySelector("game-viewport");
+		if (viewportFirst?.gameController) {
+			viewportFirst.gameController.handleExitZoneReached();
 		} else {
-			// Fallback if controller not found (should not happen in real app)
-			console.warn("GameController not found in E2E test");
+			throw new Error(
+				"Game controller not found in quest-view viewport (Chapter 1)",
+			);
 		}
 
 		// Wait for transition animation
@@ -128,17 +130,19 @@ describe("Quest Journey E2E", () => {
 		await new Promise((resolve) => setTimeout(resolve, 500));
 
 		// Reach exit zone of last chapter
-		const gameViewResumed = app.shadowRoot.querySelector("game-view");
-		if (gameViewResumed?.gameController) {
-			gameViewResumed.gameController.handleExitZoneReached();
+		const questViewResumed = app.shadowRoot.querySelector("quest-view");
+		const viewport =
+			questViewResumed?.shadowRoot?.querySelector("game-viewport");
+		if (viewport?.gameController) {
+			viewport.gameController.handleExitZoneReached();
 		} else {
-			console.warn("GameController not found in E2E test (Resumed)");
+			throw new Error("Game controller not found in quest-view viewport");
 		}
 
 		// 10. Verify Victory Screen
 		await new Promise((resolve) => setTimeout(resolve, 2000));
 		const victoryScreen = app.shadowRoot
-			.querySelector("game-view")
+			.querySelector("quest-view")
 			.shadowRoot.querySelector("victory-screen");
 		expect(victoryScreen).toBeTruthy();
 		expect(app.gameState.isQuestCompleted.get()).toBe(true);

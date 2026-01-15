@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { logger } from "../../services/logger-service.js";
-import { GameView } from "../game-view/game-view.js";
+import { QuestView } from "../quest-view/quest-view.js";
 import { LevelDialog } from "./LevelDialog.js"; // Mock child component
 
 // Mock WebAwesome components to avoid rendering issues in JSDOM
@@ -175,7 +175,7 @@ function getMockApp(overrides = {}) {
 	};
 }
 
-describe("GameView Integration", () => {
+describe("QuestView Integration", () => {
 	let element;
 	/** @type {any} */
 	let container;
@@ -194,7 +194,7 @@ describe("GameView Integration", () => {
 	});
 
 	it("should re-dispatch 'complete' event from level-dialog", async () => {
-		element = new GameView();
+		element = new QuestView();
 		element.gameState = /** @type {any} */ ({
 			config: {
 				zones: [
@@ -240,21 +240,22 @@ describe("GameView Integration", () => {
 		const dialog = element.shadowRoot?.querySelector("level-dialog");
 		expect(dialog).toBeTruthy();
 
-		// Mock gameController locally on the element		// Mock gameController on element
-		element.gameController = /** @type {any} */ ({
+		// Mock gameController on GameViewport
+		const viewport = /** @type {any} */ (
+			element.shadowRoot?.querySelector("game-viewport")
+		);
+		viewport.handleLevelComplete = vi.fn();
+		viewport.gameController = {
 			handleLevelCompleted: vi.fn(),
-		});
+		};
 
 		dialog?.dispatchEvent(new CustomEvent("complete"));
 
-		// Decoupled logic: GameView calls gameController.handleLevelCompleted
-		expect(
-			/** @type {any} */ (element).gameController.handleLevelCompleted,
-		).toHaveBeenCalled();
+		expect(viewport.handleLevelComplete).toHaveBeenCalled();
 	});
 
 	it("should re-dispatch 'close-dialog' event from level-dialog close", async () => {
-		element = new GameView();
+		element = new QuestView();
 		element.gameState = /** @type {any} */ ({
 			config: {
 				zones: [
@@ -305,24 +306,26 @@ describe("GameView Integration", () => {
 	});
 
 	it("should ignore global interaction when dialog is open", async () => {
-		element = new GameView();
+		element = new QuestView();
 		element.gameState = /** @type {any} */ ({
+			config: { zones: [] },
 			ui: { showDialog: true },
+			quest: { levelId: "1" },
 		});
 		element.app = getMockApp();
 		container.appendChild(element);
 		await element.updateComplete;
 
-		// Override interaction after setupControllers has run
-		element.interaction = /** @type {any} */ ({ handleInteract: vi.fn() });
+		const viewport = /** @type {any} */ (
+			element.shadowRoot?.querySelector("game-viewport")
+		);
+		// Mock handleInteract directly on viewport element level since it's mocked in JSDOM
+		viewport.handleInteract = vi.fn();
+		viewport.interaction = { handleInteract: vi.fn() };
 
-		element.handleInteract();
+		viewport.handleInteract();
 
 		expect(element.app.commandBus.execute).not.toHaveBeenCalled();
-		expect(
-			/** @type {import('vitest').Mock} */ (
-				/** @type {any} */ (element.interaction).handleInteract
-			),
-		).not.toHaveBeenCalled();
+		expect(viewport.interaction.handleInteract).not.toHaveBeenCalled();
 	});
 });

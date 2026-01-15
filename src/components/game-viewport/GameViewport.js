@@ -4,7 +4,23 @@ import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { ifDefined } from "lit/directives/if-defined.js";
+import { AdvanceChapterCommand } from "../../commands/advance-chapter-command.js";
+import { InteractCommand } from "../../commands/interact-command.js";
+import { MoveHeroCommand } from "../../commands/move-hero-command.js";
+import { PauseGameCommand } from "../../commands/pause-game-command.js";
 import { gameConfig } from "../../config/game-configuration.js";
+import { KeyboardController } from "../../controllers/keyboard-controller.js";
+import { GameEvents } from "../../core/event-bus.js";
+import { setupCharacterContexts } from "../../setup/setup-character-contexts.js";
+import { setupCollision } from "../../setup/setup-collision.js";
+import {
+	setupGameController,
+	setupGameService,
+} from "../../setup/setup-game.js";
+import { setupInteraction } from "../../setup/setup-interaction.js";
+import { setupService } from "../../setup/setup-service.js";
+import { setupVoice } from "../../setup/setup-voice.js";
+import { setupZones } from "../../setup/setup-zones.js";
 import {
 	extractAssetPath,
 	processImagePath,
@@ -45,6 +61,336 @@ export class GameViewport extends SignalWatcher(LitElement) {
 		this.rewardAnimState = "";
 		this.isRewardCollected = false;
 		this.isVoiceActive = false;
+
+		// Controllers
+		this._controllersInitialized = false;
+		this._eventsSubscribed = false;
+		this._autoMoveRequestId = null;
+
+		/** @type {import('../../controllers/collision-controller.js').CollisionController | null} */
+		this.collision = null;
+		/** @type {import('../../controllers/game-zone-controller.js').GameZoneController | null} */
+		this.zones = null;
+		/** @type {import('../../controllers/interaction-controller.js').InteractionController | null} */
+		this.interaction = null;
+		/** @type {import('../../controllers/keyboard-controller.js').KeyboardController | null} */
+		this.keyboard = null;
+		/** @type {import('../../controllers/voice-controller.js').VoiceController | null} */
+		this.voice = null;
+		/** @type {import('../../controllers/game-controller.js').GameController | null} */
+		this.gameController = null;
+
+		this.#boundHandleMoveInput = this.#handleMoveInput.bind(this);
+	}
+
+	/** @type {(data: any) => void} */
+	#boundHandleMoveInput;
+
+	/**
+	 * @param {import("lit").PropertyValues} changedProperties
+	 */
+	updated(changedProperties) {
+		super.updated(changedProperties);
+
+		// Initialize controllers if app becomes available after initial render
+		if (
+			changedProperties.has("app") &&
+			this.app &&
+			!this._controllersInitialized
+		) {
+			this.#setupControllers();
+			this._controllersInitialized = true;
+			// Subscribe to events now that app is available
+			this.#subscribeToEvents();
+		}
+	}
+
+	disconnectedCallback() {
+		super.disconnectedCallback();
+		this.#unsubscribeFromEvents();
+		this.stopAutoMove();
+	}
+
+	/**
+	 * Subscribe to event bus events
+	 */
+	#subscribeToEvents() {
+		if (this.app?.eventBus && !this._eventsSubscribed) {
+			this.app.eventBus.on(
+				GameEvents.HERO_MOVE_INPUT,
+				this.#boundHandleMoveInput,
+			);
+			this._eventsSubscribed = true;
+		}
+	}
+
+	/**
+	 * Unsubscribe from event bus events
+	 */
+	#unsubscribeFromEvents() {
+		if (this.app?.eventBus && this._eventsSubscribed) {
+			this.app.eventBus.off(
+				GameEvents.HERO_MOVE_INPUT,
+				this.#boundHandleMoveInput,
+			);
+			this._eventsSubscribed = false;
+		}
+	}
+
+	/**
+	 * Setup game controllers using the application context
+	 */
+	#setupControllers() {
+		const context = this.#getGameContext();
+
+		this.#setupGameMechanics(context);
+		// Update context with newly created controllers
+		context.interaction = this.interaction || undefined;
+		/** @type {any} */ (context).collision = this.collision;
+		/** @type {any} */ (context).zones = this.zones;
+
+		this.#setupInputHandlers(context);
+		this.#setupGameFlow(context);
+		this.#syncControllersToApp(context);
+		this.#syncProvidersToControllers();
+	}
+
+	/**
+	 * Setup fundamental game mechanics controllers
+	 * @param {import('../../core/game-context.js').IGameContext} context
+	 */
+	#setupGameMechanics(context) {
+		setupZones(this, context);
+		setupCollision(this, context);
+		setupService(this, context);
+		setupCharacterContexts(this, context);
+		setupInteraction(this, context);
+	}
+
+	/**
+	 * Setup input handling controllers
+	 * @param {import('../../core/game-context.js').IGameContext} context
+	 */
+	#setupInputHandlers(context) {
+		this.#setupKeyboard(context);
+		setupVoice(/** @type {any} */ (this), context);
+	}
+
+	/**
+	 * Setup high-level game flow controllers
+	 * @param {import('../../core/game-context.js').IGameContext} context
+	 */
+	#setupGameFlow(context) {
+		setupGameService(context);
+		setupGameController(this, context);
+	}
+
+	/**
+	 * Sync controller references back to app for legacy compatibility
+	 * @param {import('../../core/game-context.js').IGameContext} context
+	 */
+	#syncControllersToApp(context) {
+		this.app.interaction = this.interaction;
+		this.app.collision = this.collision;
+		this.app.zones = this.zones;
+		this.app.serviceController = context.serviceController;
+		this.app.characterContexts = context.characterContexts;
+		context.interaction = this.app.interaction;
+	}
+
+	/**
+	 * Sync providers to service controllers
+	 */
+	#syncProvidersToControllers() {
+		if (this.app.serviceController) {
+			this.app.serviceController.options.profileProvider =
+				this.app.profileProvider;
+		}
+
+		if (this.app.characterContexts) {
+			this.app.characterContexts.options.suitProvider = this.app.suitProvider;
+			this.app.characterContexts.options.gearProvider = this.app.gearProvider;
+			this.app.characterContexts.options.powerProvider = this.app.powerProvider;
+			this.app.characterContexts.options.masteryProvider =
+				this.app.masteryProvider;
+		}
+	}
+
+	/**
+	 * Creates game context from app services
+	 * @returns {import('../../core/game-context.js').IGameContext}
+	 */
+	#getGameContext() {
+		return {
+			eventBus: this.app.eventBus,
+			logger: this.app.logger,
+			gameState: this.app.gameState,
+			commandBus: this.app.commandBus,
+			sessionManager: this.app.sessionManager,
+			questController: this.app.questController,
+			progressService: this.app.progressService,
+			gameService: this.app.gameService,
+			router: this.app.router,
+			serviceController: this.app.serviceController,
+			characterContexts: this.app.characterContexts,
+			interaction: this.app.interaction,
+			aiService: this.app.aiService,
+			voiceSynthesisService: this.app.voiceSynthesisService,
+		};
+	}
+
+	/**
+	 * Setup keyboard controller
+	 * @param {import('../../core/game-context.js').IGameContext} context
+	 */
+	#setupKeyboard(context) {
+		this.keyboard = new KeyboardController(this, {
+			...context,
+			speed: 2.5,
+		});
+	}
+
+	/**
+	 * Handles hero movement
+	 * @param {number} dx - Delta X movement
+	 * @param {number} dy - Delta Y movement
+	 * @param {boolean} [isAuto] - Whether this is auto-movement
+	 */
+	handleMove(dx, dy, isAuto = false) {
+		if (!isAuto) {
+			this.stopAutoMove();
+		}
+
+		if (this.app?.commandBus) {
+			this.app.commandBus.execute(
+				new MoveHeroCommand({
+					gameState: this.app.gameState,
+					dx,
+					dy,
+				}),
+			);
+		}
+	}
+
+	/**
+	 * Handles interaction with game objects
+	 */
+	handleInteract() {
+		const stateService = this.app?.gameState;
+		const showDialog = stateService?.showDialog?.get();
+		if (showDialog) return;
+
+		if (this.app?.commandBus && this.interaction) {
+			this.app.commandBus.execute(
+				new InteractCommand({
+					interactionController: this.interaction,
+				}),
+			);
+		}
+	}
+
+	/**
+	 * Moves hero to target position with smooth animation
+	 * @param {number} targetX - Target X position
+	 * @param {number} targetY - Target Y position
+	 * @param {number} [step] - Movement step size
+	 */
+	moveTo(targetX, targetY, step = 0.4) {
+		this.stopAutoMove();
+
+		const move = () => {
+			const heroPos = this.app.gameState.heroPos.get();
+			const { x, y } = heroPos;
+
+			const dx = targetX - x;
+			const dy = targetY - y;
+			const distance = Math.sqrt(dx * dx + dy * dy);
+
+			if (distance < step) {
+				this.app.gameState.setHeroPosition(targetX, targetY);
+				this.stopAutoMove();
+				return;
+			}
+
+			const moveX = (dx / distance) * step;
+			const moveY = (dy / distance) * step;
+
+			this.handleMove(moveX, moveY, true);
+			this._autoMoveRequestId = requestAnimationFrame(move);
+		};
+
+		this._autoMoveRequestId = requestAnimationFrame(move);
+	}
+
+	/**
+	 * Stops auto-movement animation
+	 */
+	stopAutoMove() {
+		if (this._autoMoveRequestId) {
+			cancelAnimationFrame(this._autoMoveRequestId);
+			this._autoMoveRequestId = null;
+		}
+	}
+
+	/**
+	 * Triggers level transition to next chapter
+	 */
+	triggerLevelTransition() {
+		this.stopAutoMove();
+		if (this.app?.commandBus) {
+			this.app.commandBus.execute(
+				new AdvanceChapterCommand({
+					gameState: this.app.gameState,
+					sessionManager: this.app.sessionManager,
+				}),
+			);
+		}
+	}
+
+	/**
+	 * Handles level completion
+	 */
+	handleLevelComplete() {
+		if (this.gameController) {
+			this.gameController.handleLevelCompleted();
+		}
+	}
+
+	/**
+	 * Toggles game pause state
+	 */
+	togglePause() {
+		if (this.app?.commandBus) {
+			this.app.commandBus.execute(
+				new PauseGameCommand({
+					gameState: this.app.gameState,
+				}),
+			);
+		}
+	}
+
+	/**
+	 * Advances to the next dialog slide
+	 */
+	nextDialogSlide() {
+		// Dialog is not in GameViewport yet, need to manage this or event
+		this.dispatchEvent(new CustomEvent("next-slide"));
+	}
+
+	/**
+	 * Returns to the previous dialog slide
+	 */
+	prevDialogSlide() {
+		this.dispatchEvent(new CustomEvent("prev-slide"));
+	}
+
+	/**
+	 * Handles move input events
+	 * @param {{dx: number, dy: number}} data - Movement delta
+	 */
+	#handleMoveInput(data) {
+		const { dx, dy } = data;
+		this.handleMove(dx, dy);
 	}
 
 	/**

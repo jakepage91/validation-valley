@@ -67,6 +67,15 @@ export class Router {
 		this._onPopState();
 	}
 
+	/**
+	 * Alias for navigate
+	 * @param {string} path
+	 * @param {boolean} [replace=false]
+	 */
+	go(path, replace = false) {
+		this.navigate(path, replace);
+	}
+
 	_onPopState() {
 		// Remove base path from current pathname for routing
 		let path = window.location.pathname;
