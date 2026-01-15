@@ -1,5 +1,14 @@
 # Legacy's End - Project Standards & Guidelines
 
+> **CRITICAL ARCHITECTURAL DIRECTIVE**
+> All code changes, refactors, and new features MUST align with the target architecture defined in `docs/ARCHITECTURE_TOBE.md`.
+>
+> **Core Principles of TO-BE State**:
+> 1.  **Strict 3-Layer Structure**: `App (Router)` -> `QuestView (Context Provider)` -> `GameViewport (Engine)`.
+> 2.  **Domain-Driven State**: No monolithic `GameState`. Use `HeroState`, `QuestState`, `WorldState`.
+> 3.  **No Global Singletons**: All services must be Classes injected via `@lit/context`.
+> 4.  **No EventBus/CommandBus**: Use direct Service Injection.
+
 This document outlines the mandatory architectural and coding standards for "Legacy's End". All contributions must adhere to these rules to ensure consistency, maintainability, and quality.
 
 ---
