@@ -53,9 +53,9 @@ export class GameZoneController {
 	}
 
 	/**
-	 * @param {{x: number, y: number, hasCollectedItem: boolean}} data
+	 * @param {{x: number, y: number, hasCollectedItem: boolean}} _data
 	 */
-	handleHeroMoved = ({ x, y, hasCollectedItem }) => {
+	handleHeroMoved = (_data) => {
 		this.hostUpdate();
 	};
 
