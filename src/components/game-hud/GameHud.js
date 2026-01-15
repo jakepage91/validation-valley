@@ -1,4 +1,7 @@
+import { ContextConsumer } from "@lit/context";
+import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
+import { questStateContext } from "../../game/contexts/quest-context.js";
 import { gameHudStyles } from "./GameHud.styles.js";
 
 /**
@@ -15,34 +18,56 @@ import { gameHudStyles } from "./GameHud.styles.js";
  * @attribute levelTitle
  * @attribute questTitle
  */
-export class GameHud extends LitElement {
-	/** @type {import('lit').PropertyDeclarations} */
+export class GameHud extends SignalWatcher(LitElement) {
+	/** @type {ContextConsumer<import('../../game/contexts/quest-context.js').questStateContext, GameHud>} */
+	questStateConsumer = new ContextConsumer(this, {
+		context: questStateContext,
+		subscribe: true,
+	});
+
 	static properties = {
+		/** @type {import('lit').PropertyDeclaration} */
 		currentChapterNumber: { type: Number },
+		/** @type {import('lit').PropertyDeclaration} */
 		totalChapters: { type: Number },
+		/** @type {import('lit').PropertyDeclaration} */
 		levelTitle: { type: String },
+		/** @type {import('lit').PropertyDeclaration} */
 		questTitle: { type: String },
 	};
 
 	constructor() {
 		super();
-		this.currentChapterNumber = 1;
-		this.totalChapters = 1;
-		this.levelTitle = "";
-		this.questTitle = "";
+		/** @type {number|undefined} */
+		this.currentChapterNumber = undefined;
+		/** @type {number|undefined} */
+		this.totalChapters = undefined;
+		/** @type {string|undefined} */
+		this.levelTitle = undefined;
+		/** @type {string|undefined} */
+		this.questTitle = undefined;
 	}
 
 	static styles = gameHudStyles;
 
 	render() {
+		const questState = this.questStateConsumer.value;
+
+		const currentChapterNumber =
+			this.currentChapterNumber ?? questState?.currentChapterNumber.get() ?? 1;
+		const totalChapters =
+			this.totalChapters ?? questState?.totalChapters.get() ?? 1;
+		const levelTitle = this.levelTitle ?? questState?.levelTitle.get() ?? "";
+		const questTitle = this.questTitle ?? questState?.questTitle.get() ?? "";
+
 		return html`
       <div class="wa-stack">
-	  	<h5>${this.levelTitle}</h5>
-        <h6>${this.questTitle}</h6>
+	  	<h5>${levelTitle}</h5>
+        <h6>${questTitle}</h6>
       </div>
 
       <h3 class="chapter-counter">
-        ${this.currentChapterNumber}<span class="chapter-total">/${this.totalChapters}</span>
+        ${currentChapterNumber}<span class="chapter-total">/${totalChapters}</span>
       </h3>
     `;
 	}

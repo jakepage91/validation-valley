@@ -1,5 +1,6 @@
 import "@awesome.me/webawesome/dist/components/card/card.js";
 import "@awesome.me/webawesome/dist/components/details/details.js";
+import { ContextProvider } from "@lit/context";
 import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
 import { classMap } from "lit/directives/class-map.js";
@@ -33,11 +34,17 @@ import "../reward-element/reward-element.js";
 import "../viewport-elements/game-controls/game-controls.js";
 import "../viewport-elements/game-exit-zone/game-exit-zone.js";
 import "../viewport-elements/game-zone-indicator/game-zone-indicator.js";
+import { heroStateContext } from "../../game/contexts/hero-context.js";
+import { questStateContext } from "../../game/contexts/quest-context.js";
+import { worldStateContext } from "../../game/contexts/world-context.js";
+import { HeroStateService } from "../../game/services/hero-state-service.js";
+import { QuestStateService } from "../../game/services/quest-state-service.js";
+import { WorldStateService } from "../../game/services/world-state-service.js";
 import { gameViewportStyles } from "./GameViewport.styles.js";
 
 /**
  * @element game-viewport
- * @property {Object} gameState - Configuration derived state
+ * @property {any} gameState - Configuration derived state
  * @property {import('../legacys-end-app/LegacysEndApp.js').LegacysEndApp} app - Reference to Main App for direct signal access
  */
 export class GameViewport extends SignalWatcher(LitElement) {
@@ -80,6 +87,25 @@ export class GameViewport extends SignalWatcher(LitElement) {
 		/** @type {import('../../controllers/game-controller.js').GameController | null} */
 		this.gameController = null;
 
+		// Domain Services
+		this.heroState = new HeroStateService();
+		this.questState = new QuestStateService();
+		this.worldState = new WorldStateService();
+
+		// Context Providers
+		this.heroStateProvider = new ContextProvider(this, {
+			context: heroStateContext,
+			initialValue: this.heroState,
+		});
+		this.questStateProvider = new ContextProvider(this, {
+			context: questStateContext,
+			initialValue: this.questState,
+		});
+		this.worldStateProvider = new ContextProvider(this, {
+			context: worldStateContext,
+			initialValue: this.worldState,
+		});
+
 		this.#boundHandleMoveInput = this.#handleMoveInput.bind(this);
 	}
 
@@ -102,6 +128,41 @@ export class GameViewport extends SignalWatcher(LitElement) {
 			this._controllersInitialized = true;
 			// Subscribe to events now that app is available
 			this.#subscribeToEvents();
+		}
+
+		// Sync Domain Services from App (Transition Phase)
+		if (this.app?.gameState) {
+			const state = this.app.gameState;
+			this.heroState.pos.set(state.heroPos.get());
+			this.heroState.hotSwitchState.set(state.hotSwitchState.get());
+			this.heroState.isEvolving.set(state.isEvolving.get());
+
+			this.questState.hasCollectedItem.set(state.hasCollectedItem.get());
+			this.questState.isRewardCollected.set(state.isRewardCollected.get());
+			this.questState.isQuestCompleted.set(state.isQuestCompleted.get());
+			this.questState.lockedMessage.set(state.lockedMessage.get());
+
+			this.worldState.isPaused.set(state.isPaused.get());
+			this.worldState.showDialog.set(state.showDialog.get());
+			this.worldState.currentDialogText.set(state.currentDialogText.get());
+
+			// Sync Quest Metadata
+			const questData = this.app.questController?.currentQuest;
+			const chapterIndex = this.app.questController?.currentChapterIndex ?? 0;
+			const config = /** @type {any} */ (this.gameState)?.config || {};
+
+			this.questState.setCurrentChapterNumber(chapterIndex + 1);
+			this.questState.setTotalChapters(questData?.totalChapters || 0);
+			this.questState.setLevelTitle(config.title || "");
+			this.questState.setQuestTitle(questData?.data?.name || "");
+
+			// Sync Hero Image
+			const isRewardCollected = state.isRewardCollected.get();
+			const heroImage =
+				isRewardCollected && config.hero?.reward
+					? config.hero.reward
+					: config.hero?.image;
+			this.heroState.setImageSrc(heroImage || "");
 		}
 	}
 
@@ -447,12 +508,9 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	}
 
 	render() {
-		const state = /** @type {any} */ (this.gameState || {});
-		const config = state.config;
-		const quest = state.quest;
+		const config = /** @type {any} */ (this.gameState)?.config || {};
 		const stateService = this.app?.gameState;
-
-		if (!config || !stateService || !stateService.isPaused) return html``;
+		if (!config || !stateService) return "";
 
 		const backgroundStyle = config.backgroundStyle || "";
 		const backgroundPath = extractAssetPath(backgroundStyle);
@@ -462,12 +520,7 @@ export class GameViewport extends SignalWatcher(LitElement) {
 		const hasCollectedItem = stateService.hasCollectedItem.get();
 
 		return html`
-			<game-hud 
-				.currentChapterNumber="${quest?.chapterNumber || 0}" 
-				.totalChapters="${quest?.totalChapters || 0}"
-				.levelTitle="${config?.title || ""}"
-				.questTitle="${quest?.data?.name || ""}"
-			></game-hud>
+			<game-hud></game-hud>
 
 			<div class="game-area">
 				${
@@ -517,10 +570,6 @@ export class GameViewport extends SignalWatcher(LitElement) {
 		const stateService = this.app?.gameState;
 		if (!config?.npc || !stateService) return "";
 
-		const hasCollectedItem = stateService.hasCollectedItem.get();
-		const isRewardCollected = stateService.isRewardCollected.get();
-		const lockedMessage = stateService.lockedMessage.get();
-
 		// Interaction controller state remains external for now
 		const isCloseToTarget = this.app?.interaction?.isCloseToNpc() || false;
 
@@ -532,9 +581,6 @@ export class GameViewport extends SignalWatcher(LitElement) {
 				.x="${config.npc.position.x}"
 				.y="${config.npc.position.y}"
 				.isClose="${isCloseToTarget}"
-				.action="${lockedMessage || ""}"
-				.hasCollectedItem="${hasCollectedItem}"
-				.isRewardCollected="${isRewardCollected}"
 			></npc-element>
 		`;
 	}
@@ -577,36 +623,8 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	}
 
 	_renderHero() {
-		const state = /** @type {any} */ (this.gameState || {});
-		const config = state.config;
-		const stateService = this.app?.gameState;
-		if (!stateService) return "";
-
-		const heroPos = stateService.heroPos.get();
-		const isEvolving = stateService.isEvolving.get();
-		const hotSwitchState = stateService.hotSwitchState.get();
-
-		const transition = isEvolving
-			? "opacity 0.5s ease-out"
-			: "left 0.075s linear, top 0.075s linear";
-
-		// Use reward image if collected, otherwise normal hero image
-		const imageSrc =
-			this.isRewardCollected && config?.hero?.reward
-				? config.hero.reward
-				: config?.hero?.image;
-
 		return html`
-			<hero-profile 
-				style="
-					left: ${heroPos.x}%; 
-					top: ${heroPos.y}%;
-					opacity: ${isEvolving ? 0 : 1};
-					transition: ${transition};
-				"
-				.imageSrc="${imageSrc || ""}"
-				.hotSwitchState="${hotSwitchState || ""}"
-			></hero-profile>
+			<hero-profile></hero-profile>
 		`;
 	}
 }

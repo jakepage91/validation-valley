@@ -1,9 +1,12 @@
 import "@awesome.me/webawesome/dist/components/icon/icon.js";
 import "@awesome.me/webawesome/dist/components/tag/tag.js";
 import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
+import { ContextConsumer } from "@lit/context";
 import { msg, updateWhenLocaleChanges } from "@lit/localize";
+import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
+import { questStateContext } from "../../game/contexts/quest-context.js";
 import {
 	processImagePath,
 	processImageSrcset,
@@ -25,16 +28,31 @@ import { npcElementStyles } from "./NpcElement.styles.js";
  * @attribute icon
  * @attribute action
  */
-export class NpcElement extends LitElement {
+export class NpcElement extends SignalWatcher(LitElement) {
+	/** @type {ContextConsumer<import('../../game/contexts/quest-context.js').questStateContext, NpcElement>} */
+	questStateConsumer = new ContextConsumer(this, {
+		context: questStateContext,
+		subscribe: true,
+	});
+
 	static properties = {
+		/** @type {import('lit').PropertyDeclaration} */
 		name: { type: String },
+		/** @type {import('lit').PropertyDeclaration} */
 		image: { type: String },
+		/** @type {import('lit').PropertyDeclaration} */
 		icon: { type: String },
+		/** @type {import('lit').PropertyDeclaration} */
 		x: { type: Number },
+		/** @type {import('lit').PropertyDeclaration} */
 		y: { type: Number },
+		/** @type {import('lit').PropertyDeclaration} */
 		isClose: { type: Boolean },
+		/** @type {import('lit').PropertyDeclaration} */
 		action: { type: String },
+		/** @type {import('lit').PropertyDeclaration} */
 		hasCollectedItem: { type: Boolean },
+		/** @type {import('lit').PropertyDeclaration} */
 		isRewardCollected: { type: Boolean },
 	};
 
@@ -49,9 +67,12 @@ export class NpcElement extends LitElement {
 		this.x = 0;
 		this.y = 0;
 		this.isClose = false;
-		this.action = "";
-		this.hasCollectedItem = false;
-		this.isRewardCollected = false;
+		/** @type {string|undefined} */
+		this.action = undefined;
+		/** @type {boolean|undefined} */
+		this.hasCollectedItem = undefined;
+		/** @type {boolean|undefined} */
+		this.isRewardCollected = undefined;
 	}
 
 	render() {
@@ -59,15 +80,22 @@ export class NpcElement extends LitElement {
 		this.style.left = `${this.x}%`;
 		this.style.top = `${this.y}%`;
 
-		const open = this.isClose && !this.hasCollectedItem;
+		const questState = this.questStateConsumer.value;
+		const hasCollectedItem =
+			this.hasCollectedItem ?? questState?.hasCollectedItem.get() ?? false;
+		const isRewardCollected =
+			this.isRewardCollected ?? questState?.isRewardCollected.get() ?? false;
+		const action = this.action ?? questState?.lockedMessage.get();
+
+		const open = this.isClose && !hasCollectedItem;
 
 		return html`
-        <wa-tooltip 
+		<wa-tooltip 
 		 	for="npc-tooltip"
             .open="${open}"
             trigger="manual"
         >
-		${this.action || msg("TALK")}
+		${action || msg("TALK")}
         </wa-tooltip>
 		${
 			this.image
@@ -87,7 +115,7 @@ export class NpcElement extends LitElement {
 		}
 
       ${
-				!this.isRewardCollected
+				!isRewardCollected
 					? html`
         <wa-tag variant="neutral" size="small" class="npc-name-tag">${this.name}</wa-tag>
       `

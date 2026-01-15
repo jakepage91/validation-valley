@@ -7,6 +7,7 @@ import { ifDefined } from "lit/directives/if-defined.js";
 import { characterContext } from "../../contexts/character-context.js";
 import { profileContext } from "../../contexts/profile-context.js";
 import { themeContext } from "../../contexts/theme-context.js";
+import { heroStateContext } from "../../game/contexts/hero-context.js";
 import {
 	processImagePath,
 	processImageSrcset,
@@ -24,6 +25,12 @@ import { heroProfileStyles } from "./HeroProfile.styles.js";
  * @property {string} hotSwitchState - State for API injection visualization (legacy, mock, new).
  */
 export class HeroProfile extends SignalWatcher(LitElement) {
+	/** @type {ContextConsumer<import('../../game/contexts/hero-context.js').heroStateContext, HeroProfile>} */
+	heroStateConsumer = new ContextConsumer(this, {
+		context: heroStateContext,
+		subscribe: true,
+	});
+
 	static properties = {
 		/**
 		 * Base image source for the hero.
@@ -59,7 +66,7 @@ export class HeroProfile extends SignalWatcher(LitElement) {
 	constructor() {
 		super();
 		this.imageSrc = "";
-		this.hotSwitchState = "";
+		this.hotSwitchState = undefined;
 
 		// Initialize context consumers
 		new ContextConsumer(this, {
@@ -92,6 +99,8 @@ export class HeroProfile extends SignalWatcher(LitElement) {
 	 * @param {Map<string, any>} changedProperties
 	 */
 	update(changedProperties) {
+		const heroState = this.heroStateConsumer.value;
+
 		// Reactive class update based on signal
 		if (this.themeService) {
 			const mode = this.themeService.themeMode.get();
@@ -101,6 +110,20 @@ export class HeroProfile extends SignalWatcher(LitElement) {
 				this.classList.remove("wa-dark");
 			}
 		}
+
+		// Handle positioning and evolution
+		if (heroState) {
+			const pos = heroState.pos.get();
+			const isEvolving = heroState.isEvolving.get();
+
+			this.style.left = `${pos.x}%`;
+			this.style.top = `${pos.y}%`;
+			this.style.opacity = isEvolving ? "0" : "1";
+			this.style.transition = isEvolving
+				? "opacity 0.5s ease-out"
+				: "left 0.075s linear, top 0.075s linear";
+		}
+
 		super.update(changedProperties);
 	}
 
@@ -109,15 +132,18 @@ export class HeroProfile extends SignalWatcher(LitElement) {
 	 */
 	updated(changedProperties) {
 		// theme logic moved to update() for signal reactivity
+		const heroState = this.heroStateConsumer.value;
+		const hotSwitchState =
+			this.hotSwitchState ?? heroState?.hotSwitchState.get();
 
-		if (changedProperties.has("hotSwitchState")) {
+		if (changedProperties.has("hotSwitchState") || heroState) {
 			this.classList.remove(
 				"injection-mock-api",
 				"injection-legacy-api",
 				"injection-new-api",
 			);
-			if (this.hotSwitchState) {
-				this.classList.add(`injection-${this.hotSwitchState}-api`);
+			if (hotSwitchState) {
+				this.classList.add(`injection-${hotSwitchState}-api`);
 			}
 		}
 	}
@@ -131,14 +157,17 @@ export class HeroProfile extends SignalWatcher(LitElement) {
 			serviceName: _serviceName,
 		} = this.profileData || {};
 
+		const heroState = this.heroStateConsumer.value;
+		const imageSrc = heroState?.imageSrc.get() || this.imageSrc;
+
 		return html`
         <!-- Character Image -->
         ${
-					this.suitData?.image || this.imageSrc
+					this.suitData?.image || imageSrc
 						? html`
             <img 
-							src="${ifDefined(processImagePath(this.suitData?.image || this.imageSrc))}" 
-							srcset="${ifDefined(processImageSrcset(this.suitData?.image || this.imageSrc))}"
+							src="${ifDefined(processImagePath(this.suitData?.image || imageSrc))}" 
+							srcset="${ifDefined(processImageSrcset(this.suitData?.image || imageSrc))}"
 							sizes="15vw"
 							class="character-img" 
 							alt="Alarion" 
