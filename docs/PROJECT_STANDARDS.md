@@ -128,6 +128,7 @@ flowchart TD
 *   Use **Constructor Injection** for plain classes, Managers, and Controllers.
     *   Pass dependencies in an `options` object.
     *   Do not instantiate services inside other classes.
+*   **Reactive Controller Pattern**: Mandatory for controllers consuming services. The host component provides dependencies, and the controller observes them reactively. Refer to `docs/TECHNICAL_REFERENCE.md` for detailed implementation guidelines.
 *   Do not import and instantiate Services inside components directly (except for the Root App).
 
 ---

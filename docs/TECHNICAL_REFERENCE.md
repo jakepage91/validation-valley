@@ -58,8 +58,16 @@ To avoid "Prop Drilling" (passing data through many layers of components), we us
 *   **Service**: "Source of Truth". Holds data and business logic (e.g., `GameStateService`).
 *   **Controller**: "Brain". Reactive Controllers that hook into the component lifecycle to bridge services and UI (e.g., `KeyboardController`).
 *   **Component**: "View". Purely visual representation of the state (e.g., `GameViewport`).
+    *   **The Component** consumes services and provides them to controllers.
+    *   **The Controller** reactively observes these services.
 
-### 4. Alternative Considered: Services as Lit Controllers?
+### 4. Reactive Controller Pattern (Detailed)
+When a Controller needs to use one or more services:
+1.  **Component Responsibility**: The component is responsible for providing services (using `@consume` or direct import) and passing them to the controller through the constructor options.
+2.  **Controller Responsibility**: The controller receives these dependencies and sets up reactive observers (like `Task` args or Signals).
+3.  **Reactivity**: If a service value changes, the controller reacts by updating its internal state and/or requesting a host update (`this.host.requestUpdate()`).
+
+### 5. Alternative Considered: Services as Lit Controllers?
 **Question**: Why not implement `GameStateService` directly as a [Lit Reactive Controller](https://lit.dev/docs/composition/controllers/)?
 
 **Reasoning**:
