@@ -32,9 +32,6 @@ describe("GameController", () => {
 			heroState: fakeGameState.heroState,
 			questState: fakeGameState.questState,
 			worldState: fakeGameState.worldState,
-			commandBus: {
-				execute: vi.fn().mockResolvedValue(undefined),
-			},
 			questController: {
 				hasNextChapter: vi.fn(),
 				isLastChapter: vi.fn(),
@@ -43,6 +40,7 @@ describe("GameController", () => {
 				completeQuest: vi.fn(),
 				completeChapter: vi.fn(),
 				advanceQuest: vi.fn(),
+				advanceChapter: vi.fn().mockResolvedValue(undefined),
 			},
 			logger: {
 				info: vi.fn(),
@@ -85,16 +83,13 @@ describe("GameController", () => {
 		);
 	});
 
-	it("should handle exit zone reached by executing AdvanceChapterCommand", () => {
+	it("should handle exit zone reached by executing questLoader.advanceChapter", () => {
 		controller = new GameController(host, { ...context });
 		controller.hostConnected();
 
 		controller.handleExitZoneReached();
 
-		expect(context.commandBus.execute).toHaveBeenCalled();
-		const command = context.commandBus.execute.mock.calls[0][0];
-		expect(command.constructor.name).toBe("AdvanceChapterCommand");
-		expect(command.questLoader).toBe(context.questLoader);
+		expect(context.questLoader.advanceChapter).toHaveBeenCalled();
 	});
 
 	describe("handleLevelCompleted", () => {
@@ -111,7 +106,7 @@ describe("GameController", () => {
 			controller.handleLevelCompleted();
 
 			expect(fakeGameState.questState.hasCollectedItem.get()).toBe(true);
-			expect(context.commandBus.execute).not.toHaveBeenCalled();
+			expect(context.questLoader.advanceChapter).not.toHaveBeenCalled();
 		});
 
 		it("should advance chapter if reward IS collected AND has next chapter", () => {
@@ -121,10 +116,7 @@ describe("GameController", () => {
 
 			controller.handleLevelCompleted();
 
-			expect(context.commandBus.execute).toHaveBeenCalled();
-			const command = context.commandBus.execute.mock.calls[0][0];
-			expect(command.constructor.name).toBe("AdvanceChapterCommand");
-			expect(command.questLoader).toBe(context.questLoader);
+			expect(context.questLoader.advanceChapter).toHaveBeenCalled();
 		});
 
 		it("should mark item as collected if reward collected but NO next chapter (Fallback/Last Level)", () => {
@@ -135,7 +127,7 @@ describe("GameController", () => {
 			controller.handleLevelCompleted();
 
 			expect(fakeGameState.questState.hasCollectedItem.get()).toBe(true);
-			expect(context.commandBus.execute).not.toHaveBeenCalled();
+			expect(context.questLoader.advanceChapter).not.toHaveBeenCalled();
 		});
 	});
 });

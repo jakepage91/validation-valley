@@ -16,7 +16,14 @@ export function setupInteraction(host, context) {
 		host
 	).interaction = new InteractionController(host, {
 		eventBus: context.eventBus,
-		gameState: context.gameState,
+		worldState:
+			/** @type {import('../game/services/world-state-service.js').WorldStateService} */ (
+				context.worldState
+			),
+		questState:
+			/** @type {import('../game/services/quest-state-service.js').QuestStateService} */ (
+				context.questState
+			),
 		getState: () => {
 			const currentChapter = context.questController.currentChapter;
 			return {

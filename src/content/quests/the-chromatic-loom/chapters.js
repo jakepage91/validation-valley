@@ -1,5 +1,5 @@
 import { msg } from "@lit/localize";
-import { ServiceType } from "../../../services/user-services.js";
+import { ServiceType } from "../../../services/user-api-client.js";
 
 /**
  * The Token of Agnosticism Quest - Chapter Data

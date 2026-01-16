@@ -10,84 +10,91 @@ import { getQuests, loadQuest } from "../content/quests/quests-data.js";
  * Business logic for quest management.
  * Provides functions to query, filter, and validate quests.
  */
-
-/**
- * Local cache for loaded quest data (full quests with chapters)
- * @type {Record<string, Quest>}
- */
-const questCache = {};
-
-/**
- * Get quest metadata by ID
- * @param {string} questId - Quest identifier
- * @returns {Quest|undefined} Quest object (metadata or full data) or undefined if not found
- */
-export function getQuest(questId) {
-	// Priority: Full quest data (if loaded meta matches current locale)
-	// However, since quest data might be static in its module, we might need more care.
-	// For Phase 1, we focus on metadata.
-	return questCache[questId] || getQuests()[questId];
-}
-
-/**
- * Load full quest data including chapters
- * @param {string} questId
- * @returns {Promise<Quest|undefined>}
- */
-export async function loadQuestData(questId) {
-	const quest = await loadQuest(questId);
-	if (quest) {
-		questCache[questId] = quest;
+export class QuestRegistryService {
+	constructor() {
+		/**
+		 * Local cache for loaded quest data (full quests with chapters)
+		 * @type {Record<string, Quest>}
+		 */
+		this.questCache = {};
 	}
-	return quest;
-}
 
-/**
- * Get all quests (metadata)
- * @returns {Quest[]} Array of all quests
- */
-export function getAllQuests() {
-	return Object.values(getQuests());
-}
+	/**
+	 * Get quest metadata by ID
+	 * @param {string} questId - Quest identifier
+	 * @returns {Quest|undefined} Quest object (metadata or full data) or undefined if not found
+	 */
+	getQuest(questId) {
+		// Priority: Full quest data (if loaded meta matches current locale)
+		// For Phase 1, we focus on metadata.
+		return this.questCache[questId] || getQuests()[questId];
+	}
 
-/**
- * Check if a quest is locked based on prerequisites
- * @param {string} questId - Quest identifier
- * @param {Array<string>} completedQuests - Array of completed quest IDs
- * @returns {boolean} True if quest is locked, false otherwise
- */
-export function isQuestLocked(questId, completedQuests = []) {
-	const quest = getQuest(questId);
-	if (!quest) return false;
+	/**
+	 * Load full quest data including chapters
+	 * @param {string} questId
+	 * @returns {Promise<Quest|undefined>}
+	 */
+	async loadQuestData(questId) {
+		const quest = await loadQuest(questId);
+		if (quest) {
+			this.questCache[questId] = quest;
+		}
+		return quest;
+	}
 
-	return (
-		quest.prerequisites?.some((prereq) => !completedQuests.includes(prereq)) ??
-		false
-	);
-}
+	/**
+	 * Get all quests (metadata)
+	 * @returns {Quest[]} Array of all quests
+	 */
+	getAllQuests() {
+		return Object.values(getQuests());
+	}
 
-/**
- * Get quests that are unlocked and available to play
- * @param {Array<string>} _completedQuests - Array of completed quest IDs (currently unused)
- * @returns {Quest[]} Array of available quests
- */
-export function getAvailableQuests(_completedQuests = []) {
-	return getAllQuests().filter((quest) => quest.status !== "coming-soon");
-}
+	/**
+	 * Check if a quest is locked based on prerequisites
+	 * @param {string} questId - Quest identifier
+	 * @param {Array<string>} completedQuests - Array of completed quest IDs
+	 * @returns {boolean} True if quest is locked, false otherwise
+	 */
+	isQuestLocked(questId, completedQuests = []) {
+		const quest = this.getQuest(questId);
+		if (!quest) return false;
 
-/**
- * Get quests that are coming soon
- * @returns {Quest[]} Array of coming soon quests
- */
-export function getComingSoonQuests() {
-	return getAllQuests().filter((quest) => quest.status === "coming-soon");
-}
+		return (
+			quest.prerequisites?.some(
+				(prereq) => !completedQuests.includes(prereq),
+			) ?? false
+		);
+	}
 
-/**
- * Invalidate quest cache (to force reload in new language)
- */
-export function invalidateQuestCache() {
-	Object.keys(questCache).forEach((key) => {
-		delete questCache[key];
-	});
+	/**
+	 * Get quests that are unlocked and available to play
+	 * @param {Array<string>} _completedQuests - Array of completed quest IDs (currently unused)
+	 * @returns {Quest[]} Array of available quests
+	 */
+	getAvailableQuests(_completedQuests = []) {
+		return this.getAllQuests().filter(
+			(quest) => quest.status !== "coming-soon",
+		);
+	}
+
+	/**
+	 * Get quests that are coming soon
+	 * @returns {Quest[]} Array of coming soon quests
+	 */
+	getComingSoonQuests() {
+		return this.getAllQuests().filter(
+			(quest) => quest.status === "coming-soon",
+		);
+	}
+
+	/**
+	 * Invalidate quest cache (to force reload in new language)
+	 */
+	invalidateQuestCache() {
+		Object.keys(this.questCache).forEach((key) => {
+			delete this.questCache[key];
+		});
+	}
 }

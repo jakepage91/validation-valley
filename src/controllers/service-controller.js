@@ -4,15 +4,15 @@
 
 import { Task, TaskStatus } from "@lit/task";
 
-/** @typedef {import("../services/user-services.js").IUserService} IUserService */
-/** @typedef {import("../services/user-services.js").UserData} UserData */
-/** @typedef {import("../services/user-services.js").ServiceType} ServiceType */
+/** @typedef {import("../services/user-api-client.js").IUserApiClient} IUserApiClient */
+/** @typedef {import("../services/user-api-client.js").UserData} UserData */
+/** @typedef {import("../services/user-api-client.js").ServiceType} ServiceType */
 
 /**
  * @typedef {Object} ServiceControllerOptions
- * @property {Record<string, IUserService>} [services] - Map of service instances {legacy, mock, new}
+ * @property {Record<string, IUserApiClient>} [services] - Map of service instances {legacy, mock, new}
  * @property {import('@lit/context').ContextProvider<any>} [profileProvider] - Profile context provider
- * @property {() => IUserService|null} [getActiveService] - Function to get active service
+ * @property {() => IUserApiClient|null} [getActiveService] - Function to get active service
  */
 
 /**
@@ -88,7 +88,7 @@ export class ServiceController {
 	 * Get active service based on service type and hot switch state
 	 * @param {ServiceType} serviceType - ServiceType from chapter data
 	 * @param {import('../services/game-state-service.js').HotSwitchState} hotSwitchState - Current zone state (for dynamic injection)
-	 * @returns {IUserService|null} Active service or null
+	 * @returns {IUserApiClient|null} Active service or null
 	 */
 	getActiveService(serviceType, hotSwitchState) {
 		if (!serviceType) return null;

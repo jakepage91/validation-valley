@@ -10,9 +10,40 @@ import "./game-viewport.js";
  * Creates a complete mock app that satisfies the IGameContext interface.
  */
 function getMockApp(overrides = {}) {
+	const heroState = {
+		pos: { get: vi.fn(() => ({ x: 0, y: 0 })), set: vi.fn() },
+		isEvolving: { get: vi.fn(() => false) },
+		hotSwitchState: { get: vi.fn(() => "new") },
+		imageSrc: { get: vi.fn(() => "hero.png"), set: vi.fn() },
+		setPos: vi.fn(),
+		setImageSrc: vi.fn(),
+	};
+
+	const questState = {
+		hasCollectedItem: { get: vi.fn(() => false), set: vi.fn() },
+		isRewardCollected: { get: vi.fn(() => false), set: vi.fn() },
+		isQuestCompleted: { get: vi.fn(() => false) },
+		lockedMessage: { get: vi.fn(() => null) },
+	};
+
+	const worldState = {
+		isPaused: {
+			get: vi.fn(() => false),
+			set: vi.fn(),
+			subscribe: vi.fn(() => () => {}),
+		},
+		showDialog: { get: vi.fn(() => false) },
+		currentDialogText: { get: vi.fn(() => "") },
+	};
+
 	return {
 		addController: vi.fn(),
 		getChapterData: vi.fn(),
+		// Domain Services
+		heroState,
+		questState,
+		worldState,
+
 		gameState: {
 			setPaused: vi.fn(),
 			isPaused: { get: vi.fn(() => false) },
@@ -52,6 +83,7 @@ function getMockApp(overrides = {}) {
 		interaction: {
 			isCloseToNpc: vi.fn(),
 			interact: vi.fn(),
+			handleInteract: vi.fn(),
 		},
 		gameService: {
 			setLevel: vi.fn(),
@@ -73,6 +105,7 @@ function getMockApp(overrides = {}) {
 			getTotalChapters: vi.fn(() => 3),
 			isLastChapter: vi.fn(() => false),
 			hasNextChapter: vi.fn(() => true),
+			state: questState, // LINKED HERE
 		},
 		eventBus: (() => {
 			const handlers = new Map();
@@ -224,14 +257,14 @@ describe("GameViewport", () => {
 		});
 
 		it("should handle HERO_MOVE_INPUT event", () => {
+			// Mock handleMove method on the element instance or ensure controller logic works
+			const handleMoveSpy = vi.spyOn(el, "handleMove");
+
 			// Emit event through event bus
 			mockApp.eventBus.emit(GameEvents.HERO_MOVE_INPUT, { dx: 1, dy: 0 });
 
-			// Verify it executes a MoveHeroCommand via commandBus
-			expect(mockApp.commandBus.execute).toHaveBeenCalled();
-			const command = mockApp.commandBus.execute.mock.calls[0][0];
-			expect(command.name).toBe("MoveHero");
-			expect(command.metadata).toEqual({ dx: 1, dy: 0 });
+			// With new architecture, GameViewport delegates event handling.
+			expect(handleMoveSpy).toHaveBeenCalledWith(1, 0);
 		});
 
 		it("should subscribe to HERO_MOVE_INPUT with app provided", async () => {

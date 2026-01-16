@@ -5,10 +5,6 @@ import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { ifDefined } from "lit/directives/if-defined.js";
-import { AdvanceChapterCommand } from "../../commands/advance-chapter-command.js";
-import { InteractCommand } from "../../commands/interact-command.js";
-import { MoveHeroCommand } from "../../commands/move-hero-command.js";
-import { PauseGameCommand } from "../../commands/pause-game-command.js";
 import { gameConfig } from "../../config/game-configuration.js";
 import { KeyboardController } from "../../controllers/keyboard-controller.js";
 import { GameEvents } from "../../core/event-bus.js";
@@ -89,7 +85,9 @@ export class GameViewport extends SignalWatcher(LitElement) {
 
 		// Domain Services
 		this.heroState = new HeroStateService();
-		this.questState = new QuestStateService();
+		/** @type {QuestStateService} */
+		// @ts-expect-error
+		this.questState = null;
 		this.worldState = new WorldStateService();
 
 		// Context Providers
@@ -99,7 +97,7 @@ export class GameViewport extends SignalWatcher(LitElement) {
 		});
 		this.questStateProvider = new ContextProvider(this, {
 			context: questStateContext,
-			initialValue: this.questState,
+			initialValue: null,
 		});
 		this.worldStateProvider = new ContextProvider(this, {
 			context: worldStateContext,
@@ -119,11 +117,7 @@ export class GameViewport extends SignalWatcher(LitElement) {
 		super.updated(changedProperties);
 
 		// Initialize controllers if app becomes available after initial render
-		if (
-			changedProperties.has("app") &&
-			this.app &&
-			!this._controllersInitialized
-		) {
+		if (this.app && !this._controllersInitialized) {
 			this.#setupControllers();
 			this._controllersInitialized = true;
 			// Subscribe to events now that app is available
@@ -190,6 +184,7 @@ export class GameViewport extends SignalWatcher(LitElement) {
 		this.#setupGameFlow(context);
 		this.#syncControllersToApp(context);
 		this.#syncProvidersToControllers();
+		this.requestUpdate();
 	}
 
 	/**
@@ -239,8 +234,8 @@ export class GameViewport extends SignalWatcher(LitElement) {
 			this.heroState = this.app.heroState;
 			this.heroStateProvider.setValue(this.heroState);
 		}
-		if (this.app.questState) {
-			this.questState = this.app.questState;
+		if (this.app.questController?.state) {
+			this.questState = this.app.questController.state;
 			this.questStateProvider.setValue(this.questState);
 		}
 		if (this.app.worldState) {
@@ -276,7 +271,6 @@ export class GameViewport extends SignalWatcher(LitElement) {
 			eventBus: this.app.eventBus,
 			logger: this.app.logger,
 			gameState: this.app.gameState,
-			commandBus: this.app.commandBus,
 			questController: this.app.questController,
 			progressService: this.app.progressService,
 			router: this.app.router,
@@ -315,16 +309,12 @@ export class GameViewport extends SignalWatcher(LitElement) {
 			this.stopAutoMove();
 		}
 
-		if (this.app?.commandBus) {
-			this.app.commandBus.execute(
-				new MoveHeroCommand({
-					heroState: this.heroState,
-					worldState: this.app.worldState,
-					dx,
-					dy,
-				}),
-			);
-		}
+		// Direct state update (bypass CommandBus)
+		const current = this.heroState.pos.get();
+		const nextX = Math.max(0, Math.min(100, current.x + dx));
+		const nextY = Math.max(0, Math.min(100, current.y + dy));
+
+		this.heroState.setPos(nextX, nextY);
 	}
 
 	/**
@@ -334,12 +324,8 @@ export class GameViewport extends SignalWatcher(LitElement) {
 		const showDialog = this.worldState?.showDialog?.get();
 		if (showDialog) return;
 
-		if (this.app?.commandBus && this.interaction) {
-			this.app.commandBus.execute(
-				new InteractCommand({
-					interactionController: this.interaction,
-				}),
-			);
+		if (this.interaction) {
+			this.interaction.handleInteract();
 		}
 	}
 
@@ -391,13 +377,8 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	 */
 	triggerLevelTransition() {
 		this.stopAutoMove();
-		if (this.app?.commandBus) {
-			this.app.commandBus.execute(
-				new AdvanceChapterCommand({
-					heroState: this.heroState,
-					questLoader: this.app.questLoader,
-				}),
-			);
+		if (this.app?.questLoader) {
+			this.app.questLoader.advanceChapter();
 		}
 	}
 
@@ -414,12 +395,8 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	 * Toggles game pause state
 	 */
 	togglePause() {
-		if (this.app?.commandBus) {
-			this.app.commandBus.execute(
-				new PauseGameCommand({
-					worldState: this.worldState,
-				}),
-			);
+		if (this.worldState) {
+			this.worldState.setPaused(!this.worldState.isPaused.get());
 		}
 	}
 
@@ -501,6 +478,8 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	}
 
 	render() {
+		if (!this.questState) return html``;
+
 		const config = /** @type {any} */ (this.gameState)?.config || {};
 		const backgroundStyle = config.backgroundStyle || "";
 		const backgroundPath = extractAssetPath(backgroundStyle);

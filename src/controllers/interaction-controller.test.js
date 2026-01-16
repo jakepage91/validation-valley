@@ -8,7 +8,6 @@ describe("InteractionController", () => {
 	let controller;
 
 	// Mock options
-	// Mock options
 	/** @type {any} */
 	let eventBus;
 	/** @type {any} */
@@ -16,7 +15,9 @@ describe("InteractionController", () => {
 	/** @type {any} */
 	let getNpcPosition;
 	/** @type {any} */
-	let gameState;
+	let worldState;
+	/** @type {any} */
+	let questState;
 
 	beforeEach(() => {
 		host = {
@@ -31,8 +32,12 @@ describe("InteractionController", () => {
 		};
 		getState = vi.fn();
 		getNpcPosition = vi.fn();
-		gameState = {
+
+		worldState = {
 			setShowDialog: vi.fn(),
+		};
+
+		questState = {
 			setLockedMessage: vi.fn(),
 		};
 
@@ -104,14 +109,15 @@ describe("InteractionController", () => {
 				getState,
 				getNpcPosition,
 				eventBus,
-				gameState,
+				worldState,
+				questState,
 				interactWithNpcUseCase: /** @type {any} */ ({
 					execute: vi.fn().mockReturnValue({ action: "showDialog" }),
 				}),
 			});
 
 			controller.handleInteract();
-			expect(gameState.setShowDialog).toHaveBeenCalledWith(true);
+			expect(worldState.setShowDialog).toHaveBeenCalledWith(true);
 		});
 
 		it("should NOT show dialog if item already collected", () => {
@@ -159,7 +165,8 @@ describe("InteractionController", () => {
 					getState,
 					getNpcPosition,
 					eventBus,
-					gameState,
+					worldState,
+					questState,
 					interactWithNpcUseCase: /** @type {any} */ ({
 						execute: vi.fn().mockReturnValue({
 							action: "showLocked",
@@ -170,7 +177,9 @@ describe("InteractionController", () => {
 
 				controller.handleInteract();
 
-				expect(gameState.setLockedMessage).toHaveBeenCalledWith("REQ: NEW API");
+				expect(questState.setLockedMessage).toHaveBeenCalledWith(
+					"REQ: NEW API",
+				);
 			});
 
 			it("should ALLOW interaction if API is NEW", () => {
@@ -190,7 +199,8 @@ describe("InteractionController", () => {
 					getState,
 					getNpcPosition,
 					eventBus,
-					gameState,
+					worldState,
+					questState,
 					interactWithNpcUseCase: /** @type {any} */ ({
 						execute: vi.fn().mockReturnValue({ action: "showDialog" }),
 					}),
@@ -198,7 +208,7 @@ describe("InteractionController", () => {
 
 				controller.handleInteract();
 
-				expect(gameState.setShowDialog).toHaveBeenCalledWith(true);
+				expect(worldState.setShowDialog).toHaveBeenCalledWith(true);
 			});
 		});
 	});
@@ -247,7 +257,8 @@ describe("InteractionController", () => {
 				getState,
 				getNpcPosition,
 				eventBus,
-				gameState,
+				worldState,
+				questState,
 				interactWithNpcUseCase: /** @type {any} */ ({
 					execute: vi
 						.fn()
@@ -258,13 +269,13 @@ describe("InteractionController", () => {
 			controller.handleInteract();
 
 			// Verify initial locked message
-			expect(gameState.setLockedMessage).toHaveBeenCalledWith("REQ: NEW API");
+			expect(questState.setLockedMessage).toHaveBeenCalledWith("REQ: NEW API");
 
 			// Fast-forward time
 			vi.advanceTimersByTime(1000);
 
 			// Verify message clear
-			expect(gameState.setLockedMessage).toHaveBeenCalledWith(null);
+			expect(questState.setLockedMessage).toHaveBeenCalledWith(null);
 		});
 	});
 });

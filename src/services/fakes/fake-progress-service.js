@@ -7,7 +7,7 @@ import { MemoryStorageAdapter } from "./memory-storage-adapter.js";
  */
 export class FakeProgressService extends ProgressService {
 	/**
-	 * @param {typeof import('../quest-registry-service.js')} registry
+	 * @param {import('../quest-registry-service.js').QuestRegistryService} registry
 	 */
 	constructor(registry) {
 		super(new MemoryStorageAdapter(), registry, undefined);

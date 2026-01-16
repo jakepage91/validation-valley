@@ -8,7 +8,8 @@ import { gameConfig } from "../config/game-configuration.js";
  * @typedef {import('../services/game-state-service.js').HotSwitchState} HotSwitchState
  * @typedef {import('../content/quests/quest-types.js').LevelConfig} LevelConfig
  * @typedef {import('../core/event-bus.js').EventBus} EventBus
- * @typedef {import('../services/game-state-service.js').GameStateService} GameStateService
+ * @typedef {import('../game/services/world-state-service.js').WorldStateService} WorldStateService
+ * @typedef {import('../game/services/quest-state-service.js').QuestStateService} QuestStateService
  */
 
 /**
@@ -23,7 +24,8 @@ import { gameConfig } from "../config/game-configuration.js";
 /**
  * @typedef {Object} InteractionOptions
  * @property {EventBus} [eventBus] - Event bus for emitting events
- * @property {GameStateService} [gameState] - Game state service
+ * @property {WorldStateService} [worldState] - World state service (UI, Pause)
+ * @property {QuestStateService} [questState] - Quest state service (Locked messages)
  * @property {number} [interactionDistance] - Max distance to interact (default: from config)
  * @property {() => InteractionState} [getState] - Accessor for game state
  * @property {() => ({x: number, y: number}|null|undefined)} [getNpcPosition] - Accessor for NPC coordinates
@@ -52,7 +54,8 @@ export class InteractionController {
 		/** @type {InteractionOptions} */
 		this.options = {
 			eventBus: /** @type {any} */ (null),
-			gameState: /** @type {any} */ (null),
+			worldState: /** @type {any} */ (null),
+			questState: /** @type {any} */ (null),
 			interactionDistance: gameConfig.gameplay.interactionDistance,
 			getState: () => ({
 				level: "",
@@ -130,18 +133,18 @@ export class InteractionController {
 		});
 
 		if (result.action === "showDialog") {
-			if (this.options.gameState) {
-				this.options.gameState.setShowDialog(true);
+			if (this.options.worldState) {
+				this.options.worldState.setShowDialog(true);
 			}
 		} else if (result.action === "showLocked") {
-			if (this.options.gameState) {
-				this.options.gameState.setLockedMessage(result.message || null);
+			if (this.options.questState) {
+				this.options.questState.setLockedMessage(result.message || null);
 			}
 
 			// Auto clear message after delay
 			setTimeout(() => {
-				if (this.options.gameState) {
-					this.options.gameState.setLockedMessage(null);
+				if (this.options.questState) {
+					this.options.questState.setLockedMessage(null);
 				}
 			}, 1000);
 		}

@@ -29,7 +29,7 @@ import { LocalStorageAdapter } from "./storage-service.js";
 export class ProgressService {
 	/**
 	 * @param {StorageAdapter} [storage] - Storage adapter for persistence
-	 * @param {typeof import('../services/quest-registry-service.js')} [registry] - Quest registry
+	 * @param {import('../services/quest-registry-service.js').QuestRegistryService} [registry] - Quest registry
 	 * @param {import('./logger-service.js').LoggerService} [logger] - Logger service
 	 */
 	constructor(
@@ -40,7 +40,7 @@ export class ProgressService {
 		if (!registry) throw new Error("Registry is required");
 		this.storage = storage;
 		this.registry =
-			/** @type {typeof import('../services/quest-registry-service.js')} */ (
+			/** @type {import('../services/quest-registry-service.js').QuestRegistryService} */ (
 				registry
 			);
 		this.logger = logger;

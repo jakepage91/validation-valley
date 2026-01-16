@@ -4,7 +4,7 @@ import { heroStateContext } from "../../game/contexts/hero-context.js";
 import { questStateContext } from "../../game/contexts/quest-context.js";
 import { worldStateContext } from "../../game/contexts/world-context.js";
 import { logger } from "../../services/logger-service.js";
-import "./QuestView.js";
+import "./quest-view.js";
 
 /**
  * Creates mock domain services.
@@ -15,16 +15,29 @@ function getMockServices() {
 			pos: { get: vi.fn(() => ({ x: 0, y: 0 })) },
 			hotSwitchState: { get: vi.fn(() => "new") },
 			isEvolving: { get: vi.fn(() => false) },
+			imageSrc: { get: vi.fn(() => "hero.png") },
+			setImageSrc: vi.fn(),
 		},
 		questState: {
 			hasCollectedItem: { get: vi.fn(() => false) },
 			isRewardCollected: { get: vi.fn(() => false) },
 			isQuestCompleted: { get: vi.fn(() => false) },
+			lockedMessage: { get: vi.fn(() => null) },
 		},
 		worldState: {
 			isPaused: { get: vi.fn(() => false) },
 			showDialog: { get: vi.fn(() => false) },
 			setCurrentDialogText: vi.fn(),
+		},
+		aiService: {
+			checkAvailability: vi.fn().mockResolvedValue("no"),
+			createSession: vi.fn(),
+			destroySession: vi.fn(),
+			hasSession: vi.fn(() => false),
+		},
+		voiceSynthesisService: {
+			speak: vi.fn(),
+			cancel: vi.fn(),
 		},
 	};
 }
@@ -73,6 +86,23 @@ describe("QuestView Component (Wrapper)", () => {
 			config: { zones: [] },
 			quest: { data: {}, chapterNumber: 1, totalChapters: 3 },
 		});
+		// Inject mock app for GameViewport
+		el.app = {
+			...services,
+			questController: {
+				currentChapter: {},
+				getCurrentChapterNumber: vi.fn(),
+				getTotalChapters: vi.fn(),
+				state: services.questState,
+			},
+			gameState: {
+				questState: services.questState,
+				heroState: services.heroState,
+			},
+			themeService: { themeMode: { get: vi.fn(() => "light") } },
+			characterContexts: { options: {} },
+			questState: services.questState,
+		};
 
 		container.appendChild(el);
 		await el.updateComplete;
@@ -114,6 +144,22 @@ describe("QuestView Component (Wrapper)", () => {
 		el.gameState = /** @type {any} */ ({
 			config: { zones: [] },
 		});
+		el.app = {
+			...services,
+			questController: {
+				currentChapter: {},
+				getCurrentChapterNumber: vi.fn(),
+				getTotalChapters: vi.fn(),
+				state: services.questState,
+			},
+			gameState: {
+				questState: services.questState,
+				heroState: services.heroState,
+			},
+			themeService: { themeMode: { get: vi.fn(() => "light") } },
+			characterContexts: { options: {} },
+			questState: services.questState,
+		};
 
 		container.appendChild(el);
 		await el.updateComplete;
@@ -137,6 +183,22 @@ describe("QuestView Component (Wrapper)", () => {
 			config: { zones: [] },
 			quest: { levelId: "1" },
 		});
+		el.app = {
+			...services,
+			questController: {
+				currentChapter: {}, // valid chapter object to safe guard
+				getCurrentChapterNumber: vi.fn(),
+				getTotalChapters: vi.fn(),
+				state: services.questState,
+			},
+			gameState: {
+				questState: services.questState,
+				heroState: services.heroState,
+			},
+			themeService: { themeMode: { get: vi.fn(() => "light") } },
+			characterContexts: { options: {} },
+			questState: services.questState,
+		};
 
 		container.appendChild(el);
 

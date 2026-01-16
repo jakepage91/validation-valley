@@ -4,6 +4,7 @@
 
 import { Task, TaskStatus } from "@lit/task";
 import { eventBus, GameEvents } from "../core/event-bus.js";
+import { QuestStateService } from "../game/services/quest-state-service.js";
 
 /**
  * @typedef {import("../services/quest-registry-service.js").Quest} Quest
@@ -11,12 +12,13 @@ import { eventBus, GameEvents } from "../core/event-bus.js";
  *
  * @typedef {Object} QuestControllerOptions
  * @property {import('../services/progress-service.js').ProgressService} progressService - Progress tracking service
- * @property {typeof import('../services/quest-registry-service.js')} registry - Quest registry module
- * @property {import('../commands/command-bus.js').CommandBus} [commandBus] - Command bus
+ * @property {import('../services/quest-registry-service.js').QuestRegistryService} registry - Quest registry service
+
  * @property {import('../core/event-bus.js').EventBus} [eventBus] - Event bus
  * @property {import('../services/logger-service.js').LoggerService} logger - Logger
  * @property {import('../use-cases/evaluate-chapter-transition.js').EvaluateChapterTransitionUseCase} evaluateChapterTransition - Use case
  * @property {import('../services/preloader-service.js').PreloaderService} [preloaderService] - Preloader
+ * @property {QuestStateService} [state] - Quest state service
  */
 
 /**
@@ -32,7 +34,8 @@ import { eventBus, GameEvents } from "../core/event-bus.js";
  * @property {import('lit').ReactiveControllerHost} host
  * @property {QuestControllerOptions} options
  * @property {import('../services/progress-service.js').ProgressService} progressService
- * @property {Object} registry
+ * @property {import('../services/quest-registry-service.js').QuestRegistryService} registry
+ * @property {QuestStateService} state
  * @property {Object|null} currentQuest
  * @property {Object|null} currentChapter
  * @property {number} currentChapterIndex
@@ -63,6 +66,9 @@ export class QuestController {
 		this.evaluateChapterTransition = this.options.evaluateChapterTransition;
 		this.preloaderService = this.options.preloaderService;
 		this.eventBus = this.options.eventBus || eventBus;
+
+		// Instantiate state service or use injected
+		this.state = this.options.state || new QuestStateService();
 
 		/** @type {Quest|null} */
 		this.currentQuest = null;
@@ -538,6 +544,7 @@ export class QuestController {
 	 */
 	resetProgress() {
 		this.progressService.resetProgress();
+		this.state.resetQuestState();
 		this.returnToHub();
 	}
 

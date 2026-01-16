@@ -1,7 +1,6 @@
 import { ContextConsumer } from "@lit/context";
 import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
-import { PauseGameCommand } from "../../commands/pause-game-command.js";
 import { heroStateContext } from "../../game/contexts/hero-context.js";
 import { questStateContext } from "../../game/contexts/quest-context.js";
 import { worldStateContext } from "../../game/contexts/world-context.js";
@@ -104,12 +103,8 @@ export class QuestView extends SignalWatcher(LitElement) {
 	 * Toggles game pause state
 	 */
 	togglePause() {
-		if (this.app?.commandBus && this.worldState) {
-			this.app.commandBus.execute(
-				new PauseGameCommand({
-					worldState: this.worldState,
-				}),
-			);
+		if (this.worldState) {
+			this.worldState.setPaused(!this.worldState.isPaused.get());
 		}
 	}
 
@@ -201,5 +196,3 @@ export class QuestView extends SignalWatcher(LitElement) {
 		}
 	}
 }
-
-customElements.define("quest-view", QuestView);

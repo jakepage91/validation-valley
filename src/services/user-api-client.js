@@ -19,7 +19,7 @@ export const ServiceType = {
  */
 
 /**
- * @typedef {Object} IUserService
+ * @typedef {Object} IUserApiClient
  * @property {function(number): Promise<UserData>} fetchUserData
  * @property {function(): string} getServiceName
  */
@@ -28,10 +28,10 @@ export const ServiceType = {
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * LegacyUserService - Simulates a slow, legacy API response.
- * @implements {IUserService}
+ * LegacyUserApiClient - Simulates a slow, legacy API response.
+ * @implements {IUserApiClient}
  */
-export class LegacyUserService {
+export class LegacyUserApiClient {
 	/**
 	 * Fetch user data with a simulated delay.
 	 * @param {number} id - The user ID
@@ -58,10 +58,10 @@ export class LegacyUserService {
 }
 
 /**
- * MockUserService - Provides dummy data for testing purposes.
- * @implements {IUserService}
+ * MockUserApiClient - Provides dummy data for testing purposes.
+ * @implements {IUserApiClient}
  */
-export class MockUserService {
+export class MockUserApiClient {
 	/**
 	 * Fetch mock user data.
 	 * @param {number} id - The user ID
@@ -88,10 +88,10 @@ export class MockUserService {
 }
 
 /**
- * NewUserService - Simulates the modern V2 API response.
- * @implements {IUserService}
+ * NewUserApiClient - Simulates the modern V2 API response.
+ * @implements {IUserApiClient}
  */
-export class NewUserService {
+export class NewUserApiClient {
 	/**
 	 * Fetch user data from the new system.
 	 * @param {number} id - The user ID

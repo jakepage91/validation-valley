@@ -1,11 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
-import {
-	getAllQuests,
-	getAvailableQuests,
-	getComingSoonQuests,
-	getQuest,
-	isQuestLocked,
-} from "./quest-registry-service.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { QuestRegistryService } from "./quest-registry-service.js";
 
 vi.mock("../content/quests/quests-data.js", () => {
 	const mockQuests = {
@@ -47,23 +41,30 @@ vi.mock("../content/quests/quests-data.js", () => {
 });
 
 describe("Quest Registry Service", () => {
+	/** @type {QuestRegistryService} */
+	let service;
+
+	beforeEach(() => {
+		service = new QuestRegistryService();
+	});
+
 	describe("getQuest", () => {
 		it("should return quest by ID", () => {
-			const quest = getQuest("quest-1");
+			const quest = service.getQuest("quest-1");
 			expect(quest).toBeDefined();
 			expect(quest?.id).toBe("quest-1");
 			expect(quest?.name).toBe("First Quest");
 		});
 
 		it("should return undefined for non-existent quest", () => {
-			const quest = getQuest("non-existent");
+			const quest = service.getQuest("non-existent");
 			expect(quest).toBeUndefined();
 		});
 	});
 
 	describe("getAllQuests", () => {
 		it("should return all quests", () => {
-			const quests = getAllQuests();
+			const quests = service.getAllQuests();
 			expect(quests).toHaveLength(4);
 			expect(quests.map((q) => q.id)).toContain("quest-1");
 			expect(quests.map((q) => q.id)).toContain("quest-2");
@@ -72,7 +73,7 @@ describe("Quest Registry Service", () => {
 		});
 
 		it("should return array of quest objects", () => {
-			const quests = getAllQuests();
+			const quests = service.getAllQuests();
 			quests.forEach((quest) => {
 				expect(quest).toHaveProperty("id");
 				expect(quest).toHaveProperty("name");
@@ -84,39 +85,39 @@ describe("Quest Registry Service", () => {
 
 	describe("isQuestLocked", () => {
 		it("should return false for quest with no prerequisites", () => {
-			const locked = isQuestLocked("quest-1", []);
+			const locked = service.isQuestLocked("quest-1", []);
 			expect(locked).toBe(false);
 		});
 
 		it("should return false when all prerequisites are completed", () => {
-			const locked = isQuestLocked("quest-2", ["quest-1"]);
+			const locked = service.isQuestLocked("quest-2", ["quest-1"]);
 			expect(locked).toBe(false);
 		});
 
 		it("should return true when prerequisites are not completed", () => {
-			const locked = isQuestLocked("quest-2", []);
+			const locked = service.isQuestLocked("quest-2", []);
 			expect(locked).toBe(true);
 		});
 
 		it("should return true when some prerequisites are missing", () => {
-			const locked = isQuestLocked("quest-3", ["quest-1"]);
+			const locked = service.isQuestLocked("quest-3", ["quest-1"]);
 			expect(locked).toBe(true);
 		});
 
 		it("should return false when all multiple prerequisites are completed", () => {
-			const locked = isQuestLocked("quest-3", ["quest-1", "quest-2"]);
+			const locked = service.isQuestLocked("quest-3", ["quest-1", "quest-2"]);
 			expect(locked).toBe(false);
 		});
 
 		it("should return false for non-existent quest", () => {
-			const locked = isQuestLocked("non-existent", []);
+			const locked = service.isQuestLocked("non-existent", []);
 			expect(locked).toBe(false);
 		});
 	});
 
 	describe("getAvailableQuests", () => {
 		it("should return only available quests", () => {
-			const quests = getAvailableQuests();
+			const quests = service.getAvailableQuests();
 			expect(quests).toHaveLength(3);
 			expect(quests.map((q) => q.id)).toContain("quest-1");
 			expect(quests.map((q) => q.id)).toContain("quest-2");
@@ -125,28 +126,28 @@ describe("Quest Registry Service", () => {
 		});
 
 		it("should exclude coming-soon quests", () => {
-			const quests = getAvailableQuests();
+			const quests = service.getAvailableQuests();
 			quests.forEach((quest) => {
 				expect(quest.status).not.toBe("coming-soon");
 			});
 		});
 
 		it("should accept completedQuests parameter (currently unused)", () => {
-			const quests = getAvailableQuests(["quest-1"]);
+			const quests = service.getAvailableQuests(["quest-1"]);
 			expect(quests).toHaveLength(3);
 		});
 	});
 
 	describe("getComingSoonQuests", () => {
 		it("should return only coming-soon quests", () => {
-			const quests = getComingSoonQuests();
+			const quests = service.getComingSoonQuests();
 			expect(quests).toHaveLength(1);
 			expect(quests[0].id).toBe("quest-coming-soon");
 			expect(quests[0].status).toBe("coming-soon");
 		});
 
 		it("should exclude available quests", () => {
-			const quests = getComingSoonQuests();
+			const quests = service.getComingSoonQuests();
 			expect(quests.map((q) => q.id)).not.toContain("quest-1");
 			expect(quests.map((q) => q.id)).not.toContain("quest-2");
 			expect(quests.map((q) => q.id)).not.toContain("quest-3");

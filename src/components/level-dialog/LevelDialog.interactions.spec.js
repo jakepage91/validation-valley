@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { logger } from "../../services/logger-service.js";
-import { QuestView } from "../quest-view/quest-view.js";
+import { QuestView } from "../quest-view/QuestView.js";
+import "../quest-view/quest-view.js";
 import { LevelDialog } from "./LevelDialog.js"; // Mock child component
 
 // Mock WebAwesome components to avoid rendering issues in JSDOM

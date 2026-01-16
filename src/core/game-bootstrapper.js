@@ -1,13 +1,6 @@
-import { CommandBus } from "../commands/command-bus.js";
-import {
-	loggingMiddleware,
-	performanceMiddleware,
-	validationMiddleware,
-} from "../commands/middleware.js";
 import { HeroStateService } from "../game/services/hero-state-service.js";
 import { QuestStateService } from "../game/services/quest-state-service.js";
 import { WorldStateService } from "../game/services/world-state-service.js";
-import { aiService } from "../services/ai-service.js";
 import { GameStateService } from "../services/game-state-service.js";
 import { LocalizationService } from "../services/localization-service.js";
 import { logger } from "../services/logger-service.js";
@@ -17,11 +10,10 @@ import { QuestLoaderService } from "../services/quest-loader-service.js";
 import { SessionService } from "../services/session-service.js";
 import { LocalStorageAdapter } from "../services/storage-service.js";
 import {
-	LegacyUserService,
-	MockUserService,
-	NewUserService,
-} from "../services/user-services.js";
-import { voiceSynthesisService } from "../services/voice-synthesis-service.js";
+	LegacyUserApiClient,
+	MockUserApiClient,
+	NewUserApiClient,
+} from "../services/user-api-client.js";
 import { setupRoutes } from "../setup/routes.js";
 import { setupCharacterContexts } from "../setup/setup-character-contexts.js";
 import { setupCollision } from "../setup/setup-collision.js";
@@ -40,8 +32,8 @@ import { eventBus as centralEventBus } from "./event-bus.js";
  * @property {import('../services/storage-service.js').LocalStorageAdapter} storageAdapter
  * @property {import('../services/game-state-service.js').GameStateService} gameState
  * @property {import('../services/progress-service.js').ProgressService} progressService
+ * @property {import('../services/quest-registry-service.js').QuestRegistryService} registry
  * @property {Object} services
- * @property {import('../commands/command-bus.js').CommandBus} commandBus
 
  * @property {import('../services/preloader-service.js').PreloaderService} preloader
  * @property {import('../use-cases/evaluate-chapter-transition.js').EvaluateChapterTransitionUseCase} evaluateChapterTransition
@@ -61,7 +53,6 @@ import { eventBus as centralEventBus } from "./event-bus.js";
  * @property {import('./event-bus.js').EventBus} eventBus
  * @property {import('../services/logger-service.js').LoggerService} logger
  * @property {import('../services/game-state-service.js').GameStateService} gameState
- * @property {import('../commands/command-bus.js').CommandBus} commandBus
 
  * @property {import('../services/storage-service.js').LocalStorageAdapter} storageAdapter
  * @property {import('../controllers/quest-controller.js').QuestController} [questController]
@@ -126,22 +117,37 @@ export class GameBootstrapper {
 	 */
 	async #setupServices() {
 		const storageAdapter = new LocalStorageAdapter();
-		const gameState = new GameStateService(logger);
+		const loggerService = logger; // Use global logger
 
 		const themeService = new (
 			await import("../services/theme-service.js")
-		).ThemeService(logger, storageAdapter);
+		).ThemeService(loggerService, storageAdapter);
 
-		// Dynamic import to avoid chunking warning
-		const registry = await import("../services/quest-registry-service.js");
+		// Instantiate standardized services
+		const registry = new (
+			await import("../services/quest-registry-service.js")
+		).QuestRegistryService();
+
+		const aiService = new (
+			await import("../services/ai-service.js")
+		).AIService();
+
+		const voiceSynthesisService = new (
+			await import("../services/voice-synthesis-service.js")
+		).VoiceSynthesisService();
+
+		const gameState = new GameStateService(loggerService);
 
 		const progressService = new ProgressService(
 			storageAdapter,
 			registry,
-			logger,
+			loggerService,
 		);
 
-		const localizationService = new LocalizationService(logger, storageAdapter);
+		const localizationService = new LocalizationService(
+			loggerService,
+			storageAdapter,
+		);
 
 		// Wire quest cache invalidation on locale change
 		localizationService.onLocaleChange(() => {
@@ -149,9 +155,9 @@ export class GameBootstrapper {
 		});
 
 		const services = {
-			legacy: new LegacyUserService(),
-			mock: new MockUserService(),
-			new: new NewUserService(),
+			legacy: new LegacyUserApiClient(),
+			mock: new MockUserApiClient(),
+			new: new NewUserApiClient(),
 		};
 
 		const sessionService = new SessionService();
@@ -163,17 +169,13 @@ export class GameBootstrapper {
 		gameState.setDomainServices(heroState, questState, worldState);
 
 		// Initialize Command Bus
-		const commandBus = new CommandBus();
-		commandBus.use(validationMiddleware);
-		commandBus.use(loggingMiddleware);
-		commandBus.use(performanceMiddleware);
+		// CommandBus removed
 
 		return {
 			storageAdapter,
 			gameState,
 			progressService,
 			services,
-			commandBus,
 			preloader,
 			evaluateChapterTransition: new EvaluateChapterTransitionUseCase(),
 			aiService,
@@ -181,6 +183,7 @@ export class GameBootstrapper {
 			localizationService,
 			themeService,
 			sessionService,
+			registry, // Add registry to context
 			questLoader: /** @type {any} */ (null), // Instantiated in setupControllers for now
 			heroState,
 			questState,
@@ -200,7 +203,6 @@ export class GameBootstrapper {
 			eventBus: this.eventBus,
 			logger: logger,
 			gameState: servicesContext.gameState,
-			commandBus: servicesContext.commandBus,
 			progressService: servicesContext.progressService,
 			storageAdapter: servicesContext.storageAdapter,
 			projectService: null, // Placeholder if needed
@@ -221,6 +223,7 @@ export class GameBootstrapper {
 			heroState: servicesContext.heroState,
 			questState: servicesContext.questState,
 			worldState: servicesContext.worldState,
+			registry: servicesContext.registry,
 		};
 
 		// Run existing setup helpers

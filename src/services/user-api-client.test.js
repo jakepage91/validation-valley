@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-	LegacyUserService,
-	MockUserService,
-	NewUserService,
+	LegacyUserApiClient,
+	MockUserApiClient,
+	NewUserApiClient,
 	ServiceType,
-} from "./user-services.js";
+} from "./user-api-client.js";
 
-describe("UserServices", () => {
+describe("UserApiClients", () => {
 	beforeEach(() => {
 		vi.useFakeTimers();
 	});
@@ -15,15 +15,15 @@ describe("UserServices", () => {
 		vi.useRealTimers();
 	});
 
-	describe("LegacyUserService", () => {
+	describe("LegacyUserApiClient", () => {
 		it("should return LEGACY service name", () => {
-			const service = new LegacyUserService();
-			expect(service.getServiceName()).toBe(ServiceType.LEGACY);
+			const client = new LegacyUserApiClient();
+			expect(client.getServiceName()).toBe(ServiceType.LEGACY);
 		});
 
 		it("should fetch user data after delay", async () => {
-			const service = new LegacyUserService();
-			const promise = service.fetchUserData(123);
+			const client = new LegacyUserApiClient();
+			const promise = client.fetchUserData(123);
 
 			vi.advanceTimersByTime(500);
 
@@ -38,15 +38,15 @@ describe("UserServices", () => {
 		});
 	});
 
-	describe("MockUserService", () => {
+	describe("MockUserApiClient", () => {
 		it("should return MOCK service name", () => {
-			const service = new MockUserService();
-			expect(service.getServiceName()).toBe(ServiceType.MOCK);
+			const client = new MockUserApiClient();
+			expect(client.getServiceName()).toBe(ServiceType.MOCK);
 		});
 
 		it("should fetch user data after delay", async () => {
-			const service = new MockUserService();
-			const promise = service.fetchUserData(456);
+			const client = new MockUserApiClient();
+			const promise = client.fetchUserData(456);
 
 			vi.advanceTimersByTime(500);
 
@@ -61,15 +61,15 @@ describe("UserServices", () => {
 		});
 	});
 
-	describe("NewUserService", () => {
+	describe("NewUserApiClient", () => {
 		it("should return NEW service name", () => {
-			const service = new NewUserService();
-			expect(service.getServiceName()).toBe(ServiceType.NEW);
+			const client = new NewUserApiClient();
+			expect(client.getServiceName()).toBe(ServiceType.NEW);
 		});
 
 		it("should fetch user data after delay", async () => {
-			const service = new NewUserService();
-			const promise = service.fetchUserData(789);
+			const client = new NewUserApiClient();
+			const promise = client.fetchUserData(789);
 
 			vi.advanceTimersByTime(500);
 

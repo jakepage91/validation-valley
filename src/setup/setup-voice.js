@@ -1,7 +1,4 @@
-import { InteractCommand } from "../commands/interact-command.js";
-import { NextDialogSlideCommand } from "../commands/next-dialog-slide-command.js";
-import { PauseGameCommand } from "../commands/pause-game-command.js";
-import { PrevDialogSlideCommand } from "../commands/prev-dialog-slide-command.js";
+// Commands removed
 import { gameConfig } from "../config/game-configuration.js";
 import { VoiceController } from "../controllers/voice-controller.js";
 import { GameEvents } from "../core/event-bus.js";
@@ -40,31 +37,23 @@ export function setupVoice(host, context) {
 				}
 			},
 			onInteract: () => {
-				if (context.commandBus && context.interaction) {
-					context.commandBus.execute(
-						new InteractCommand({ interactionController: context.interaction }),
-					);
+				if (context.interaction) {
+					context.interaction.handleInteract();
 				}
 			},
 			onPause: () => {
-				if (context.commandBus && context.worldState) {
-					context.commandBus.execute(
-						new PauseGameCommand({ worldState: context.worldState }),
-					);
+				if (context.worldState) {
+					context.worldState.setPaused(!context.worldState.isPaused.get());
 				}
 			},
 			onNextSlide: () => {
-				if (context.commandBus) {
-					context.commandBus.execute(
-						new NextDialogSlideCommand(/** @type {any} */ (host)),
-					);
+				if (typeof (/** @type {any} */ (host).nextDialogSlide) === "function") {
+					/** @type {any} */ (host).nextDialogSlide();
 				}
 			},
 			onPrevSlide: () => {
-				if (context.commandBus) {
-					context.commandBus.execute(
-						new PrevDialogSlideCommand(/** @type {any} */ (host)),
-					);
+				if (typeof (/** @type {any} */ (host).prevDialogSlide) === "function") {
+					/** @type {any} */ (host).prevDialogSlide();
 				}
 			},
 			onGetDialogText: () => {

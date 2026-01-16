@@ -232,5 +232,3 @@ export class AIService {
 		this.sessions.clear();
 	}
 }
-
-export const aiService = new AIService();

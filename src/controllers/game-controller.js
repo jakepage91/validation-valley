@@ -4,8 +4,6 @@
  * @typedef {import("../core/game-context.js").IGameContext} IGameContext
  */
 
-import { AdvanceChapterCommand } from "../commands/advance-chapter-command.js";
-
 /**
  * @typedef {Object} GameControllerOptions
  * @property {boolean} [exposeToConsole=true] - Whether to expose game service to console as window.game
@@ -14,7 +12,6 @@ import { AdvanceChapterCommand } from "../commands/advance-chapter-command.js";
  * @property {import('../game/interfaces.js').IQuestStateService} [questState]
  * @property {import('../game/interfaces.js').IWorldStateService} [worldState]
  * @property {import('../controllers/quest-controller.js').QuestController} [questController]
- * @property {import('../commands/command-bus.js').CommandBus} [commandBus]
  * @property {import('../services/quest-loader-service.js').QuestLoaderService} [questLoader]
  */
 
@@ -53,37 +50,16 @@ export class GameController {
 		// Prevent multiple triggers
 		if (this.isTransitioning) return;
 
-		const {
-			heroState,
-			worldState,
-			questState,
-			questController,
-			commandBus,
-			questLoader,
-		} = this.options;
-		if (
-			commandBus &&
-			heroState &&
-			worldState &&
-			questState &&
-			questController &&
-			questLoader
-		) {
+		const { questLoader } = this.options;
+		if (questLoader && this.options.heroState && this.options.questController) {
 			this.isTransitioning = true;
-			commandBus
-				.execute(
-					new AdvanceChapterCommand({
-						heroState,
-						questLoader,
-					}),
-				)
-				.finally(() => {
-					// Reset flag after a delay or let the next chapter load reset it naturally
-					// For now, we keep it true until the next chapter or reset happens externally
-					setTimeout(() => {
-						this.isTransitioning = false;
-					}, 2000);
-				});
+			questLoader.advanceChapter().finally(() => {
+				// Reset flag after a delay or let the next chapter load reset it naturally
+				// For now, we keep it true until the next chapter or reset happens externally
+				setTimeout(() => {
+					this.isTransitioning = false;
+				}, 2000);
+			});
 		}
 	};
 
@@ -92,14 +68,8 @@ export class GameController {
 	 * Executes logic to advance chapter or complete quest
 	 */
 	handleLevelCompleted = () => {
-		const {
-			heroState,
-			worldState,
-			questState,
-			questController,
-			commandBus,
-			questLoader,
-		} = this.options;
+		const { worldState, questState, questController, questLoader } =
+			this.options;
 
 		// 1. Hide dialog if open (handled by UI state, but ensures clean slate)
 		worldState?.setShowDialog(false);
@@ -112,13 +82,8 @@ export class GameController {
 			this.logger?.info("📖 Advancing to next chapter");
 			// Stop auto-move if any? (Handled by AdvanceChapterCommand presumably or logic)
 
-			if (commandBus && heroState && worldState && questState && questLoader) {
-				commandBus.execute(
-					new AdvanceChapterCommand({
-						heroState,
-						questLoader,
-					}),
-				);
+			if (questLoader) {
+				questLoader.advanceChapter();
 			}
 		} else {
 			// Just mark item as collected/level complete state

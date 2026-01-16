@@ -4,8 +4,7 @@ import { questHubStyles } from "./QuestHub.styles.js";
 import "@awesome.me/webawesome/dist/components/button/button.js";
 import "@awesome.me/webawesome/dist/components/icon/icon.js";
 import "../about-slides/about-slides.js";
-import "../language-selector/LanguageSelector.js";
-import "../language-selector/LanguageSelector.js";
+import "../language-selector/language-selector.js";
 import "./components/quest-card/quest-card.js";
 
 /**

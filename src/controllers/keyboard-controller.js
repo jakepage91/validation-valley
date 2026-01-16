@@ -1,10 +1,7 @@
 /**
  * @typedef {import('lit').ReactiveController} ReactiveController
- * @typedef {import('../commands/command-bus.js').CommandBus} CommandBus
  */
 
-import { InteractCommand } from "../commands/interact-command.js";
-import { PauseGameCommand } from "../commands/pause-game-command.js";
 import { GameEvents } from "../core/event-bus.js";
 
 /**
@@ -17,9 +14,8 @@ import { GameEvents } from "../core/event-bus.js";
  *
  * Handles:
  * - Movement keys (WASD, Arrow keys) -> HERO_MOVE_INPUT
- * - Interaction key (Space) -> InteractCommand
- * - Pause key (Escape) -> PauseGameCommand
- * - Undo/Redo (Ctrl+Z/Y) -> CommandBus
+ * - Interaction key (Space) -> interaction.handleInteract()
+ * - Pause key (Escape) -> worldState.setPaused()
  *
  * @implements {ReactiveController}
  */
@@ -31,11 +27,10 @@ export class KeyboardController {
 	constructor(host, options = {}) {
 		/** @type {import('lit').ReactiveControllerHost} */
 		this.host = host;
-		/** @type {KeyboardOptions & {interaction: any, commandBus: import('../commands/command-bus.js').CommandBus|undefined, eventBus: any, gameState: any, worldState: import('../game/interfaces.js').IWorldStateService|undefined}} */
+		/** @type {KeyboardOptions & {interaction: any, eventBus: any, gameState: any, worldState: import('../game/interfaces.js').IWorldStateService|undefined}} */
 		this.options = {
 			speed: 2.5,
 			interaction: undefined,
-			commandBus: undefined,
 			eventBus: undefined,
 			gameState: undefined,
 			worldState: undefined,
@@ -48,6 +43,7 @@ export class KeyboardController {
 	hostConnected() {
 		this.handleKeyDown = this.handleKeyDown.bind(this);
 		window.addEventListener("keydown", this.handleKeyDown);
+		console.log("KeyboardController connected, listener added");
 	}
 
 	hostDisconnected() {
@@ -59,47 +55,26 @@ export class KeyboardController {
 	 * @param {KeyboardEvent} e
 	 */
 	handleKeyDown(e) {
-		const { commandBus, interaction } = this.options;
-
-		// Handle Undo/Redo (Ctrl+Z / Ctrl+Y or Shift+Ctrl+Z)
-		if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
-			e.preventDefault();
-			if (e.shiftKey) {
-				commandBus?.redo();
-			} else {
-				commandBus?.undo();
-			}
-			return;
-		}
-
-		if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
-			e.preventDefault();
-			commandBus?.redo();
-			return;
-		}
+		const { interaction, worldState } = this.options;
 
 		// Handle Pause (Escape) - Always allowed
 		if (e.code === "Escape") {
 			e.preventDefault();
-			const { worldState } = this.options;
-			if (commandBus && worldState) {
-				commandBus.execute(new PauseGameCommand({ worldState }));
+			if (worldState) {
+				worldState.setPaused(!worldState.isPaused.get());
 			}
 			return;
 		}
 
 		// Handle interaction (Space)
-		if (e.code === "Space") {
+		if (e.code === "Space" || e.key === " ") {
+			// throw new Error("DEBUG: KeyDownSpace REACHED");
 			e.preventDefault();
 			const effectiveInteraction =
 				/** @type {any} */ (this.host).interaction || interaction;
 
-			if (commandBus && effectiveInteraction) {
-				commandBus.execute(
-					new InteractCommand({
-						interactionController: effectiveInteraction,
-					}),
-				);
+			if (effectiveInteraction) {
+				effectiveInteraction.handleInteract();
 			}
 			return;
 		}

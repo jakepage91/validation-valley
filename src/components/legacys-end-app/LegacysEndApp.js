@@ -2,11 +2,6 @@ import { ContextProvider } from "@lit/context";
 import { msg } from "@lit/localize";
 import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
-import { CollectRewardCommand } from "../../commands/collect-reward-command.js";
-import { ContinueQuestCommand } from "../../commands/continue-quest-command.js";
-import { ReturnToHubCommand } from "../../commands/return-to-hub-command.js";
-import { StartQuestCommand } from "../../commands/start-quest-command.js";
-import { ToggleHotSwitchCommand } from "../../commands/toggle-hot-switch-command.js";
 import { ROUTES } from "../../constants/routes.js";
 import { themeContext } from "../../contexts/theme-context.js";
 import { eventBus as centralEventBus } from "../../core/event-bus.js";
@@ -48,8 +43,6 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 	sessionService = /** @type {any} */ (null);
 	/** @type {import("../../services/quest-loader-service.js").QuestLoaderService} */
 	questLoader = /** @type {any} */ (null);
-	/** @type {import("../../commands/command-bus.js").CommandBus} */
-	commandBus = /** @type {any} */ (null);
 	/** @type {import('../../core/event-bus.js').EventBus} */
 	eventBus = centralEventBus;
 	/** @type {import("../../services/logger-service.js").LoggerService} */
@@ -147,7 +140,6 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 		this.services = context.services;
 		this.sessionService = context.sessionService;
 		this.questLoader = context.questLoader;
-		this.commandBus = context.commandBus;
 		this.aiService = context.aiService;
 		this.voiceSynthesisService = context.voiceSynthesisService;
 		this.localizationService = context.localizationService;
@@ -335,23 +327,15 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 	}
 
 	#handleToggleHotSwitch() {
-		this.#executeCommand(
-			new ToggleHotSwitchCommand({ heroState: this.heroState }),
-			() => {
-				const currentState = this.heroState.hotSwitchState.get();
-				const newState = currentState === "legacy" ? "new" : "legacy";
-				this.heroState.setHotSwitchState(newState);
-				logger.info("🔄 Hot Switch toggled to:", newState);
-			},
-		);
+		const currentState = this.heroState.hotSwitchState.get();
+		const newState = currentState === "legacy" ? "new" : "legacy";
+		this.heroState.setHotSwitchState(newState);
+		logger.info("🔄 Hot Switch toggled to:", newState);
 	}
 
 	#handleRewardCollected() {
 		logger.info("🎉 LegacysEndApp received reward-collected event");
-		this.#executeCommand(
-			new CollectRewardCommand({ questState: this.questState }),
-			() => this.questState.setIsRewardCollected(true),
-		);
+		this.questState.setIsRewardCollected(true);
 		this.requestUpdate();
 	}
 
@@ -465,26 +449,10 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 	}
 
 	#handleQuestSelect(/** @type {string} */ questId) {
-		if (this.commandBus) {
-			return this.commandBus.execute(
-				new StartQuestCommand({
-					questLoader: this.questLoader,
-					questId,
-				}),
-			);
-		}
 		return this.questLoader.startQuest(questId);
 	}
 
 	#handleContinueQuest(/** @type {string} */ questId) {
-		if (this.commandBus) {
-			return this.commandBus.execute(
-				new ContinueQuestCommand({
-					questLoader: this.questLoader,
-					questId,
-				}),
-			);
-		}
 		return this.questLoader.continueQuest(questId);
 	}
 
@@ -551,27 +519,9 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 	}
 
 	/**
-	 * Executes a command if commandBus is available
-	 * @param {any} command
-	 * @param {Function} [fallback] - Fallback function if no commandBus
-	 */
-	#executeCommand(command, fallback) {
-		if (this.commandBus) {
-			this.commandBus.execute(command);
-		} else if (fallback) {
-			fallback();
-		}
-	}
-
-	/**
 	 * Returns to hub (shared logic)
 	 */
 	#returnToHub() {
-		this.#executeCommand(
-			new ReturnToHubCommand({
-				questLoader: this.questLoader,
-			}),
-			() => this.questLoader.returnToHub(),
-		);
+		this.questLoader.returnToHub();
 	}
 }

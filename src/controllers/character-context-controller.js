@@ -11,7 +11,7 @@
  * @property {string} [hotSwitchState]
  * @property {boolean} [hasCollectedItem]
  * @property {boolean} [isRewardCollected]
- * @property {import("../services/user-services.js").UserData} [userData]
+ * @property {import("../services/user-api-client.js").UserData} [userData]
  */
 
 /**

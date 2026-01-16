@@ -19,7 +19,10 @@ describe("GameHud Component", () => {
 	});
 
 	it("renders correctly with default props", async () => {
-		render(html`<game-hud levelTitle="Default Level"></game-hud>`, container);
+		render(
+			html`<game-hud .levelTitle="${"Default Level"}"></game-hud>`,
+			container,
+		);
 		const element = /** @type {GameHud} */ (
 			container.querySelector("game-hud")
 		);
@@ -31,7 +34,7 @@ describe("GameHud Component", () => {
 
 	it("renders level and quest title", async () => {
 		render(
-			html`<game-hud levelTitle="Level 1" questTitle="Quest 1"></game-hud>`,
+			html`<game-hud .levelTitle="${"Level 1"}" .questTitle="${"Quest 1"}"></game-hud>`,
 			container,
 		);
 		const element = /** @type {GameHud} */ (
@@ -45,7 +48,7 @@ describe("GameHud Component", () => {
 
 	it("renders chapter progress correct", async () => {
 		render(
-			html`<game-hud currentChapterNumber=${2} totalChapters=${5}></game-hud>`,
+			html`<game-hud .currentChapterNumber="${2}" .totalChapters="${5}"></game-hud>`,
 			container,
 		);
 		const element = /** @type {GameHud} */ (
@@ -59,7 +62,7 @@ describe("GameHud Component", () => {
 
 	it("should have no accessibility violations", async () => {
 		render(
-			html`<game-hud levelTitle="Level 1" questTitle="Quest 1"></game-hud>`,
+			html`<game-hud .levelTitle="${"Level 1"}" .questTitle="${"Quest 1"}"></game-hud>`,
 			container,
 		);
 		const element = /** @type {GameHud} */ (

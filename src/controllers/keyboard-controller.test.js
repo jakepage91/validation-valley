@@ -1,12 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { InteractCommand } from "../commands/interact-command.js";
-import { PauseGameCommand } from "../commands/pause-game-command.js";
 import { GameEvents } from "../core/event-bus.js";
 import { KeyboardController } from "./keyboard-controller.js";
-
-// Mock commands
-vi.mock("../commands/interact-command.js");
-vi.mock("../commands/pause-game-command.js");
 
 describe("KeyboardController", () => {
 	/** @type {any} */
@@ -23,6 +17,9 @@ describe("KeyboardController", () => {
 		host = {
 			addController: vi.fn(),
 			requestUpdate: vi.fn(),
+			interaction: {
+				handleInteract: vi.fn(),
+			},
 		};
 
 		// Mock context
@@ -30,14 +27,14 @@ describe("KeyboardController", () => {
 			eventBus: {
 				emit: vi.fn(),
 			},
-			commandBus: {
-				execute: vi.fn(),
-				undo: vi.fn(),
-				redo: vi.fn(),
+			interaction: {
+				handleInteract: vi.fn(),
 			},
-			interaction: {},
 			gameState: {},
-			worldState: {},
+			worldState: {
+				isPaused: { get: () => false },
+				setPaused: vi.fn(),
+			},
 		};
 
 		// Mock window event listeners
@@ -95,75 +92,22 @@ describe("KeyboardController", () => {
 		);
 	});
 
-	it("should execute InteractCommand on Space", () => {
+	it("should call interaction.handleInteract() on Space", () => {
 		const event = { code: "Space", preventDefault: vi.fn() };
 		eventMap.keydown(event);
 
 		expect(event.preventDefault).toHaveBeenCalled();
-		expect(context.commandBus.execute).toHaveBeenCalled();
-		expect(InteractCommand).toHaveBeenCalled();
+		// It checks host.interaction first, then option.interaction
+		// host.interaction is set in beforeEach
+		expect(host.interaction.handleInteract).toHaveBeenCalled();
 	});
 
-	it("should execute PauseGameCommand on Escape", () => {
+	it("should call worldState.setPaused() on Escape", () => {
 		const event = { code: "Escape", preventDefault: vi.fn() };
 		eventMap.keydown(event);
 
 		expect(event.preventDefault).toHaveBeenCalled();
-		expect(context.commandBus.execute).toHaveBeenCalled();
-		expect(PauseGameCommand).toHaveBeenCalled();
-	});
-
-	it("should handle undo with Ctrl+Z", () => {
-		const event = {
-			key: "z",
-			ctrlKey: true,
-			toLowerCase: () => "z",
-			preventDefault: vi.fn(),
-		};
-		eventMap.keydown(event);
-
-		expect(event.preventDefault).toHaveBeenCalled();
-		expect(context.commandBus.undo).toHaveBeenCalled();
-	});
-
-	it("should handle redo with Ctrl+Shift+Z", () => {
-		const event = {
-			key: "z",
-			ctrlKey: true,
-			shiftKey: true,
-			toLowerCase: () => "z",
-			preventDefault: vi.fn(),
-		};
-		eventMap.keydown(event);
-
-		expect(event.preventDefault).toHaveBeenCalled();
-		expect(context.commandBus.redo).toHaveBeenCalled();
-	});
-
-	it("should handle redo with Ctrl+Y", () => {
-		const event = {
-			key: "y",
-			ctrlKey: true,
-			toLowerCase: () => "y",
-			preventDefault: vi.fn(),
-		};
-		eventMap.keydown(event);
-
-		expect(event.preventDefault).toHaveBeenCalled();
-		expect(context.commandBus.redo).toHaveBeenCalled();
-	});
-
-	it("should handle Mac Meta key for undo (Cmd+Z)", () => {
-		const event = {
-			key: "z",
-			metaKey: true, // Cmd key on Mac
-			toLowerCase: () => "z",
-			preventDefault: vi.fn(),
-		};
-		eventMap.keydown(event);
-
-		expect(event.preventDefault).toHaveBeenCalled();
-		expect(context.commandBus.undo).toHaveBeenCalled();
+		expect(context.worldState.setPaused).toHaveBeenCalledWith(true);
 	});
 
 	it("should use custom speed from options", () => {
@@ -192,30 +136,5 @@ describe("KeyboardController", () => {
 			"keydown",
 			expect.any(Function),
 		);
-		// Verify functionality is actually gone
-		// (We manually registered callback via mock, but in real DOM it would be gone)
-		// For this test we assume removeEventListener being called is sufficient
-	});
-
-	it("should be robust if services are missing (e.g., commandBus)", () => {
-		// Create controller with missing commandBus
-		const partialContext = {
-			eventBus: context.eventBus,
-			// commandBus missing
-		};
-
-		// @ts-expect-error
-		const robustController = new KeyboardController(host, partialContext, {});
-		robustController.hostConnected();
-
-		const event = {
-			key: "z",
-			ctrlKey: true,
-			toLowerCase: () => "z",
-			preventDefault: vi.fn(),
-		};
-
-		// Should not throw when attempting undo
-		expect(() => eventMap.keydown(event)).not.toThrow();
 	});
 });

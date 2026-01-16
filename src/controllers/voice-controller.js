@@ -83,8 +83,8 @@ export class VoiceController {
 	#getLanguage() {
 		return (
 			this.localizationService?.getLocale() ||
-			document.documentElement.lang ||
 			this.options.language ||
+			document.documentElement.lang ||
 			"en-US"
 		);
 	}

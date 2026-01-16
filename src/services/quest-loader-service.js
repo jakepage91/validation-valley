@@ -4,7 +4,7 @@ import { ContinueQuestUseCase } from "../use-cases/continue-quest.js";
 import { InteractWithNpcUseCase } from "../use-cases/interact-with-npc.js";
 import { ReturnToHubUseCase } from "../use-cases/return-to-hub.js";
 import { StartQuestUseCase } from "../use-cases/start-quest.js";
-import { ServiceType } from "./user-services.js";
+import { ServiceType } from "./user-api-client.js";
 
 /**
  * @typedef {import('../core/game-context.js').IGameContext} IGameContext
@@ -144,6 +144,26 @@ export class QuestLoaderService {
 			this.context.sessionService.setLoading(false);
 		}
 	}
+	/**
+	 * Advance to next chapter with evolution animation
+	 */
+	async advanceChapter() {
+		const quest = this.context.sessionService.currentQuest.get();
+		if (quest) {
+			this.context.heroState.setIsEvolving(true);
+
+			// Simulate evolution animation duration
+			await new Promise((resolve) => setTimeout(resolve, 500));
+
+			const questController = this.context.questController;
+			if (questController.isLastChapter()) {
+				await this.completeQuest();
+			} else {
+				this.completeChapter();
+			}
+			this.context.heroState.setIsEvolving(false);
+		}
+	}
 
 	/**
 	 * Complete current chapter
@@ -233,7 +253,7 @@ export class QuestLoaderService {
 
 	/**
 	 * Maps ServiceType to HotSwitchState
-	 * @param {import('./user-services.js').ServiceType | null} serviceType
+	 * @param {import('./user-api-client.js').ServiceType | null} serviceType
 	 */
 	#mapServiceTypeToHotSwitch(serviceType) {
 		if (serviceType === null) return null;

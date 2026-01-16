@@ -1,9 +1,11 @@
 import { SignalWatcher } from "@lit-labs/signals";
-import { css, html, LitElement, nothing } from "lit";
+import { html, LitElement, nothing } from "lit";
 import "@awesome.me/webawesome/dist/components/select/select.js";
 import "@awesome.me/webawesome/dist/components/option/option.js";
 import { msg, updateWhenLocaleChanges } from "@lit/localize";
 import { allLocales } from "../../generated/locales/locale-codes.js";
+
+import { languageSelectorStyles } from "./LanguageSelector.styles.js";
 
 /**
  * LanguageSelector
@@ -14,14 +16,7 @@ export class LanguageSelector extends SignalWatcher(LitElement) {
 		localizationService: { attribute: false },
 	};
 
-	static styles = css`
-		:host {
-			display: block;
-		}
-		wa-select {
-			width: 12ch;
-		}
-	`;
+	static styles = languageSelectorStyles;
 
 	constructor() {
 		super();
@@ -74,5 +69,3 @@ export class LanguageSelector extends SignalWatcher(LitElement) {
 		return labels[locale] || locale;
 	}
 }
-
-customElements.define("language-selector", LanguageSelector);

@@ -203,4 +203,3 @@ export class VoiceSynthesisService {
 }
 
 // Export singleton instance
-export const voiceSynthesisService = new VoiceSynthesisService();

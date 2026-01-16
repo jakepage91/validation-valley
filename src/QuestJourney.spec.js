@@ -61,7 +61,7 @@ describe("Quest Journey E2E", () => {
 		expect(app.sessionService.isInHub.get()).toBe(false);
 
 		// 4. Move to NPC and Interact
-		app.gameState.setHeroPosition(40, 50); // Close to NPC at {40, 55}
+		app.heroState.setPos(40, 54); // Close to NPC at {40, 55}
 		await new Promise((resolve) => setTimeout(resolve, 200));
 		await userEvent.keyboard(" "); // Interact
 
@@ -86,7 +86,7 @@ describe("Quest Journey E2E", () => {
 
 		// 5. Verify Item Collected and Exit Zone Active
 		await new Promise((resolve) => setTimeout(resolve, 800));
-		expect(app.gameState.hasCollectedItem.get()).toBe(true);
+		expect(app.questState.hasCollectedItem.get()).toBe(true);
 
 		// 6. Transition to Chapter 2
 		// Simulate reaching exit zone
@@ -105,7 +105,7 @@ describe("Quest Journey E2E", () => {
 		expect(app.questController.currentChapter.id).toBe("hall-of-fragments");
 
 		// 7. Return to Hub
-		await app.sessionService.returnToHub();
+		await app.questLoader.returnToHub();
 		await new Promise((resolve) => setTimeout(resolve, 500));
 		expect(app.sessionService.isInHub.get()).toBe(true);
 
@@ -126,7 +126,7 @@ describe("Quest Journey E2E", () => {
 
 		// 9. Complete Chapter 2 (Final)
 		// Simulate interaction and completion for final chapter
-		app.gameState.setCollectedItem(true);
+		app.questState.setHasCollectedItem(true);
 		await new Promise((resolve) => setTimeout(resolve, 500));
 
 		// Reach exit zone of last chapter
@@ -145,7 +145,7 @@ describe("Quest Journey E2E", () => {
 			.querySelector("quest-view")
 			.shadowRoot.querySelector("victory-screen");
 		expect(victoryScreen).toBeTruthy();
-		expect(app.gameState.isQuestCompleted.get()).toBe(true);
+		expect(app.questState.isQuestCompleted.get()).toBe(true);
 
 		// 11. Return to Hub from Victory Screen
 		const returnHubBtn = victoryScreen.shadowRoot.querySelector("wa-button");

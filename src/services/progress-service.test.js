@@ -41,7 +41,7 @@ describe("ProgressService", () => {
 
 		service = new ProgressService(
 			mockStorage,
-			/** @type {typeof import('../services/quest-registry-service.js')} */ (
+			/** @type {import('../services/quest-registry-service.js').QuestRegistryService} */ (
 				/** @type {unknown} */ (mockRegistry)
 			),
 		);

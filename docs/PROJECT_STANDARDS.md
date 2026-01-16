@@ -168,8 +168,13 @@ flowchart TD
 Every component must follow this strict structure in its own directory:
 1.  **Logic** (`MyComponent.js`): Pure Lit component logic.
 2.  **Styles** (`MyComponent.styles.js`): CSS exports.
-3.  **Definition** (`my-component.js`): `customElements.define` and re-exports.
+3.  **Definition** (`my-component.js`): Imports the class, calls `customElements.define`. **MUST NOT** export the class.
 4.  **Test** (`MyComponent.spec.js`): Vitest browser tests + A11y.
+
+**Rules**:
+-   The **Class file** (`MyComponent.js`) is responsible for importing its dependencies (other components it uses).
+-   The **Class file** MUST NOT define the custom element.
+-   The **Definition file** (`my-component.js`) is the entry point for side-effects (registration) only.
 
 ### Reactivity
 *   **Signals**: Components consuming signals must use the `SignalWatcher` mixin.
