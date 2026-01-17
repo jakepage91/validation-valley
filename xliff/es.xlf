@@ -622,10 +622,6 @@
   <source>Loading Quest...</source>
   <target>Cargando Misión...</target>
 </trans-unit>
-<trans-unit id="s4ec2a3e10d84ee1b">
-  <source>Loading level data...</source>
-  <target>Cargando datos del nivel...</target>
-</trans-unit>
 <trans-unit id="s091f3b38c997ae43">
   <source>The Fortress of Design</source>
   <target>La Fortaleza del Diseño</target>
@@ -1255,7 +1251,7 @@
   <target>SIGUIENTE</target>
 </trans-unit>
 <trans-unit id="s57a94dec0f069ee2">
-  <source>You have obtained <x id="0" equiv-text="${this.config.reward.name}"/>.</source>
+  <source>You have obtained <x id="0" equiv-text="${config.reward.name}"/>.</source>
   <target>Has obtenido <x id="0" equiv-text="${this.config.reward.name}"/>.</target>
 </trans-unit>
 <trans-unit id="s485889f52aa786db">
@@ -1381,6 +1377,14 @@
 <trans-unit id="sefcf950b3cc4fc3b">
   <source>Language</source>
   <target>Idioma</target>
+</trans-unit>
+<trans-unit id="s7fa4dd112e90286c">
+  <source>Initializing Game...</source>
+  <target>Inicializando Juego...</target>
+</trans-unit>
+<trans-unit id="sfc982e2a1b3ccece">
+  <source>Loading View...</source>
+  <target>Cargando Vista...</target>
 </trans-unit>
 </body>
 </file>

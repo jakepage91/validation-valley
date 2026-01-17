@@ -1,6 +1,6 @@
 import "@awesome.me/webawesome/dist/components/tag/tag.js";
 
-import { ContextConsumer } from "@lit/context";
+import { consume } from "@lit/context";
 import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
@@ -25,35 +25,27 @@ import { heroProfileStyles } from "./HeroProfile.styles.js";
  * @property {string} hotSwitchState - State for API injection visualization (legacy, mock, new).
  */
 export class HeroProfile extends SignalWatcher(LitElement) {
-	/** @type {ContextConsumer<import('../../game/contexts/hero-context.js').heroStateContext, HeroProfile>} */
-	heroStateConsumer = new ContextConsumer(this, {
-		context: heroStateContext,
-		subscribe: true,
-	});
+	/** @type {import('../../game/interfaces.js').IHeroStateService} */
+	@consume({ context: heroStateContext, subscribe: true })
+	accessor heroState = /** @type {any} */ (null);
+
+	/** @type {any} */
+	@consume({ context: profileContext, subscribe: true })
+	accessor profileData = /** @type {any} */ (null);
+
+	/** @type {import('../../services/theme-service.js').ThemeService} */
+	@consume({ context: themeContext, subscribe: true })
+	accessor themeService = /** @type {any} */ (null);
+
+	/** @type {any} */
+	@consume({ context: characterContext, subscribe: true })
+	accessor suitData = /** @type {any} */ (null);
 
 	static properties = {
 		/**
 		 * Base image source for the hero.
 		 */
 		imageSrc: { type: String },
-
-		/**
-		 * Profile data from profileContext.
-		 * @internal
-		 */
-		profileData: { state: true },
-
-		/**
-		 * Theme Service from themeContext.
-		 * @internal
-		 */
-		themeService: { state: true },
-
-		/**
-		 * Suit data from characterContext.
-		 * @internal
-		 */
-		suitData: { state: true },
 
 		/**
 		 * State for API injection visualization (legacy, mock, new).
@@ -65,41 +57,17 @@ export class HeroProfile extends SignalWatcher(LitElement) {
 
 	constructor() {
 		super();
+		/** @type {string} */
 		this.imageSrc = "";
+		/** @type {string|undefined} */
 		this.hotSwitchState = undefined;
-
-		// Initialize context consumers
-		new ContextConsumer(this, {
-			context: profileContext,
-			callback: (value) => {
-				this.profileData = value;
-			},
-			subscribe: true,
-		});
-		new ContextConsumer(this, {
-			context: themeContext,
-			callback: (value) => {
-				this.themeService = value;
-			},
-			subscribe: true,
-		});
-		new ContextConsumer(this, {
-			context: characterContext,
-			callback: (value) => {
-				// Destructure character data into component properties
-				// Fallback to empty objects to prevent undefined errors
-				const { suit = {} } = value || {};
-				this.suitData = suit;
-			},
-			subscribe: true,
-		});
 	}
 
 	/**
-	 * @param {Map<string, any>} changedProperties
+	 * @param {import('lit').PropertyValues} changedProperties
 	 */
 	update(changedProperties) {
-		const heroState = this.heroStateConsumer.value;
+		const heroState = this.heroState;
 
 		// Reactive class update based on signal
 		if (this.themeService) {
@@ -128,11 +96,11 @@ export class HeroProfile extends SignalWatcher(LitElement) {
 	}
 
 	/**
-	 * @param {Map<string, any>} changedProperties
+	 * @param {import('lit').PropertyValues} changedProperties
 	 */
 	updated(changedProperties) {
 		// theme logic moved to update() for signal reactivity
-		const heroState = this.heroStateConsumer.value;
+		const heroState = this.heroState;
 		const hotSwitchState =
 			this.hotSwitchState ?? heroState?.hotSwitchState.get();
 
@@ -149,15 +117,9 @@ export class HeroProfile extends SignalWatcher(LitElement) {
 	}
 
 	render() {
-		const {
-			name,
-			role: _role,
-			loading,
-			error,
-			serviceName: _serviceName,
-		} = this.profileData || {};
+		const { name, loading, error } = this.profileData || {};
 
-		const heroState = this.heroStateConsumer.value;
+		const heroState = this.heroState;
 		const imageSrc = heroState?.imageSrc.get() || this.imageSrc;
 
 		return html`

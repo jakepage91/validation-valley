@@ -12,6 +12,7 @@ import { GameEvents } from "../core/event-bus.js";
  * @property {() => void} [handleLevelComplete]
  * @property {(x: number, y: number) => void} [moveTo]
  */
+
 /**
  * @typedef {LitElement & VoiceHost} VoiceElement
  * @typedef {import('../core/game-context.js').IGameContext} IGameContext
@@ -20,30 +21,52 @@ import { GameEvents } from "../core/event-bus.js";
 /**
  * Setup VoiceController
  * @param {VoiceElement} host
- * @param {IGameContext} context
+ * @param {Object} dependencies
+ * @param {import('../services/logger-service.js').LoggerService} dependencies.logger
+ * @param {import('../services/localization-service.js').LocalizationService} dependencies.localizationService
+ * @param {import('../services/ai-service.js').AIService} [dependencies.aiService]
+ * @param {import('../services/voice-synthesis-service.js').VoiceSynthesisService} [dependencies.voiceSynthesisService]
+ * @param {import('../core/event-bus.js').EventBus} dependencies.eventBus
+ * @param {import('../game/services/world-state-service.js').WorldStateService} dependencies.worldState
+ * @param {import('../game/services/quest-state-service.js').QuestStateService} dependencies.questState
+ * @param {import('../controllers/quest-controller.js').QuestController} dependencies.questController
+ * @param {import('../services/quest-loader-service.js').QuestLoaderService} [dependencies.questLoader]
  */
-export function setupVoice(host, context) {
+export function setupVoice(
+	host,
+	{
+		logger,
+		localizationService,
+		aiService,
+		voiceSynthesisService,
+		eventBus,
+		worldState,
+		questState,
+		questController,
+		questLoader,
+	},
+) {
 	/** @type {VoiceElement & { voice: VoiceController }} */ (host).voice =
 		new VoiceController(host, {
-			logger: context.logger,
-			localizationService: context.localizationService,
-			// @ts-expect-error - context.aiService is optional in type but guaranteed by bootstrapper
-			aiService: context.aiService,
+			logger,
+			localizationService,
+			// @ts-expect-error - aiService is optional but expected
+			aiService,
 			// @ts-expect-error
-			voiceSynthesisService: context.voiceSynthesisService,
+			voiceSynthesisService,
 			onMove: (dx, dy) => {
-				if (context.eventBus) {
-					context.eventBus.emit(GameEvents.HERO_MOVE_INPUT, { dx, dy });
+				if (eventBus) {
+					eventBus.emit(GameEvents.HERO_MOVE_INPUT, { dx, dy });
 				}
 			},
 			onInteract: () => {
-				if (context.interaction) {
-					context.interaction.handleInteract();
+				if (/** @type {any} */ (host).interaction) {
+					/** @type {any} */ (host).interaction.handleInteract();
 				}
 			},
 			onPause: () => {
-				if (context.worldState) {
-					context.worldState.setPaused(!context.worldState.isPaused.get());
+				if (worldState) {
+					worldState.setPaused(!worldState.isPaused.get());
 				}
 			},
 			onNextSlide: () => {
@@ -57,14 +80,14 @@ export function setupVoice(host, context) {
 				}
 			},
 			onGetDialogText: () => {
-				return context.worldState.currentDialogText.get() || "";
+				return worldState.currentDialogText.get() || "";
 			},
 			onGetContext: () => ({
-				isDialogOpen: context.worldState.showDialog.get(),
-				isRewardCollected: context.questState.isRewardCollected.get(),
+				isDialogOpen: worldState.showDialog.get(),
+				isRewardCollected: questState.isRewardCollected.get(),
 			}),
 			onMoveToNpc: () => {
-				const currentChapter = context.questController.currentChapter;
+				const currentChapter = questController.currentChapter;
 				const npcPos = currentChapter?.npc?.position;
 				if (!npcPos) return;
 
@@ -77,13 +100,11 @@ export function setupVoice(host, context) {
 				}
 			},
 			onMoveToExit: () => {
-				const currentChapter = context.questController.currentChapter;
+				const currentChapter = questController.currentChapter;
 				const exitZone = currentChapter?.exitZone;
 				if (!exitZone) return;
 
-				context.logger.info(
-					`🚪 Moving to exit at (${exitZone.x}, ${exitZone.y})`,
-				);
+				logger.info(`🚪 Moving to exit at (${exitZone.x}, ${exitZone.y})`);
 				if (host.moveTo) {
 					host.moveTo(exitZone.x, exitZone.y);
 				}
@@ -96,11 +117,8 @@ export function setupVoice(host, context) {
 			},
 			onDebugAction: (action, value) => {
 				// Original logic was using app.gameService
-				if (
-					context.questLoader &&
-					/** @type {any} */ (context.questLoader)[action]
-				) {
-					/** @type {any} */ (context.questLoader)[action](value);
+				if (questLoader && /** @type {any} */ (questLoader)[action]) {
+					/** @type {any} */ (questLoader)[action](value);
 				}
 			},
 			isEnabled: () => true, // Voice should generally be enabled if setup

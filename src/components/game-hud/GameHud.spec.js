@@ -1,4 +1,3 @@
-import { html, render } from "lit";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import "./game-hud.js";
 import axe from "axe-core";
@@ -19,13 +18,14 @@ describe("GameHud Component", () => {
 	});
 
 	it("renders correctly with default props", async () => {
-		render(
-			html`<game-hud .levelTitle="${"Default Level"}"></game-hud>`,
-			container,
-		);
-		const element = /** @type {GameHud} */ (
-			container.querySelector("game-hud")
-		);
+		const element = /** @type {GameHud} */ (document.createElement("game-hud"));
+		element.questState = {
+			levelTitle: { get: () => "Default Level" },
+			questTitle: { get: () => "" },
+			currentChapterNumber: { get: () => 1 },
+			totalChapters: { get: () => 1 },
+		};
+		container.appendChild(element);
 		await element.updateComplete;
 
 		const h5 = element.shadowRoot?.querySelector("h5");
@@ -33,13 +33,14 @@ describe("GameHud Component", () => {
 	});
 
 	it("renders level and quest title", async () => {
-		render(
-			html`<game-hud .levelTitle="${"Level 1"}" .questTitle="${"Quest 1"}"></game-hud>`,
-			container,
-		);
-		const element = /** @type {GameHud} */ (
-			container.querySelector("game-hud")
-		);
+		const element = /** @type {GameHud} */ (document.createElement("game-hud"));
+		element.questState = {
+			levelTitle: { get: () => "Level 1" },
+			questTitle: { get: () => "Quest 1" },
+			currentChapterNumber: { get: () => 1 },
+			totalChapters: { get: () => 1 },
+		};
+		container.appendChild(element);
 		await element.updateComplete;
 
 		expect(element.shadowRoot?.textContent).toContain("Level 1");
@@ -47,13 +48,14 @@ describe("GameHud Component", () => {
 	});
 
 	it("renders chapter progress correct", async () => {
-		render(
-			html`<game-hud .currentChapterNumber="${2}" .totalChapters="${5}"></game-hud>`,
-			container,
-		);
-		const element = /** @type {GameHud} */ (
-			container.querySelector("game-hud")
-		);
+		const element = /** @type {GameHud} */ (document.createElement("game-hud"));
+		element.questState = {
+			levelTitle: { get: () => "Level 1" },
+			questTitle: { get: () => "Quest 1" },
+			currentChapterNumber: { get: () => 2 },
+			totalChapters: { get: () => 5 },
+		};
+		container.appendChild(element);
 		await element.updateComplete;
 
 		const counter = element.shadowRoot?.querySelector(".chapter-counter");
@@ -61,13 +63,14 @@ describe("GameHud Component", () => {
 	});
 
 	it("should have no accessibility violations", async () => {
-		render(
-			html`<game-hud .levelTitle="${"Level 1"}" .questTitle="${"Quest 1"}"></game-hud>`,
-			container,
-		);
-		const element = /** @type {GameHud} */ (
-			container.querySelector("game-hud")
-		);
+		const element = /** @type {GameHud} */ (document.createElement("game-hud"));
+		element.questState = {
+			levelTitle: { get: () => "Level 1" },
+			questTitle: { get: () => "Quest 1" },
+			currentChapterNumber: { get: () => 1 },
+			totalChapters: { get: () => 1 },
+		};
+		container.appendChild(element);
 		await element.updateComplete;
 
 		const results = await axe.run(element);

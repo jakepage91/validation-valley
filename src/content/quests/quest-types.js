@@ -95,7 +95,7 @@ export const Difficulty = {
  * @property {Vector2} startPos
  * @property {Zone} [exitZone]
  * @property {string} [backgroundStyle]
- * @property {string} [postDialogBackgroundStyle]
+ * @property {string} [backgroundStyleReward]
  * @property {string} [background]
  * @property {NpcConfig} [npc]
  * @property {RewardConfig} [reward]

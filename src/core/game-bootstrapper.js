@@ -17,7 +17,7 @@ import {
 import { setupRoutes } from "../setup/routes.js";
 import { setupCharacterContexts } from "../setup/setup-character-contexts.js";
 import { setupCollision } from "../setup/setup-collision.js";
-import { setupGameService } from "../setup/setup-game.js";
+import { setupGameController, setupGameService } from "../setup/setup-game.js";
 import { setupInteraction } from "../setup/setup-interaction.js";
 import { setupQuest } from "../setup/setup-quest.js";
 import { setupService } from "../setup/setup-service.js";
@@ -42,7 +42,7 @@ import { eventBus as centralEventBus } from "./event-bus.js";
  * @property {import('../services/localization-service.js').LocalizationService} localizationService
  * @property {import('../services/theme-service.js').ThemeService} themeService
  * @property {import('../services/session-service.js').SessionService} sessionService
- * @property {import('../services/quest-loader-service.js').QuestLoaderService} questLoader
+ * @property {import('../services/quest-loader-service.js').QuestLoaderService} [questLoader]
  * @property {import('../game/services/hero-state-service.js').HeroStateService} heroState
  * @property {import('../game/services/quest-state-service.js').QuestStateService} questState
  * @property {import('../game/services/world-state-service.js').WorldStateService} worldState
@@ -72,6 +72,7 @@ import { eventBus as centralEventBus } from "./event-bus.js";
  * @property {import('../game/services/hero-state-service.js').HeroStateService} heroState
  * @property {import('../game/services/quest-state-service.js').QuestStateService} questState
  * @property {import('../game/services/world-state-service.js').WorldStateService} worldState
+ * @property {any} [gameService]
  */
 
 /**
@@ -103,10 +104,8 @@ export class GameBootstrapper {
 		const context = await this.#setupControllers(host, servicesContext, router);
 
 		// 4. Setup Routes
-		setupRoutes(
-			router,
-			/** @type {any} */ ({ sessionManager: context.questLoader }),
-		);
+		setupRoutes(router, context);
+		router.init();
 
 		logger.info("GameBootstrapper: Initialization complete.");
 		return context;
@@ -168,9 +167,6 @@ export class GameBootstrapper {
 		// Inject dependencies into GameStateService facade
 		gameState.setDomainServices(heroState, questState, worldState);
 
-		// Initialize Command Bus
-		// CommandBus removed
-
 		return {
 			storageAdapter,
 			gameState,
@@ -183,8 +179,7 @@ export class GameBootstrapper {
 			localizationService,
 			themeService,
 			sessionService,
-			registry, // Add registry to context
-			questLoader: /** @type {any} */ (null), // Instantiated in setupControllers for now
+			registry,
 			heroState,
 			questState,
 			worldState,
@@ -197,61 +192,140 @@ export class GameBootstrapper {
 	 * @param {import('../utils/router.js').Router} router
 	 */
 	async #setupControllers(host, servicesContext, router) {
-		// Create a mutable context object to pass around setup functions
-		// This pattern is used by the existing setup helper functions
-		const context = {
-			eventBus: this.eventBus,
-			logger: logger,
-			gameState: servicesContext.gameState,
-			progressService: servicesContext.progressService,
-			storageAdapter: servicesContext.storageAdapter,
-			projectService: null, // Placeholder if needed
-			gameService: /** @type {any} */ (null),
-			router: router,
-			questController: /** @type {any} */ (null),
-			serviceController: undefined,
-			characterContexts: undefined,
-			services: servicesContext.services,
-			preloaderService: servicesContext.preloader, // Add to context
-			evaluateChapterTransition: servicesContext.evaluateChapterTransition,
-			aiService: servicesContext.aiService,
-			voiceSynthesisService: servicesContext.voiceSynthesisService,
-			localizationService: servicesContext.localizationService,
-			themeService: servicesContext.themeService,
-			sessionService: servicesContext.sessionService,
-			questLoader: servicesContext.questLoader,
-			heroState: servicesContext.heroState,
-			questState: servicesContext.questState,
-			worldState: servicesContext.worldState,
-			registry: servicesContext.registry,
+		const {
+			eventBus,
+			progressService,
+			gameState,
+			questState,
+			heroState,
+			worldState,
+			registry,
+			evaluateChapterTransition,
+			services,
+			themeService,
+			sessionService,
+			localizationService,
+			aiService,
+			voiceSynthesisService,
+			storageAdapter,
+		} = { ...servicesContext, eventBus: this.eventBus };
+
+		// 1. Setup QuestController
+		const questController = setupQuest(/** @type {any} */ (host), {
+			progressService,
+			eventBus,
+			logger,
+			registry,
+			preloaderService: servicesContext.preloader,
+			evaluateChapterTransition,
+			questState,
+		});
+
+		// 2. Setup QuestLoaderService
+		const questLoader = new QuestLoaderService({
+			questController,
+			eventBus,
+			logger,
+			questState,
+			gameState,
+			sessionService,
+			progressService,
+			worldState,
+			heroState,
+			router,
+		});
+		questLoader.setupEventListeners();
+
+		// 3. Setup GameService (Visual Facade)
+		const gameService = setupGameService({
+			questLoader,
+			sessionService,
+			questState,
+			heroState,
+			questController,
+			progressService,
+			themeService,
+		});
+
+		// 4. Setup Other Controllers
+		setupGameController(/** @type {any} */ (host), {
+			gameService,
+			logger,
+			heroState,
+			questState,
+			worldState,
+			questController,
+			questLoader,
+		});
+
+		// 4. Setup Services
+		const serviceController = setupService(/** @type {any} */ (host), {
+			services,
+		});
+
+		const characterContexts = setupCharacterContexts(
+			/** @type {any} */ (host),
+			{
+				gameState,
+				questController,
+				themeService,
+			},
+		);
+
+		setupZones(/** @type {any} */ (host), {
+			heroState,
+			questState,
+			questController,
+			themeService,
+		});
+		setupInteraction(/** @type {any} */ (host), {
+			eventBus,
+			worldState,
+			questState,
+			heroState,
+			questController,
+			questLoader,
+		});
+		setupCollision(/** @type {any} */ (host), {
+			heroState,
+			questState,
+			questController,
+		});
+		setupVoice(/** @type {any} */ (host), {
+			logger,
+			localizationService,
+			aiService,
+			voiceSynthesisService,
+			eventBus,
+			worldState,
+			questState,
+			questController,
+			questLoader,
+		});
+
+		return {
+			eventBus,
+			logger,
+			gameState,
+			storageAdapter,
+			questController,
+			progressService,
+			router,
+			serviceController,
+			characterContexts,
+			services,
+			preloaderService: servicesContext.preloader,
+			evaluateChapterTransition,
+			aiService,
+			voiceSynthesisService,
+			localizationService,
+			themeService,
+			sessionService,
+			questLoader,
+			heroState,
+			questState,
+			worldState,
+			gameService,
 		};
-
-		// Run existing setup helpers
-		// These helpers instantiate controllers and attach them to the host (LegacysEndApp)
-		// and also populate the context object with the created instances.
-
-		await setupQuest(/** @type {any} */ (host), context);
-		context.questLoader = new QuestLoaderService(context);
-		context.questLoader.setupEventListeners();
-
-		setupGameService(context);
-		setupService(/** @type {any} */ (host), context);
-		setupCharacterContexts(/** @type {any} */ (host), context);
-		setupZones(/** @type {any} */ (host), context);
-		setupInteraction(/** @type {any} */ (host), context);
-		setupCollision(/** @type {any} */ (host), context);
-		setupVoice(/** @type {any} */ (host), context);
-
-		// Note: serviceController and characterContexts are accessed via context after usage.
-		// Wait, looking at LegacysEndApp source lines 239-251:
-		// setupQuest(this, context);
-		// setupSessionManager(context);
-		// setupGameService(context);
-		//
-		// It seems setupGameService might create serviceController/characterContexts?
-		// I should verify where those come from.
-		// For now, I assume they are added to 'context' by these setup functions.
-
-		return context;
 	}
 }

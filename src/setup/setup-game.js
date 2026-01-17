@@ -7,44 +7,58 @@ import { logger } from "../services/logger-service.js";
 
 /**
  * Setup GameService (Facade)
- * @param {IGameContext} context
+ * @param {Object} dependencies
+ * @param {import('../services/quest-loader-service.js').QuestLoaderService} dependencies.questLoader
+ * @param {import('../services/session-service.js').SessionService} dependencies.sessionService
+ * @param {import('../game/services/quest-state-service.js').QuestStateService} dependencies.questState
+ * @param {import('../game/services/hero-state-service.js').HeroStateService} dependencies.heroState
+ * @param {import('../controllers/quest-controller.js').QuestController} dependencies.questController
+ * @param {import('../services/progress-service.js').ProgressService} dependencies.progressService
+ * @param {import('../services/theme-service.js').ThemeService} dependencies.themeService
+ * @returns {Object} The created gameService
  */
-export function setupGameService(context) {
+export function setupGameService({
+	questLoader,
+	sessionService,
+	questState,
+	heroState,
+	questController,
+	progressService,
+	themeService,
+}) {
 	// Create GameService facade with all game operation callbacks
 	const gameService = {
 		/** @param {string} chapterId */
 		setLevel: (chapterId) => {
 			// Leverage questLoader which handles validation and state
-			context.questLoader?.loadChapter(
-				context.sessionService.currentQuest.get()?.id || "",
+			questLoader?.loadChapter(
+				sessionService.currentQuest.get()?.id || "",
 				chapterId,
 			);
 		},
 		giveItem: () => {
-			context.questState.setHasCollectedItem(true);
-			context.questState.setIsRewardCollected(true);
+			questState.setHasCollectedItem(true);
+			questState.setIsRewardCollected(true);
 			logger.info(`✨ Item collected!`);
 		},
 		/** @param {number} x @param {number} y */
 		teleport: (x, y) => {
-			context.heroState.setPos(x, y);
-			logger.info(`📍 Teleported to(${x}, ${y})`);
+			heroState.setPos(x, y);
+			logger.info(`📍 Teleportado a(${x}, ${y})`);
 		},
 		getState: () => {
 			return {
-				level: context.questController.currentChapter?.id || "",
-				hasCollectedItem: context.questState.hasCollectedItem.get(),
-				position: context.heroState.pos.get(),
-				themeMode: context.themeService
-					? context.themeService.themeMode.get()
-					: "light",
-				hotSwitchState: context.heroState.hotSwitchState.get(),
+				level: questController.currentChapter?.id || "",
+				hasCollectedItem: questState.hasCollectedItem.get(),
+				position: heroState.pos.get(),
+				themeMode: themeService ? themeService.themeMode.get() : "light",
+				hotSwitchState: heroState.hotSwitchState.get(),
 			};
 		},
 		/** @param {string} mode */
 		setTheme: (mode) => {
-			if (context.themeService) {
-				context.themeService.setTheme(
+			if (themeService) {
+				themeService.setTheme(
 					/** @type {import('../services/theme-service.js').ThemeMode} */ (
 						mode
 					),
@@ -56,32 +70,32 @@ export function setupGameService(context) {
 		// Quest commands
 		/** @param {string} questId */
 		startQuest: (questId) => {
-			context.questLoader?.startQuest(questId);
+			questLoader?.startQuest(questId);
 		},
 		completeQuest: () => {
-			context.questLoader?.completeQuest();
+			questLoader?.completeQuest();
 		},
 		completeChapter: () => {
-			context.questLoader?.completeChapter();
+			questLoader?.completeChapter();
 		},
 		returnToHub: () => {
-			context.questLoader?.returnToHub();
+			questLoader?.returnToHub();
 		},
 		listQuests: () => {
-			const available = context.questController.getAvailableQuests();
+			const available = questController.getAvailableQuests();
 			logger.info("📋 Available Quests:");
 			available.forEach((q) => {
-				const progress = context.questController.getQuestProgress(q.id);
-				const completed = context.questController.isQuestCompleted(q.id);
+				const progress = questController.getQuestProgress(q.id);
+				const completed = questController.isQuestCompleted(q.id);
 				logger.info(`  ${completed ? "✅" : "⏳"} ${q.name} (${progress}%)`);
 			});
 			return available;
 		},
 		getProgress: () => {
-			return context.progressService.getProgress();
+			return progressService.getProgress();
 		},
 		resetProgress: () => {
-			context.progressService.resetProgress();
+			progressService.resetProgress();
 			logger.info("🔄 Progress reset");
 		},
 		help: () => {
@@ -103,7 +117,7 @@ Available Commands:
 		},
 	};
 
-	context.gameService = /** @type {any} */ (gameService);
+	return gameService;
 }
 
 /**
@@ -113,14 +127,37 @@ Available Commands:
 /**
  * Setup GameController
  * @param {GameHost} host
- * @param {IGameContext} context
+ * @param {Object} dependencies
+ * @param {any} dependencies.gameService
+ * @param {import('../services/logger-service.js').LoggerService} dependencies.logger
+ * @param {import('../game/services/hero-state-service.js').HeroStateService} dependencies.heroState
+ * @param {import('../game/services/quest-state-service.js').QuestStateService} dependencies.questState
+ * @param {import('../game/services/world-state-service.js').WorldStateService} dependencies.worldState
+ * @param {import('../controllers/quest-controller.js').QuestController} dependencies.questController
+ * @param {import('../services/quest-loader-service.js').QuestLoaderService} dependencies.questLoader
  */
-export function setupGameController(host, context) {
+export function setupGameController(
+	host,
+	{
+		gameService,
+		logger,
+		heroState,
+		questState,
+		worldState,
+		questController,
+		questLoader,
+	},
+) {
 	// Create GameController with GameService
 	/** @type {GameHost & { gameController: GameController }} */ (
 		host
 	).gameController = new GameController(/** @type {any} */ (host), {
-		...context,
-		gameService: context.gameService,
+		gameService,
+		logger,
+		heroState,
+		questState,
+		worldState,
+		questController,
+		questLoader,
 	});
 }

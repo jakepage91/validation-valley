@@ -26,6 +26,7 @@
  * @property {{ get(): number }} totalChapters
  * @property {{ get(): string }} levelTitle
  * @property {{ get(): string }} questTitle
+ * @property {{ get(): string|null }} currentChapterId
  * @property {(collected: boolean) => void} setHasCollectedItem
  * @property {(collected: boolean) => void} setIsRewardCollected
  * @property {(completed: boolean) => void} setIsQuestCompleted
@@ -34,6 +35,7 @@
  * @property {(n: number) => void} setTotalChapters
  * @property {(title: string) => void} setLevelTitle
  * @property {(title: string) => void} setQuestTitle
+ * @property {(id: string|null) => void} setCurrentChapterId
  * @property {() => void} resetChapterState
  * @property {() => void} resetQuestState
  */

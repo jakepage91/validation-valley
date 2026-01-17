@@ -7,22 +7,26 @@ import { CharacterContextController } from "../controllers/character-context-con
 /**
  * Setup CharacterContextController
  * @param {import('lit').LitElement} host
- * @param {IGameContext} context
+ * @param {Object} dependencies
+ * @param {import('../services/game-state-service.js').GameStateService} dependencies.gameState
+ * @param {import('../controllers/quest-controller.js').QuestController} dependencies.questController
+ * @param {import('../services/theme-service.js').ThemeService} dependencies.themeService
+ * @returns {CharacterContextController}
  */
-export function setupCharacterContexts(host, context) {
-	context.characterContexts = new CharacterContextController(
+export function setupCharacterContexts(
+	host,
+	{ gameState, questController, themeService },
+) {
+	return new CharacterContextController(
 		/** @type {import('lit').ReactiveControllerHost} */ (host),
 		{
 			suitProvider: undefined, // Will be set in connectedCallback
 			gearProvider: undefined,
 			powerProvider: undefined,
 			masteryProvider: undefined,
-			gameState: context.gameState,
-			questController: context.questController,
-			themeService:
-				/** @type {import('../services/theme-service.js').ThemeService} */ (
-					context.themeService
-				),
+			gameState,
+			questController,
+			themeService,
 		},
 	);
 }

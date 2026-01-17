@@ -41,6 +41,8 @@
 	},
 	"devDependencies": {
 		"@axe-core/playwright": "^4.11.0",
+		"@babel/core": "^7.28.6",
+		"@babel/plugin-proposal-decorators": "^7.28.6",
 		"@biomejs/biome": "^2.0.8",
 		"@commitlint/cli": "^20.2.0",
 		"@commitlint/config-conventional": "^20.2.0",
@@ -63,6 +65,7 @@
 		"typescript": "^5.9.3",
 		"vite": "^7.2.7",
 		"vite-imagetools": "^9.0.2",
+		"vite-plugin-babel": "^1.4.1",
 		"vite-plugin-image-optimizer": "^2.0.3",
 		"vitest": "^4.0.15"
 	}

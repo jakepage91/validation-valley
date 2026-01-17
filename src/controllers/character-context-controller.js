@@ -62,6 +62,7 @@ export class CharacterContextController {
 	hostUpdate() {
 		// Access state via domain services on GameStateService facade
 		const gameState = this.options.gameState;
+		if (!gameState) return;
 
 		// Handle both real GameStateService (with .questState) and FakeGameStateService (direct properties or mock)
 		// The FakeGameStateService in tests seems to expose signals directly based on previous test file view

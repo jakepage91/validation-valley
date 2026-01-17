@@ -128,6 +128,7 @@ describe("QuestController", () => {
 				{
 					chapter: expect.objectContaining({ id: "chapter-1" }),
 					index: 0,
+					total: 3,
 				},
 			);
 			expect(host.requestUpdate).toHaveBeenCalled();
@@ -174,6 +175,7 @@ describe("QuestController", () => {
 				{
 					chapter: expect.objectContaining({ id: "chapter-2" }),
 					index: 1,
+					total: 3,
 				},
 			);
 		});

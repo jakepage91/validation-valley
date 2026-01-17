@@ -7,26 +7,35 @@ import { QuestController } from "../controllers/quest-controller.js";
 /**
  * Setup QuestController
  * @param {import('lit').LitElement} host
- * @param {IGameContext} context
+ * @param {Object} dependencies
+ * @param {import('../services/progress-service.js').ProgressService} dependencies.progressService
+ * @param {import('../core/event-bus.js').EventBus} dependencies.eventBus
+ * @param {import('../services/logger-service.js').LoggerService} dependencies.logger
+ * @param {import('../services/quest-registry-service.js').QuestRegistryService} dependencies.registry
+ * @param {import('../services/preloader-service.js').PreloaderService} [dependencies.preloaderService]
+ * @param {import('../use-cases/evaluate-chapter-transition.js').EvaluateChapterTransitionUseCase} dependencies.evaluateChapterTransition
+ * @param {import('../game/services/quest-state-service.js').QuestStateService} dependencies.questState
+ * @returns {QuestController}
  */
-export async function setupQuest(host, context) {
-	if (!context) {
-		console.error("setupQuest: context is undefined");
-		return;
-	}
-	context.questController = new QuestController(host, {
-		progressService: context.progressService,
-		eventBus: /** @type {any} */ (context).eventBus,
-		logger: /** @type {any} */ (context).logger,
-		registry: /** @type {any} */ (context).registry,
-		preloaderService: context.preloaderService,
-		evaluateChapterTransition:
-			/** @type {import('../use-cases/evaluate-chapter-transition.js').EvaluateChapterTransitionUseCase} */ (
-				context.evaluateChapterTransition
-			),
-		state:
-			/** @type {import('../game/services/quest-state-service.js').QuestStateService} */ (
-				context.questState
-			),
+export function setupQuest(
+	host,
+	{
+		progressService,
+		eventBus,
+		logger,
+		registry,
+		preloaderService,
+		evaluateChapterTransition,
+		questState,
+	},
+) {
+	return new QuestController(host, {
+		progressService,
+		eventBus,
+		logger,
+		registry,
+		preloaderService,
+		evaluateChapterTransition,
+		state: questState,
 	});
 }

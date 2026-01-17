@@ -1,7 +1,6 @@
 /**
  * @typedef {import("lit").ReactiveController} ReactiveController
  * @typedef {import("lit").ReactiveControllerHost} ReactiveControllerHost
- * @typedef {import("../core/game-context.js").IGameContext} IGameContext
  */
 
 /**
@@ -13,6 +12,7 @@
  * @property {import('../game/interfaces.js').IWorldStateService} [worldState]
  * @property {import('../controllers/quest-controller.js').QuestController} [questController]
  * @property {import('../services/quest-loader-service.js').QuestLoaderService} [questLoader]
+ * @property {any} [gameService]
  */
 
 /**
@@ -27,7 +27,7 @@
 export class GameController {
 	/**
 	 * @param {ReactiveControllerHost} host
-	 * @param {GameControllerOptions & Partial<IGameContext>} options
+	 * @param {GameControllerOptions} options
 	 */
 	constructor(host, options) {
 		this.host = host;

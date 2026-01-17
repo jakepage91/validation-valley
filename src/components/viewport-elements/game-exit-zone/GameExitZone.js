@@ -1,4 +1,8 @@
+import { consume } from "@lit/context";
+import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
+import { questControllerContext } from "../../../contexts/quest-controller-context.js";
+import { questStateContext } from "../../../game/contexts/quest-context.js";
 
 import { gameExitZoneStyles } from "./GameExitZone.styles.js";
 import "@awesome.me/webawesome/dist/components/tag/tag.js";
@@ -14,25 +18,24 @@ import "@awesome.me/webawesome/dist/components/tag/tag.js";
  * @typedef {import('../../../content/quests/quest-types.js').Zone} Zone
  */
 
-export class GameExitZone extends LitElement {
+export class GameExitZone extends SignalWatcher(LitElement) {
+	/** @type {import('../../../controllers/quest-controller.js').QuestController} */
+	@consume({ context: questControllerContext, subscribe: true })
+	accessor questController = /** @type {any} */ (null);
+
+	/** @type {import('../../../game/interfaces.js').IQuestStateService} */
+	@consume({ context: questStateContext, subscribe: true })
+	accessor questState = /** @type {any} */ (null);
+
 	static styles = gameExitZoneStyles;
 
-	static properties = {
-		zoneConfig: { type: Object },
-		active: { type: Boolean },
-	};
-
-	constructor() {
-		super();
-		/** @type {Zone} */
-		this.zoneConfig = /** @type {Zone} */ ({});
-		this.active = false;
-	}
-
 	render() {
-		if (!this.active || !this.zoneConfig) return "";
+		const zoneConfig = this.questController?.currentChapter?.exitZone;
+		const active = this.questState?.hasCollectedItem.get() || false;
 
-		const { x, y, width, height, label } = this.zoneConfig;
+		if (!active || !zoneConfig) return "";
+
+		const { x, y, width, height, label } = zoneConfig;
 		this.style.left = `${x}%`;
 		this.style.top = `${y}%`;
 		this.style.width = `${width}%`;

@@ -101,7 +101,7 @@ async function analyzeCommit(hash) {
 		}
 
 		// Tests (if script exists)
-		if (pkg.scripts && pkg.scripts.test) {
+		if (pkg.scripts?.test) {
 			console.log("Running tests...");
 			const testResultPath = path.join(TEMP_DIR, "test-results.json");
 			// We try to use vitest json reporter if possible
@@ -127,7 +127,7 @@ async function analyzeCommit(hash) {
 }
 
 async function main() {
-	const limit = parseInt(process.argv[2]) || 5;
+	const limit = parseInt(process.argv[2], 10) || 5;
 	const logRaw = exec(`git log --oneline --reverse -n ${limit}`);
 	if (!logRaw) {
 		console.error("Failed to get git log");
@@ -164,7 +164,7 @@ async function main() {
 		}
 
 		const metrics = await analyzeCommit(hash);
-		if (metrics && metrics.hash) {
+		if (metrics?.hash) {
 			fs.appendFileSync(outputPath, `${JSON.stringify(metrics)}\n`);
 			console.log(`Saved metrics for ${hash}`);
 		}

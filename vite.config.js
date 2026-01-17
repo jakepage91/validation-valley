@@ -2,6 +2,7 @@ import { playwright } from "@vitest/browser-playwright";
 import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig, loadEnv } from "vite";
 import { imagetools } from "vite-imagetools";
+import babel from "vite-plugin-babel";
 import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
 
 export default defineConfig(({ mode }) => {
@@ -37,6 +38,15 @@ export default defineConfig(({ mode }) => {
 				},
 			}),
 			imagetools(),
+			babel({
+				babelConfig: {
+					babelrc: false,
+					configFile: false,
+					plugins: [
+						["@babel/plugin-proposal-decorators", { version: "2023-05" }],
+					],
+				},
+			}),
 			process.env.ANALYZE === "true" &&
 				visualizer({
 					filename: "stats.html",
@@ -48,11 +58,11 @@ export default defineConfig(({ mode }) => {
 		optimizeDeps: {
 			include: ["@awesome.me/webawesome/dist/components/spinner/spinner.js"],
 			esbuildOptions: {
-				target: "esnext",
+				target: "es2022",
 			},
 		},
 		test: {
-			silent: true,
+			silent: false,
 			browser: {
 				enabled: true,
 				headless: true,

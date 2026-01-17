@@ -1,7 +1,7 @@
 import "@awesome.me/webawesome/dist/components/icon/icon.js";
 import "@awesome.me/webawesome/dist/components/tag/tag.js";
 import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
-import { ContextConsumer } from "@lit/context";
+import { consume } from "@lit/context";
 import { msg, updateWhenLocaleChanges } from "@lit/localize";
 import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
@@ -29,11 +29,9 @@ import { npcElementStyles } from "./NpcElement.styles.js";
  * @attribute action
  */
 export class NpcElement extends SignalWatcher(LitElement) {
-	/** @type {ContextConsumer<import('../../game/contexts/quest-context.js').questStateContext, NpcElement>} */
-	questStateConsumer = new ContextConsumer(this, {
-		context: questStateContext,
-		subscribe: true,
-	});
+	/** @type {import('../../game/interfaces.js').IQuestStateService} */
+	@consume({ context: questStateContext, subscribe: true })
+	accessor questState = /** @type {any} */ (null);
 
 	static properties = {
 		/** @type {import('lit').PropertyDeclaration} */
@@ -50,10 +48,6 @@ export class NpcElement extends SignalWatcher(LitElement) {
 		isClose: { type: Boolean },
 		/** @type {import('lit').PropertyDeclaration} */
 		action: { type: String },
-		/** @type {import('lit').PropertyDeclaration} */
-		hasCollectedItem: { type: Boolean },
-		/** @type {import('lit').PropertyDeclaration} */
-		isRewardCollected: { type: Boolean },
 	};
 
 	static styles = npcElementStyles;
@@ -69,10 +63,6 @@ export class NpcElement extends SignalWatcher(LitElement) {
 		this.isClose = false;
 		/** @type {string|undefined} */
 		this.action = undefined;
-		/** @type {boolean|undefined} */
-		this.hasCollectedItem = undefined;
-		/** @type {boolean|undefined} */
-		this.isRewardCollected = undefined;
 	}
 
 	render() {
@@ -80,12 +70,9 @@ export class NpcElement extends SignalWatcher(LitElement) {
 		this.style.left = `${this.x}%`;
 		this.style.top = `${this.y}%`;
 
-		const questState = this.questStateConsumer.value;
-		const hasCollectedItem =
-			this.hasCollectedItem ?? questState?.hasCollectedItem.get() ?? false;
-		const isRewardCollected =
-			this.isRewardCollected ?? questState?.isRewardCollected.get() ?? false;
-		const action = this.action ?? questState?.lockedMessage.get();
+		const hasCollectedItem = this.questState?.hasCollectedItem.get() ?? false;
+		const isRewardCollected = this.questState?.isRewardCollected.get() ?? false;
+		const action = this.action ?? this.questState?.lockedMessage.get();
 
 		const open = this.isClose && !hasCollectedItem;
 

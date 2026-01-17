@@ -1,5 +1,10 @@
+import { consume } from "@lit/context";
+import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
 import { styleMap } from "lit/directives/style-map.js";
+import { questControllerContext } from "../../../contexts/quest-controller-context.js";
+import { themeContext } from "../../../contexts/theme-context.js";
+import { heroStateContext } from "../../../game/contexts/hero-context.js";
 import { gameZoneIndicatorStyles } from "./GameZoneIndicator.styles.js";
 
 /**
@@ -12,21 +17,31 @@ import { gameZoneIndicatorStyles } from "./GameZoneIndicator.styles.js";
  * @property {Zone[]} zones - The list of zones to render.
  * @property {String} type - The type of zones to filter and render (e.g. 'THEME_CHANGE', 'CONTEXT_CHANGE').
  */
-export class GameZoneIndicator extends LitElement {
+export class GameZoneIndicator extends SignalWatcher(LitElement) {
+	/** @type {import('../../../controllers/quest-controller.js').QuestController} */
+	@consume({ context: questControllerContext, subscribe: true })
+	accessor questController = /** @type {any} */ (null);
+
+	/** @type {import('../../../services/theme-service.js').ThemeService} */
+	@consume({ context: themeContext, subscribe: true })
+	accessor themeService = /** @type {any} */ (null);
+
+	/** @type {import('../../../game/interfaces.js').IHeroStateService} */
+	@consume({ context: heroStateContext, subscribe: true })
+	accessor heroState = /** @type {any} */ (null);
+
 	static styles = gameZoneIndicatorStyles;
 
 	static properties = {
-		zones: { type: Array },
 		type: { type: String },
-		currentState: { type: String },
+		zones: { type: Array },
 	};
 
 	constructor() {
 		super();
-		/** @type {Zone[]} */
-		this.zones = [];
 		this.type = "";
-		this.currentState = "";
+		/** @type {any[]} */
+		this.zones = [];
 	}
 
 	/**
@@ -48,21 +63,6 @@ export class GameZoneIndicator extends LitElement {
 		const isDark = zone.payload === "dark";
 		const label = isDark ? "Dark Theme" : "Light Theme";
 		const className = isDark ? "zone-theme-dark" : "zone-theme-light";
-		// Original Theme Zones were static opacity 0.1
-		// But in new generic system, we highlight the ACTIVE one?
-		// "The styles are not like they were before" implies we should match old behavior.
-		// Old behavior: Simply show two zones, left (light) and right (dark).
-		// Opacity was constant 0.1.
-		// So I will remove dynamic opacity for Theme Zones to match original.
-		// EXCEPT: original used `left: 0` and `right: 0` + `width: 50%`.
-		// Generic system uses `x, y, width, height`.
-		// If I use generic rect, it works.
-		// Opacity: I will set inline `opacity: 0.1` on the container, OR rely on CSS .zone opacity?
-		// CSS .zone has transition. Original .zone had `opacity: 0.1`.
-		// But wait, if .zone has opacity 0.1, the label is hard to read?
-		// Original likely had readable text?
-		// "font-family: 'Press Start 2P'".
-		// I'll stick to CSS definition.
 
 		return html`
 			<div class="zone ${className}" style="${styleMap(this.getStyle(zone))}">
@@ -89,9 +89,14 @@ export class GameZoneIndicator extends LitElement {
 		const newTitleInactive = "#1e3a8a"; // Blue 900
 
 		// Check active state
-		const isActive = this.currentState
-			? this.currentState === zone.payload
-			: false;
+		const currentState =
+			this.type === "THEME_CHANGE"
+				? this.themeService?.themeMode.get()
+				: this.type === "CONTEXT_CHANGE"
+					? this.heroState?.hotSwitchState.get()
+					: "";
+
+		const isActive = currentState ? currentState === zone.payload : false;
 		const stateClass = isActive ? "active" : "inactive";
 
 		// Dynamic text colors
@@ -100,13 +105,6 @@ export class GameZoneIndicator extends LitElement {
 			: isLegacy
 				? legacyTitleInactive
 				: newTitleInactive;
-		// Note: Subtitle color was generic "#991b1b" or "#1e40af" hardcoded in original
-		// Original: style="color: #991b1b" (Legacy), style="color: #1e40af" (New)
-		// It did NOT change to white?
-		// Checking Step 5468:
-		// <small class="ctx-sub" style="color: #991b1b">LegacyUserService</small>
-		// <small class="ctx-sub" style="color: #1e40af">NewUserService</small>
-		// Yes, subtitle color was static. Only Title changed.
 		const subColor = isLegacy ? legacyColorInactive : newColorInactive;
 
 		return html`
@@ -118,9 +116,11 @@ export class GameZoneIndicator extends LitElement {
 	}
 
 	render() {
-		if (!this.zones || this.zones.length === 0) return "";
+		/** @type {any[]} */
+		const zones = this.zones || [];
+		if (zones.length === 0) return "";
 
-		const relevantZones = this.zones.filter((z) => z.type === this.type);
+		const relevantZones = zones.filter((z) => z.type === this.type);
 
 		return html`
 			${relevantZones.map((zone) => {

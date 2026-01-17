@@ -1,6 +1,8 @@
-import { ContextConsumer } from "@lit/context";
+import { consume } from "@lit/context";
 import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
+import { questLoaderContext } from "../../contexts/quest-loader-context.js";
+import { sessionContext } from "../../contexts/session-context.js";
 import { heroStateContext } from "../../game/contexts/hero-context.js";
 import { questStateContext } from "../../game/contexts/quest-context.js";
 import { worldStateContext } from "../../game/contexts/world-context.js";
@@ -11,142 +13,61 @@ import "../victory-screen/victory-screen.js";
 import { questViewStyles } from "./quest-view.css.js";
 
 /**
- * @typedef {Object} GameState
- * @property {import('../../config/game-configuration.js').GameplayConfig} config
- * @property {Object} ui
- * @property {boolean} ui.isPaused
- * @property {boolean} ui.showDialog
- * @property {boolean} ui.isQuestCompleted
- * @property {string} ui.lockedMessage
- * @property {Object} quest
- * @property {import('../../services/quest-registry-service.js').Quest|null} quest.data
- * @property {number} quest.chapterNumber
- * @property {number} quest.totalChapters
- * @property {boolean} quest.isLastChapter
- * @property {string} [quest.levelId]
- * @property {Object} hero
- * @property {import('../../services/game-state-service.js').HeroPosition} hero.pos
- * @property {boolean} hero.isEvolving
- * @property {import('../../services/game-state-service.js').HotSwitchState} hero.hotSwitchState
- * @property {Object} levelState
- * @property {boolean} levelState.hasCollectedItem
- * @property {boolean} levelState.isRewardCollected
- * @property {boolean} levelState.isCloseToTarget
- */
-
-/**
  * QuestView - Page wrapper for the game
  *
- * Responsible for:
- * - Orchestrating the high-level game page UI (Pause menu, Victory screen, Dialogs)
- * - Providing a boundary for the GameViewport (Engine)
- * - Managing page-level state transitions (Hub <-> Game)
- *
  * @element quest-view
- * @property {GameState} gameState - Current game state
- * @property {import('../legacys-end-app/LegacysEndApp.js').LegacysEndApp} app - Reference to Main App
  */
 export class QuestView extends SignalWatcher(LitElement) {
-	static properties = {
-		gameState: { type: Object },
-		app: { type: Object },
-	};
-	/** @type {ContextConsumer<typeof heroStateContext, QuestView>} */
-	heroStateConsumer = new ContextConsumer(this, {
-		context: heroStateContext,
-		subscribe: true,
-	});
+	/** @type {import('../../game/interfaces.js').IHeroStateService} */
+	@consume({ context: heroStateContext, subscribe: true })
+	accessor heroState = /** @type {any} */ (null);
 
-	/** @type {ContextConsumer<typeof questStateContext, QuestView>} */
-	questStateConsumer = new ContextConsumer(this, {
-		context: questStateContext,
-		subscribe: true,
-	});
+	/** @type {import('../../game/interfaces.js').IQuestStateService} */
+	@consume({ context: questStateContext, subscribe: true })
+	accessor questState = /** @type {any} */ (null);
 
-	/** @type {ContextConsumer<typeof worldStateContext, QuestView>} */
-	worldStateConsumer = new ContextConsumer(this, {
-		context: worldStateContext,
-		subscribe: true,
-	});
+	/** @type {import('../../game/interfaces.js').IWorldStateService} */
+	@consume({ context: worldStateContext, subscribe: true })
+	accessor worldState = /** @type {any} */ (null);
 
-	get heroState() {
-		return this.heroStateConsumer.value;
-	}
+	/** @type {import('../../services/quest-loader-service.js').QuestLoaderService} */
+	@consume({ context: questLoaderContext, subscribe: true })
+	accessor questLoader = /** @type {any} */ (null);
 
-	get questState() {
-		return this.questStateConsumer.value;
-	}
-
-	get worldState() {
-		return this.worldStateConsumer.value;
-	}
+	/** @type {import('../../services/session-service.js').SessionService} */
+	@consume({ context: sessionContext, subscribe: true })
+	accessor sessionService = /** @type {any} */ (null);
 
 	static styles = questViewStyles;
 
-	constructor() {
-		super();
-		/** @type {GameState} */
-		this.gameState = /** @type {GameState} */ ({});
-		/** @type {any} */
-		this.app = null;
-	}
-
 	/**
-	 * Handles slide change events from level dialog
-	 * @param {CustomEvent} e - Slide changed event
+	 * @param {CustomEvent<{text: string}>} e
 	 */
 	#handleSlideChanged(e) {
 		this.worldState?.setCurrentDialogText(e.detail.text);
 	}
 
-	/**
-	 * Toggles game pause state
-	 */
-	togglePause() {
-		if (this.worldState) {
-			this.worldState.setPaused(!this.worldState.isPaused.get());
-		}
-	}
-
 	render() {
-		const { config, quest } = this.gameState || {};
-
-		if (!config || !this.worldState || !this.questState) {
-			return html`<div>Loading level data...</div>`;
+		if (!this.worldState || !this.questState || !this.sessionService) {
+			return html`<div>Loading services...</div>`;
 		}
 
-		// Pull current state from signals for rendering
-		const isPaused = this.worldState.isPaused.get();
-		const isQuestCompleted = this.questState.isQuestCompleted.get();
 		const showDialog = this.worldState.showDialog.get();
+		const currentQuest = this.sessionService.currentQuest.get();
+
+		if (!currentQuest) {
+			return html`<div>No active quest</div>`;
+		}
 
 		return html`
-			<pause-menu
-				.open="${isPaused}"
-				@resume="${() => this.worldState.setPaused(false)}"
-				@restart="${() => {
-					this.worldState.setPaused(false);
-					this.dispatchEvent(new CustomEvent("restart"));
-				}}"
-				@quit="${() => {
-					this.app.gameState.setPaused(false);
-					this.dispatchEvent(new CustomEvent("quit"));
-				}}"
-			></pause-menu>
+			<pause-menu></pause-menu>
 
 			${
-				isQuestCompleted
-					? html`
-					<victory-screen
-						.quest="${quest?.data}" 
-						.onReturn="${() => this.dispatchEvent(new CustomEvent("return-to-hub"))}"
-					></victory-screen>
-				`
+				this.questState.isQuestCompleted.get()
+					? html`<victory-screen></victory-screen>`
 					: html`
 				<main>
 					<game-viewport
-						.gameState="${this.gameState}"
-						.app="${this.app}"
 						@next-slide="${() => this.nextDialogSlide()}"
 						@prev-slide="${() => this.prevDialogSlide()}"
 					></game-viewport>
@@ -155,14 +76,12 @@ export class QuestView extends SignalWatcher(LitElement) {
 			}
 
 			${
-				showDialog && !isQuestCompleted
+				showDialog && !this.questState.isQuestCompleted.get()
 					? html`
 				<level-dialog
-					.config="${config}"
-					.level="${quest?.levelId || ""}"
 					@complete="${() => this.#handleLevelComplete()}"
 					@close="${() => this.dispatchEvent(new CustomEvent("close-dialog"))}"
-					@slide-changed="${(/** @type {any} */ e) => this.#handleSlideChanged(e)}"
+					@slide-changed="${(/** @type {CustomEvent} */ e) => this.#handleSlideChanged(e)}"
 				></level-dialog>
 			`
 					: ""

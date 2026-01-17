@@ -26,16 +26,23 @@
  *
  * ReactiveController pattern:
  * - Checks exit zone on host update via heroPos signal
+ *
+ * @implements {ReactiveController}
  */
 export class CollisionController {
 	/**
 	 * @param {ReactiveControllerHost} host
-	 * @param {IGameContext} context
+	 * @param {Object} dependencies
+	 * @param {import('../game/interfaces.js').IHeroStateService} dependencies.heroState
+	 * @param {import('../game/interfaces.js').IQuestStateService} dependencies.questState
+	 * @param {import('../controllers/quest-controller.js').QuestController} [dependencies.questController]
 	 * @param {{ heroSize?: number }} [config]
 	 */
-	constructor(host, context, config = {}) {
+	constructor(host, { heroState, questState, questController }, config = {}) {
 		this.host = host;
-		this.context = context;
+		this.heroState = heroState;
+		this.questState = questState;
+		this.questController = questController;
 		this.config = {
 			heroSize: 2.5,
 			...config,
@@ -48,9 +55,9 @@ export class CollisionController {
 	hostDisconnected() {}
 
 	hostUpdate() {
-		const pos = this.context.heroState.pos.get();
-		const hasCollectedItem = this.context.questState.hasCollectedItem.get();
-		const currentChapter = this.context.questController?.currentChapter;
+		const pos = this.heroState.pos.get();
+		const hasCollectedItem = this.questState.hasCollectedItem.get();
+		const currentChapter = this.questController?.currentChapter;
 		if (currentChapter?.exitZone) {
 			this.checkExitZone(
 				pos.x,

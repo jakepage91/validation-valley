@@ -1,13 +1,23 @@
 import "@awesome.me/webawesome/dist/components/card/card.js";
 import "@awesome.me/webawesome/dist/components/details/details.js";
-import { ContextProvider } from "@lit/context";
+import { consume } from "@lit/context";
 import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { gameConfig } from "../../config/game-configuration.js";
+import { aiContext } from "../../contexts/ai-context.js";
+import { localizationContext } from "../../contexts/localization-context.js";
+import { questControllerContext } from "../../contexts/quest-controller-context.js";
+import { questLoaderContext } from "../../contexts/quest-loader-context.js";
+import { sessionContext } from "../../contexts/session-context.js";
+import { themeContext } from "../../contexts/theme-context.js";
+import { voiceContext } from "../../contexts/voice-context.js";
 import { KeyboardController } from "../../controllers/keyboard-controller.js";
 import { GameEvents } from "../../core/event-bus.js";
+import { heroStateContext } from "../../game/contexts/hero-context.js";
+import { questStateContext } from "../../game/contexts/quest-context.js";
+import { worldStateContext } from "../../game/contexts/world-context.js";
 import { setupCharacterContexts } from "../../setup/setup-character-contexts.js";
 import { setupCollision } from "../../setup/setup-collision.js";
 import {
@@ -30,12 +40,6 @@ import "../reward-element/reward-element.js";
 import "../viewport-elements/game-controls/game-controls.js";
 import "../viewport-elements/game-exit-zone/game-exit-zone.js";
 import "../viewport-elements/game-zone-indicator/game-zone-indicator.js";
-import { heroStateContext } from "../../game/contexts/hero-context.js";
-import { questStateContext } from "../../game/contexts/quest-context.js";
-import { worldStateContext } from "../../game/contexts/world-context.js";
-import { HeroStateService } from "../../game/services/hero-state-service.js";
-import { QuestStateService } from "../../game/services/quest-state-service.js";
-import { WorldStateService } from "../../game/services/world-state-service.js";
 import { gameViewportStyles } from "./GameViewport.styles.js";
 
 /**
@@ -44,9 +48,46 @@ import { gameViewportStyles } from "./GameViewport.styles.js";
  * @property {import('../legacys-end-app/LegacysEndApp.js').LegacysEndApp} app - Reference to Main App for direct signal access
  */
 export class GameViewport extends SignalWatcher(LitElement) {
+	@consume({ context: heroStateContext, subscribe: true })
+	accessor heroState = /** @type {any} */ (null);
+
+	/** @type {import('../../game/interfaces.js').IQuestStateService} */
+	@consume({ context: questStateContext, subscribe: true })
+	accessor questState = /** @type {any} */ (null);
+
+	/** @type {import('../../game/interfaces.js').IWorldStateService} */
+	@consume({ context: worldStateContext, subscribe: true })
+	accessor worldState = /** @type {any} */ (null);
+
+	/** @type {import('../../controllers/quest-controller.js').QuestController} */
+	@consume({ context: questControllerContext, subscribe: true })
+	accessor questController = /** @type {any} */ (null);
+
+	/** @type {import('../../services/quest-loader-service.js').QuestLoaderService} */
+	@consume({ context: questLoaderContext, subscribe: true })
+	accessor questLoader = /** @type {any} */ (null);
+
+	/** @type {import('../../services/session-service.js').SessionService} */
+	@consume({ context: sessionContext, subscribe: true })
+	accessor sessionService = /** @type {any} */ (null);
+
+	/** @type {import('../../services/localization-service.js').LocalizationService} */
+	@consume({ context: localizationContext, subscribe: true })
+	accessor localizationService = /** @type {any} */ (null);
+
+	/** @type {import('../../services/theme-service.js').ThemeService} */
+	@consume({ context: themeContext, subscribe: true })
+	accessor themeService = /** @type {any} */ (null);
+
+	/** @type {import('../../services/ai-service.js').AIService} */
+	@consume({ context: aiContext, subscribe: true })
+	accessor aiService = /** @type {any} */ (null);
+
+	/** @type {import('../../services/voice-synthesis-service.js').VoiceSynthesisService} */
+	@consume({ context: voiceContext, subscribe: true })
+	accessor voiceSynthesisService = /** @type {any} */ (null);
+
 	static properties = {
-		gameState: { type: Object },
-		app: { type: Object },
 		isAnimatingReward: { state: true },
 		rewardAnimState: { state: true },
 		isRewardCollected: { state: true },
@@ -57,9 +98,6 @@ export class GameViewport extends SignalWatcher(LitElement) {
 
 	constructor() {
 		super();
-		this.gameState = {};
-		/** @type {any} */
-		this.app = null;
 		this.isAnimatingReward = false;
 		this.rewardAnimState = "";
 		this.isRewardCollected = false;
@@ -83,27 +121,6 @@ export class GameViewport extends SignalWatcher(LitElement) {
 		/** @type {import('../../controllers/game-controller.js').GameController | null} */
 		this.gameController = null;
 
-		// Domain Services
-		this.heroState = new HeroStateService();
-		/** @type {QuestStateService} */
-		// @ts-expect-error
-		this.questState = null;
-		this.worldState = new WorldStateService();
-
-		// Context Providers
-		this.heroStateProvider = new ContextProvider(this, {
-			context: heroStateContext,
-			initialValue: this.heroState,
-		});
-		this.questStateProvider = new ContextProvider(this, {
-			context: questStateContext,
-			initialValue: null,
-		});
-		this.worldStateProvider = new ContextProvider(this, {
-			context: worldStateContext,
-			initialValue: this.worldState,
-		});
-
 		this.#boundHandleMoveInput = this.#handleMoveInput.bind(this);
 	}
 
@@ -116,17 +133,24 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	updated(changedProperties) {
 		super.updated(changedProperties);
 
-		// Initialize controllers if app becomes available after initial render
-		if (this.app && !this._controllersInitialized) {
+		// Initialize controllers once services are available via context
+		const allServicesReady =
+			this.questController &&
+			this.heroState &&
+			this.questState &&
+			this.worldState &&
+			this.themeService &&
+			this.sessionService;
+
+		if (allServicesReady && !this._controllersInitialized) {
 			this.#setupControllers();
 			this._controllersInitialized = true;
-			// Subscribe to events now that app is available
 			this.#subscribeToEvents();
 		}
 
 		// Sync Hero Image from current chapter config
-		const config = /** @type {any} */ (this.gameState)?.config;
-		if (config) {
+		const config = this.questController?.currentChapter;
+		if (config && this.questState) {
 			const isRewardCollected = this.questState.isRewardCollected.get();
 			const heroImage =
 				isRewardCollected && config.hero?.reward
@@ -146,8 +170,8 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	 * Subscribe to event bus events
 	 */
 	#subscribeToEvents() {
-		if (this.app?.eventBus && !this._eventsSubscribed) {
-			this.app.eventBus.on(
+		if (this.questController?.options?.eventBus && !this._eventsSubscribed) {
+			this.questController.options.eventBus.on(
 				GameEvents.HERO_MOVE_INPUT,
 				this.#boundHandleMoveInput,
 			);
@@ -159,8 +183,8 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	 * Unsubscribe from event bus events
 	 */
 	#unsubscribeFromEvents() {
-		if (this.app?.eventBus && this._eventsSubscribed) {
-			this.app.eventBus.off(
+		if (this.questController?.options?.eventBus && this._eventsSubscribed) {
+			this.questController.options.eventBus.off(
 				GameEvents.HERO_MOVE_INPUT,
 				this.#boundHandleMoveInput,
 			);
@@ -182,8 +206,6 @@ export class GameViewport extends SignalWatcher(LitElement) {
 
 		this.#setupInputHandlers(context);
 		this.#setupGameFlow(context);
-		this.#syncControllersToApp(context);
-		this.#syncProvidersToControllers();
 		this.requestUpdate();
 	}
 
@@ -192,11 +214,14 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	 * @param {import('../../core/game-context.js').IGameContext} context
 	 */
 	#setupGameMechanics(context) {
-		setupZones(this, context);
-		setupCollision(this, context);
-		setupService(this, context);
-		setupCharacterContexts(this, context);
-		setupInteraction(this, context);
+		setupZones(/** @type {any} */ (this), /** @type {any} */ (context));
+		setupCollision(/** @type {any} */ (this), /** @type {any} */ (context));
+		setupService(/** @type {any} */ (this), /** @type {any} */ (context));
+		setupCharacterContexts(
+			/** @type {any} */ (this),
+			/** @type {any} */ (context),
+		);
+		setupInteraction(/** @type {any} */ (this), /** @type {any} */ (context));
 	}
 
 	/**
@@ -205,7 +230,7 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	 */
 	#setupInputHandlers(context) {
 		this.#setupKeyboard(context);
-		setupVoice(/** @type {any} */ (this), context);
+		setupVoice(/** @type {any} */ (this), /** @type {any} */ (context));
 	}
 
 	/**
@@ -213,78 +238,49 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	 * @param {import('../../core/game-context.js').IGameContext} context
 	 */
 	#setupGameFlow(context) {
-		setupGameService(context);
-		setupGameController(this, context);
+		setupGameService(/** @type {any} */ (context));
+		setupGameController(
+			/** @type {any} */ (this),
+			/** @type {any} */ (context),
+		);
 	}
 
 	/**
-	 * Sync controller references back to app for legacy compatibility
-	 * @param {import('../../core/game-context.js').IGameContext} context
-	 */
-	#syncControllersToApp(context) {
-		this.app.interaction = this.interaction;
-		this.app.collision = this.collision;
-		this.app.zones = this.zones;
-		this.app.serviceController = context.serviceController;
-		this.app.characterContexts = context.characterContexts;
-		context.interaction = this.app.interaction;
-
-		// Link domain services if not already
-		if (this.app.heroState) {
-			this.heroState = this.app.heroState;
-			this.heroStateProvider.setValue(this.heroState);
-		}
-		if (this.app.questController?.state) {
-			this.questState = this.app.questController.state;
-			this.questStateProvider.setValue(this.questState);
-		}
-		if (this.app.worldState) {
-			this.worldState = this.app.worldState;
-			this.worldStateProvider.setValue(this.worldState);
-		}
-	}
-
-	/**
-	 * Sync providers to service controllers
-	 */
-	#syncProvidersToControllers() {
-		if (this.app.serviceController) {
-			this.app.serviceController.options.profileProvider =
-				this.app.profileProvider;
-		}
-
-		if (this.app.characterContexts) {
-			this.app.characterContexts.options.suitProvider = this.app.suitProvider;
-			this.app.characterContexts.options.gearProvider = this.app.gearProvider;
-			this.app.characterContexts.options.powerProvider = this.app.powerProvider;
-			this.app.characterContexts.options.masteryProvider =
-				this.app.masteryProvider;
-		}
-	}
-
-	/**
-	 * Creates game context from app services
 	 * @returns {import('../../core/game-context.js').IGameContext}
 	 */
 	#getGameContext() {
-		return {
-			eventBus: this.app.eventBus,
-			logger: this.app.logger,
-			gameState: this.app.gameState,
-			questController: this.app.questController,
-			progressService: this.app.progressService,
-			router: this.app.router,
-			serviceController: this.app.serviceController,
-			characterContexts: this.app.characterContexts,
-			interaction: this.app.interaction,
-			aiService: this.app.aiService,
-			voiceSynthesisService: this.app.voiceSynthesisService,
-			sessionService: this.app.sessionService,
-			questLoader: this.app.questLoader,
-			heroState: this.app.heroState,
-			questState: this.app.questState,
-			worldState: this.app.worldState,
+		const context = {
+			eventBus: this.questController?.options?.eventBus,
+			logger: this.questController?.options?.logger,
+			gameState: /** @type {any} */ (null), // This will be populated by setupGameService
+			questController: this.questController,
+			progressService: this.questController?.progressService,
+			router: undefined, // Not directly available here, but part of IGameContext
+			sessionService: this.sessionService,
+			questLoader: this.questLoader,
+			heroState: this.heroState,
+			questState: this.questState,
+			worldState: this.worldState,
+			themeService: this.themeService,
+			localizationService: this.localizationService,
+			gameService: this,
+			services: {
+				questLoader: this.questLoader,
+				sessionService: this.sessionService,
+				questState: this.questState,
+				heroState: this.heroState,
+				questController: this.questController,
+				themeService: this.themeService,
+				localizationService: this.localizationService,
+				aiService: this.aiService,
+				voiceSynthesisService: this.voiceSynthesisService,
+			},
+			aiService: this.aiService,
+			voiceSynthesisService: this.voiceSynthesisService,
 		};
+		return /** @type {import('../../core/game-context.js').IGameContext} */ (
+			/** @type {any} */ (context)
+		);
 	}
 
 	/**
@@ -377,9 +373,7 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	 */
 	triggerLevelTransition() {
 		this.stopAutoMove();
-		if (this.app?.questLoader) {
-			this.app.questLoader.advanceChapter();
-		}
+		this.questLoader?.advanceChapter();
 	}
 
 	/**
@@ -478,22 +472,23 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	}
 
 	render() {
-		if (!this.questState) return html``;
+		if (!this.questState || !this.questController) return html``;
 
-		const config = /** @type {any} */ (this.gameState)?.config || {};
-		const backgroundStyle = config.backgroundStyle || "";
+		/** @type {any} */
+		const config = this.questController.currentChapter || {};
+		let backgroundStyle = config.backgroundStyle || "";
+
+		if (
+			this.questState.isRewardCollected.get() &&
+			config.backgroundStyleReward
+		) {
+			backgroundStyle = config.backgroundStyleReward;
+		}
+
 		const backgroundPath = extractAssetPath(backgroundStyle);
 
-		const hotSwitchState = this.heroState.hotSwitchState.get();
-		const themeMode = this.app?.themeService?.themeMode.get() || "light";
-		const hasCollectedItem = this.questState.hasCollectedItem.get();
 		return html`
-			<game-hud
-				.currentChapterNumber="${this.app?.questController?.getCurrentChapterNumber()}"
-				.totalChapters="${this.app?.questController?.getTotalChapters()}"
-				.levelTitle="${config?.title}"
-				.questTitle="${this.app?.questController?.currentQuest?.name}"
-			></game-hud>
+			<game-hud></game-hud>
 
 			<div class="game-area">
 				${
@@ -514,22 +509,17 @@ export class GameViewport extends SignalWatcher(LitElement) {
 					@toggle-voice="${this.#handleToggleVoice}"
 				></game-controls>
 				
-				<game-zone-indicator
+				<game-zone-indicator 
 					.type="${"THEME_CHANGE"}"
-					.zones="${config?.zones || []}"
-					.currentState="${themeMode}"
+					.zones="${config.zones || []}"
 				></game-zone-indicator>
 
-				<game-zone-indicator
+				<game-zone-indicator 
 					.type="${"CONTEXT_CHANGE"}"
-					.zones="${config?.zones || []}"
-					.currentState="${hotSwitchState || ""}"
+					.zones="${config.zones || []}"
 				></game-zone-indicator>
 
-				<game-exit-zone 
-					.zoneConfig="${config?.exitZone || {}}" 
-					.active="${hasCollectedItem}"
-				></game-exit-zone>
+				<game-exit-zone></game-exit-zone>
 
 				${
 					this.questState.lockedMessage.get()
@@ -547,11 +537,10 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	}
 
 	_renderNPC() {
-		const config = /** @type {any} */ (this.gameState)?.config;
+		const config = this.questController.currentChapter;
 		if (!config?.npc) return "";
 
-		// Interaction controller state remains external for now
-		const isCloseToTarget = this.app?.interaction?.isCloseToNpc() || false;
+		const isCloseToTarget = this.interaction?.isCloseToNpc() || false;
 
 		return html`
 			<npc-element
@@ -566,7 +555,7 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	}
 
 	_renderReward() {
-		const config = /** @type {any} */ (this.gameState)?.config;
+		const config = this.questController.currentChapter;
 		if (!config?.reward) return "";
 
 		const hasCollectedItem = this.questState.hasCollectedItem.get();

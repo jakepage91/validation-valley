@@ -1,214 +1,177 @@
 import { ContextProvider } from "@lit/context";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Signal } from "@lit-labs/signals";
+import { html, LitElement } from "lit";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { questLoaderContext } from "../../contexts/quest-loader-context.js";
+import { sessionContext } from "../../contexts/session-context.js";
 import { heroStateContext } from "../../game/contexts/hero-context.js";
 import { questStateContext } from "../../game/contexts/quest-context.js";
 import { worldStateContext } from "../../game/contexts/world-context.js";
 import { logger } from "../../services/logger-service.js";
 import "./quest-view.js";
 
-/**
- * Creates mock domain services.
- */
-function getMockServices() {
-	return {
-		heroState: {
-			pos: { get: vi.fn(() => ({ x: 0, y: 0 })) },
-			hotSwitchState: { get: vi.fn(() => "new") },
-			isEvolving: { get: vi.fn(() => false) },
-			imageSrc: { get: vi.fn(() => "hero.png") },
-			setImageSrc: vi.fn(),
-		},
-		questState: {
-			hasCollectedItem: { get: vi.fn(() => false) },
-			isRewardCollected: { get: vi.fn(() => false) },
-			isQuestCompleted: { get: vi.fn(() => false) },
-			lockedMessage: { get: vi.fn(() => null) },
-		},
-		worldState: {
-			isPaused: { get: vi.fn(() => false) },
-			showDialog: { get: vi.fn(() => false) },
-			setCurrentDialogText: vi.fn(),
-		},
-		aiService: {
-			checkAvailability: vi.fn().mockResolvedValue("no"),
-			createSession: vi.fn(),
-			destroySession: vi.fn(),
-			hasSession: vi.fn(() => false),
-		},
-		voiceSynthesisService: {
-			speak: vi.fn(),
-			cancel: vi.fn(),
-		},
+// Mock child components
+vi.mock("../game-viewport/game-viewport.js", () => ({}));
+vi.mock("../level-dialog/level-dialog.js", () => ({}));
+vi.mock("../pause-menu/pause-menu.js", () => ({}));
+vi.mock("../victory-screen/victory-screen.js", () => ({}));
+
+class TestContextWrapper extends LitElement {
+	static properties = {
+		heroState: { type: Object },
+		questState: { type: Object },
+		worldState: { type: Object },
+		questLoader: { type: Object },
+		sessionService: { type: Object },
 	};
-}
 
-/**
- * @param {HTMLElement} container
- * @param {any} services
- */
-function setupContexts(container, services) {
-	new ContextProvider(container, {
-		context: heroStateContext,
-		initialValue: services.heroState,
-	});
-	new ContextProvider(container, {
-		context: questStateContext,
-		initialValue: services.questState,
-	});
-	new ContextProvider(container, {
-		context: worldStateContext,
-		initialValue: services.worldState,
-	});
-}
+	constructor() {
+		super();
+		/** @type {any} */
+		this.heroState = undefined;
+		/** @type {any} */
+		this.questState = undefined;
+		/** @type {any} */
+		this.worldState = undefined;
+		/** @type {any} */
+		this.questLoader = undefined;
+		/** @type {any} */
+		this.sessionService = undefined;
+	}
 
-describe("QuestView Component (Wrapper)", () => {
+	connectedCallback() {
+		super.connectedCallback();
+		new ContextProvider(this, {
+			context: heroStateContext,
+			initialValue: /** @type {any} */ (this.heroState),
+		});
+		new ContextProvider(this, {
+			context: questStateContext,
+			initialValue: /** @type {any} */ (this.questState),
+		});
+		new ContextProvider(this, {
+			context: worldStateContext,
+			initialValue: /** @type {any} */ (this.worldState),
+		});
+		new ContextProvider(this, {
+			context: questLoaderContext,
+			initialValue: /** @type {any} */ (this.questLoader),
+		});
+		new ContextProvider(this, {
+			context: sessionContext,
+			initialValue: /** @type {any} */ (this.sessionService),
+		});
+	}
+
+	render() {
+		return html`<slot></slot>`;
+	}
+}
+customElements.define("test-context-wrapper-quest", TestContextWrapper);
+
+describe("QuestView", () => {
+	/** @type {HTMLElement} */
+	let container;
+
 	beforeEach(() => {
-		document.body.innerHTML = "";
+		container = document.createElement("div");
+		document.body.appendChild(container);
 		vi.spyOn(logger, "warn").mockImplementation(() => {});
 	});
 
-	it("renders loading state when no config is provided", async () => {
-		const el = /** @type {any} */ (document.createElement("quest-view"));
-		document.body.appendChild(el);
-		await el.updateComplete;
-
-		expect(el.shadowRoot?.textContent).toContain("Loading level data...");
+	afterEach(() => {
+		document.body.removeChild(container);
+		vi.clearAllMocks();
 	});
 
-	it("renders game-viewport when config and app are provided", async () => {
-		const services = getMockServices();
-		const container = document.createElement("div");
-		document.body.appendChild(container);
-		setupContexts(container, services);
+	it("renders loading state when services are missing", async () => {
+		const element = document.createElement("quest-view");
+		container.appendChild(element);
+		await /** @type {any} */ (element).updateComplete;
 
-		const el = /** @type {any} */ (document.createElement("quest-view"));
-		el.gameState = /** @type {any} */ ({
-			config: { zones: [] },
-			quest: { data: {}, chapterNumber: 1, totalChapters: 3 },
-		});
-		// Inject mock app for GameViewport
-		el.app = {
-			...services,
-			questController: {
-				currentChapter: {},
-				getCurrentChapterNumber: vi.fn(),
-				getTotalChapters: vi.fn(),
-				state: services.questState,
-			},
-			gameState: {
-				questState: services.questState,
-				heroState: services.heroState,
-			},
-			themeService: { themeMode: { get: vi.fn(() => "light") } },
-			characterContexts: { options: {} },
-			questState: services.questState,
+		expect(element.shadowRoot?.textContent).toContain("Loading services...");
+	});
+
+	it("renders no active quest when session has no quest", async () => {
+		const wrapper = new TestContextWrapper();
+		wrapper.worldState = { showDialog: new Signal.State(false) };
+		wrapper.questState = { isQuestCompleted: new Signal.State(false) };
+		wrapper.sessionService = { currentQuest: new Signal.State(null) };
+		wrapper.heroState = {};
+		wrapper.questLoader = {};
+
+		const element = document.createElement("quest-view");
+		wrapper.appendChild(element);
+		container.appendChild(wrapper);
+
+		await wrapper.updateComplete;
+		await /** @type {any} */ (element).updateComplete;
+
+		expect(element.shadowRoot?.textContent).toContain("No active quest");
+	});
+
+	it("renders game-viewport when active quest exists", async () => {
+		const wrapper = new TestContextWrapper();
+		wrapper.worldState = {
+			showDialog: new Signal.State(false),
+			isPaused: new Signal.State(false),
+			setCurrentDialogText: vi.fn(),
 		};
+		wrapper.questState = { isQuestCompleted: new Signal.State(false) };
+		wrapper.sessionService = { currentQuest: new Signal.State({ id: "q1" }) };
+		wrapper.heroState = {};
+		wrapper.questLoader = {};
 
-		container.appendChild(el);
-		await el.updateComplete;
+		const element = document.createElement("quest-view");
+		wrapper.appendChild(element);
+		container.appendChild(wrapper);
 
-		const viewport = el.shadowRoot?.querySelector("game-viewport");
+		await wrapper.updateComplete;
+		await /** @type {any} */ (element).updateComplete;
+
+		const viewport = element.shadowRoot?.querySelector("game-viewport");
 		expect(viewport).toBeTruthy();
 	});
 
 	it("renders victory-screen when quest is completed", async () => {
-		const services = getMockServices();
-		services.questState.isQuestCompleted.get.mockReturnValue(true);
+		const wrapper = new TestContextWrapper();
+		wrapper.worldState = { showDialog: new Signal.State(false) };
+		wrapper.questState = { isQuestCompleted: new Signal.State(true) };
+		wrapper.sessionService = { currentQuest: new Signal.State({ id: "q1" }) };
+		wrapper.heroState = {};
+		wrapper.questLoader = {};
 
-		const container = document.createElement("div");
-		document.body.appendChild(container);
-		setupContexts(container, services);
+		const element = document.createElement("quest-view");
+		wrapper.appendChild(element);
+		container.appendChild(wrapper);
 
-		const el = /** @type {any} */ (document.createElement("quest-view"));
-		el.gameState = /** @type {any} */ ({
-			config: { zones: [] },
-			quest: { data: { name: "Test Quest" } },
-		});
+		await wrapper.updateComplete;
+		await /** @type {any} */ (element).updateComplete;
 
-		container.appendChild(el);
-		await el.updateComplete;
-
-		const victory = el.shadowRoot?.querySelector("victory-screen");
+		const victory = element.shadowRoot?.querySelector("victory-screen");
 		expect(victory).toBeTruthy();
 	});
 
-	it("renders pause-menu and reflects paused state", async () => {
-		const services = getMockServices();
-		services.worldState.isPaused.get.mockReturnValue(true);
-
-		const container = document.createElement("div");
-		document.body.appendChild(container);
-		setupContexts(container, services);
-
-		const el = /** @type {any} */ (document.createElement("quest-view"));
-		el.gameState = /** @type {any} */ ({
-			config: { zones: [] },
-		});
-		el.app = {
-			...services,
-			questController: {
-				currentChapter: {},
-				getCurrentChapterNumber: vi.fn(),
-				getTotalChapters: vi.fn(),
-				state: services.questState,
-			},
-			gameState: {
-				questState: services.questState,
-				heroState: services.heroState,
-			},
-			themeService: { themeMode: { get: vi.fn(() => "light") } },
-			characterContexts: { options: {} },
-			questState: services.questState,
-		};
-
-		container.appendChild(el);
-		await el.updateComplete;
-
-		const pauseMenu = el.shadowRoot?.querySelector("pause-menu");
-		expect(pauseMenu).toBeTruthy();
-		expect(pauseMenu?.open).toBe(true);
-	});
-
 	it("renders level-dialog when showDialog is true", async () => {
-		await customElements.whenDefined("quest-view");
-		const services = getMockServices();
-		services.worldState.showDialog.get.mockReturnValue(true);
-
-		const container = document.createElement("div");
-		document.body.appendChild(container);
-		setupContexts(container, services);
-
-		const el = /** @type {any} */ (document.createElement("quest-view"));
-		el.gameState = /** @type {any} */ ({
-			config: { zones: [] },
-			quest: { levelId: "1" },
-		});
-		el.app = {
-			...services,
-			questController: {
-				currentChapter: {}, // valid chapter object to safe guard
-				getCurrentChapterNumber: vi.fn(),
-				getTotalChapters: vi.fn(),
-				state: services.questState,
-			},
-			gameState: {
-				questState: services.questState,
-				heroState: services.heroState,
-			},
-			themeService: { themeMode: { get: vi.fn(() => "light") } },
-			characterContexts: { options: {} },
-			questState: services.questState,
+		const wrapper = new TestContextWrapper();
+		wrapper.worldState = {
+			showDialog: new Signal.State(true),
+			isPaused: new Signal.State(false),
+			setCurrentDialogText: vi.fn(),
 		};
+		wrapper.questState = { isQuestCompleted: new Signal.State(false) };
+		wrapper.sessionService = { currentQuest: new Signal.State({ id: "q1" }) };
+		wrapper.heroState = {};
+		wrapper.questLoader = {};
 
-		container.appendChild(el);
+		const element = document.createElement("quest-view");
+		wrapper.appendChild(element);
+		container.appendChild(wrapper);
 
-		// Wait for stability
-		await el.updateComplete;
-		await new Promise((r) => setTimeout(r, 100));
-		await el.updateComplete;
+		await wrapper.updateComplete;
+		await /** @type {any} */ (element).updateComplete;
 
-		expect(el.shadowRoot).toBeTruthy();
-		const dialog = el.shadowRoot?.querySelector("level-dialog");
+		const dialog = element.shadowRoot?.querySelector("level-dialog");
 		expect(dialog).toBeTruthy();
 	});
 });

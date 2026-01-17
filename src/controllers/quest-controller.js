@@ -444,6 +444,7 @@ export class QuestController {
 		this.eventBus.emit(GameEvents.CHAPTER_CHANGED, {
 			chapter: /** @type {Chapter} */ (this.currentChapter),
 			index: this.currentChapterIndex,
+			total: this.currentQuest?.chapterIds?.length || 0,
 		});
 
 		// Preload next chapter assets
@@ -644,6 +645,7 @@ export class QuestController {
 			this.eventBus.emit(GameEvents.CHAPTER_CHANGED, {
 				chapter: /** @type {Chapter} */ (this.currentChapter),
 				index: this.currentChapterIndex,
+				total: this.currentQuest?.chapterIds?.length || 0,
 			});
 		}
 	}

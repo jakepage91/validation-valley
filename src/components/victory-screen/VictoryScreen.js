@@ -1,8 +1,12 @@
 import "@awesome.me/webawesome/dist/components/button/button.js";
 import "@awesome.me/webawesome/dist/components/icon/icon.js";
+import { consume } from "@lit/context";
 import { msg, updateWhenLocaleChanges } from "@lit/localize";
+import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
+import { questLoaderContext } from "../../contexts/quest-loader-context.js";
+import { sessionContext } from "../../contexts/session-context.js";
 import { processImagePath } from "../../utils/process-assets.js";
 import { victoryScreenStyles } from "./VictoryScreen.styles.js";
 
@@ -16,33 +20,34 @@ import { victoryScreenStyles } from "./VictoryScreen.styles.js";
  * @property {Quest} quest
  * @property {Function} onReturn
  */
-export class VictoryScreen extends LitElement {
-	static properties = {
-		quest: { type: Object },
-		onReturn: { type: Function },
-	};
+export class VictoryScreen extends SignalWatcher(LitElement) {
+	/** @type {import('../../services/session-service.js').SessionService} */
+	@consume({ context: sessionContext, subscribe: true })
+	accessor sessionService = /** @type {any} */ (null);
+
+	/** @type {import('../../services/quest-loader-service.js').QuestLoaderService} */
+	@consume({ context: questLoaderContext, subscribe: true })
+	accessor questLoader = /** @type {any} */ (null);
 
 	static styles = victoryScreenStyles;
 
 	constructor() {
 		super();
 		updateWhenLocaleChanges(this);
-		/** @type {Quest | null} */
-		this.quest = null;
-		this.onReturn = () => {};
 	}
 
 	render() {
-		if (!this.quest) {
+		const quest = this.sessionService?.currentQuest.get();
+		if (!quest) {
 			return html`<div>${msg("Error: No quest data for completion screen.")}</div>`;
 		}
 
 		// Collect all rewards from chapters
 		/** @type {Array<RewardConfig>} */
 		const collectedRewards = [];
-		if (this.quest.chapterIds && this.quest.chapters) {
-			this.quest.chapterIds.forEach((chapterId) => {
-				const chapter = this.quest?.chapters?.[chapterId];
+		if (quest.chapterIds && quest.chapters) {
+			quest.chapterIds.forEach((chapterId) => {
+				const chapter = quest?.chapters?.[chapterId];
 				if (chapter?.reward) {
 					collectedRewards.push(chapter.reward);
 				}
@@ -54,7 +59,7 @@ export class VictoryScreen extends LitElement {
 				<h1 class="victory-title">${msg("QUEST COMPLETE!")}</h1>
 				<p class="victory-text"><small>
 					${msg("Congratulations, hero! You have successfully completed the quest:")}
-					<strong>${this.quest.name}</strong>.
+					<strong>${quest.name}</strong>.
 				</small></p>
 
 				<ul class="rewards-list" role="list">
@@ -69,11 +74,11 @@ export class VictoryScreen extends LitElement {
 				</ul>
 
 				<p class="victory-text"><small>
-					${msg("You earned the badge:")} <b>"${this.quest?.reward?.badge}"</b>
+					${msg("You earned the badge:")} <b>"${quest?.reward?.badge}"</b>
 					<br/>
-					${msg("Ability gained:")} <b>"${this.quest?.reward?.ability}"</b>
+					${msg("Ability gained:")} <b>"${quest?.reward?.ability}"</b>
 				</small></p>
-				<wa-button class="ng-btn" @click="${this.onReturn}">
+				<wa-button class="ng-btn" @click="${() => this.questLoader?.returnToHub()}">
 					<wa-icon slot="start" name="house"></wa-icon>
 					${msg("RETURN TO HUB")}
 				</wa-button>

@@ -30,10 +30,12 @@ export const gameZoneIndicatorStyles = [
 		   ========================================= */
 		.zone-theme-light {
 			background-color: var(--wa-color-neutral-0);
+			opacity: 0.1;
 		}
 
 		.zone-theme-dark {
 			background-color: var(--wa-color-neutral-900);
+			opacity: 0.1;
 		}
 
 		.zone-theme-label {
@@ -65,8 +67,8 @@ export const gameZoneIndicatorStyles = [
 
 		/* Legacy State Styles */
 		.zone-context-legacy.inactive {
-			border: var(--wa-border-width-s) solid var(--wa-color-danger-border-normal);
-			background-color: color-mix(in oklab, var(--wa-color-danger-fill-loud) 0%, transparent);
+			border: 2px solid var(--wa-color-danger-border-normal);
+			background-color: color-mix(in oklab, var(--wa-color-danger-fill-loud) 25%, transparent);
 		}
 
 		.zone-context-legacy.active {
@@ -76,8 +78,8 @@ export const gameZoneIndicatorStyles = [
 
 		/* New State Styles */
 		.zone-context-new.inactive {
-			border: var(--wa-border-width-s) solid var(--wa-color-brand-border-normal);
-			background-color: color-mix(in oklab, var(--wa-color-brand-fill-loud) 0%, transparent);
+			border: 2px solid var(--wa-color-brand-border-normal);
+			background-color: color-mix(in oklab, var(--wa-color-brand-fill-loud) 25%, transparent);
 		}
 
 		.zone-context-new.active {

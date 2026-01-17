@@ -1,10 +1,59 @@
+import { ContextProvider } from "@lit/context";
+import { Signal } from "@lit-labs/signals";
 import axe from "axe-core";
-import { html, render } from "lit";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
+import { html, LitElement } from "lit";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import "./victory-screen.js";
+import { questLoaderContext } from "../../contexts/quest-loader-context.js";
+import { sessionContext } from "../../contexts/session-context.js";
 
-/** @typedef {import("./VictoryScreen.js").VictoryScreen} VictoryScreen */
+class TestContextWrapper extends LitElement {
+	static properties = {
+		sessionService: { type: Object },
+		questLoader: { type: Object },
+	};
+
+	constructor() {
+		super();
+		/** @type {any} */
+		this.sessionService = undefined;
+		/** @type {any} */
+		this.questLoader = undefined;
+		/** @type {ContextProvider<any>|undefined} */
+		this.sessionProvider = undefined;
+		/** @type {ContextProvider<any>|undefined} */
+		this.qlProvider = undefined;
+	}
+
+	connectedCallback() {
+		super.connectedCallback();
+		this.sessionProvider = new ContextProvider(this, {
+			context: sessionContext,
+			initialValue: /** @type {any} */ (this.sessionService),
+		});
+		this.qlProvider = new ContextProvider(this, {
+			context: questLoaderContext,
+			initialValue: /** @type {any} */ (this.questLoader),
+		});
+	}
+
+	/**
+	 * @param {import("lit").PropertyValues} changedProperties
+	 */
+	updated(changedProperties) {
+		if (changedProperties.has("sessionService")) {
+			this.sessionProvider?.setValue(this.sessionService);
+		}
+		if (changedProperties.has("questLoader")) {
+			this.qlProvider?.setValue(this.questLoader);
+		}
+	}
+
+	render() {
+		return html`<slot></slot>`;
+	}
+}
+customElements.define("test-context-wrapper-victory", TestContextWrapper);
 
 describe("VictoryScreen", () => {
 	/** @type {HTMLElement} */
@@ -16,10 +65,7 @@ describe("VictoryScreen", () => {
 	});
 
 	afterEach(() => {
-		if (container) {
-			container.remove();
-		}
-		vi.clearAllMocks();
+		document.body.removeChild(container);
 	});
 
 	it("renders quest data correctly", async () => {
@@ -36,14 +82,20 @@ describe("VictoryScreen", () => {
 			chapterIds: ["c1"],
 		};
 
-		render(
-			html`<victory-screen .quest=${questData}></victory-screen>`,
-			container,
-		);
-		const element = /** @type {VictoryScreen} */ (
-			container.querySelector("victory-screen")
-		);
-		await element.updateComplete;
+		const wrapper = new TestContextWrapper();
+		wrapper.sessionService = {
+			currentQuest: new Signal.State(questData),
+		};
+		wrapper.questLoader = {
+			returnToHub: () => {},
+		};
+
+		const element = document.createElement("victory-screen");
+		wrapper.appendChild(element);
+		container.appendChild(wrapper);
+
+		await wrapper.updateComplete;
+		await /** @type {any} */ (element).updateComplete;
 
 		expect(element.shadowRoot?.textContent).toContain("Epic Quest");
 		expect(element.shadowRoot?.textContent).toContain("Hero Badge");
@@ -52,24 +104,34 @@ describe("VictoryScreen", () => {
 	});
 
 	it("calls onReturn when button is clicked", async () => {
-		const onReturnSpy = vi.fn();
+		// Mock returnToHub
+		let returnCalled = false;
+
 		const questData = { name: "Quest" };
 
-		render(
-			html`<victory-screen .quest=${questData} .onReturn=${onReturnSpy}></victory-screen>`,
-			container,
-		);
-		const element = /** @type {VictoryScreen} */ (
-			container.querySelector("victory-screen")
-		);
-		await element.updateComplete;
+		const wrapper = new TestContextWrapper();
+		wrapper.sessionService = {
+			currentQuest: new Signal.State(questData),
+		};
+		wrapper.questLoader = {
+			returnToHub: () => {
+				returnCalled = true;
+			},
+		};
+
+		const element = document.createElement("victory-screen");
+		wrapper.appendChild(element);
+		container.appendChild(wrapper);
+
+		await wrapper.updateComplete;
+		await /** @type {any} */ (element).updateComplete;
 
 		const btn = /** @type {HTMLElement} */ (
 			element.shadowRoot?.querySelector("wa-button")
 		);
 		btn.click();
 
-		expect(onReturnSpy).toHaveBeenCalled();
+		expect(returnCalled).toBe(true);
 	});
 
 	it("should have no accessibility violations", async () => {
@@ -84,14 +146,20 @@ describe("VictoryScreen", () => {
 			chapterIds: [],
 		};
 
-		render(
-			html`<victory-screen .quest=${questData}></victory-screen>`,
-			container,
-		);
-		const element = /** @type {VictoryScreen} */ (
-			container.querySelector("victory-screen")
-		);
-		await element.updateComplete;
+		const wrapper = new TestContextWrapper();
+		wrapper.sessionService = {
+			currentQuest: new Signal.State(questData),
+		};
+		wrapper.questLoader = {
+			returnToHub: () => {},
+		};
+
+		const element = document.createElement("victory-screen");
+		wrapper.appendChild(element);
+		container.appendChild(wrapper);
+
+		await wrapper.updateComplete;
+		await /** @type {any} */ (element).updateComplete;
 
 		const results = await axe.run(element);
 		expect(results.violations).toEqual([]);

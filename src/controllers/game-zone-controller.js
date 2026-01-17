@@ -1,6 +1,6 @@
 /**
-/**
  * @typedef {import("lit").ReactiveControllerHost} ReactiveControllerHost
+ * @typedef {import("lit").ReactiveController} ReactiveController
  * @typedef {import("../core/game-context.js").IGameContext} IGameContext
  */
 
@@ -14,16 +14,29 @@
  *
  * ReactiveController pattern:
  * - Checks zones on host update via heroPos signal
+ *
+ * @implements {ReactiveController}
  */
 export class GameZoneController {
 	/**
 	 * @param {ReactiveControllerHost} host
-	 * @param {IGameContext} context
+	 * @param {Object} dependencies
+	 * @param {import('../game/interfaces.js').IHeroStateService} dependencies.heroState
+	 * @param {import('../game/interfaces.js').IQuestStateService} dependencies.questState
+	 * @param {import('../controllers/quest-controller.js').QuestController} dependencies.questController
+	 * @param {import('../services/theme-service.js').ThemeService} dependencies.themeService
 	 * @param {{ processGameZoneInteraction: any }} useCases
 	 */
-	constructor(host, context, useCases) {
+	constructor(
+		host,
+		{ heroState, questState, questController, themeService },
+		useCases,
+	) {
 		this.host = host;
-		this.context = context;
+		this.heroState = heroState;
+		this.questState = questState;
+		this.questController = questController;
+		this.themeService = themeService;
 		this.useCases = useCases;
 		/** @type {{x: number, y: number, hasCollectedItem: boolean} | null} */
 		this.lastPos = null;
@@ -35,8 +48,8 @@ export class GameZoneController {
 	hostDisconnected() {}
 
 	hostUpdate() {
-		const pos = this.context.heroState.pos.get();
-		const hasCollectedItem = this.context.questState.hasCollectedItem.get();
+		const pos = this.heroState.pos.get();
+		const hasCollectedItem = this.questState.hasCollectedItem.get();
 
 		// Prevent redundant checks if position hasn't changed
 		if (
@@ -66,7 +79,7 @@ export class GameZoneController {
 	 * @param {boolean} [hasCollectedItem]
 	 */
 	checkZones(x, y, hasCollectedItem = false) {
-		const chapter = this.context.questController?.currentChapter;
+		const chapter = this.questController?.currentChapter;
 		if (!chapter) return;
 
 		const results = this.useCases.processGameZoneInteraction.execute({
@@ -80,8 +93,8 @@ export class GameZoneController {
 		const themeChange = results.findLast(
 			(/** @type {any} */ r) => r.type === "THEME_CHANGE",
 		);
-		if (themeChange && this.context.themeService) {
-			this.context.themeService.setTheme(themeChange.payload);
+		if (themeChange && this.themeService) {
+			this.themeService.setTheme(themeChange.payload);
 		}
 
 		// Handle CONTEXT_CHANGE (Last one wins if multiple)
@@ -89,9 +102,9 @@ export class GameZoneController {
 			(/** @type {any} */ r) => r.type === "CONTEXT_CHANGE",
 		);
 		if (contextChange) {
-			const currentContext = this.context.heroState.hotSwitchState.get();
+			const currentContext = this.heroState.hotSwitchState.get();
 			if (currentContext !== contextChange.payload) {
-				this.context.heroState.setHotSwitchState(contextChange.payload);
+				this.heroState.setHotSwitchState(contextChange.payload);
 			}
 		}
 	}

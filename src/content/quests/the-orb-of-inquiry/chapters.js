@@ -448,7 +448,7 @@ export class ProductProviderMock extends LitElement {
 		serviceType: /** @type {any} */ (null),
 		startPos: { x: 95, y: 30 },
 		exitZone: { x: 50, y: 10, width: 20, height: 10, label: msg("Victory") },
-		postDialogBackgroundStyle: `url('/assets/liberated-battlefield/background_end.png')`,
+		backgroundStyleReward: `url('/assets/liberated-battlefield/background_end.png')`,
 		backgroundStyle: `url('/assets/liberated-battlefield/background.png')`,
 		npc: {
 			name: msg("Oracle"),

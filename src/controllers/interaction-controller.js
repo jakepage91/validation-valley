@@ -8,8 +8,8 @@ import { gameConfig } from "../config/game-configuration.js";
  * @typedef {import('../services/game-state-service.js').HotSwitchState} HotSwitchState
  * @typedef {import('../content/quests/quest-types.js').LevelConfig} LevelConfig
  * @typedef {import('../core/event-bus.js').EventBus} EventBus
- * @typedef {import('../game/services/world-state-service.js').WorldStateService} WorldStateService
- * @typedef {import('../game/services/quest-state-service.js').QuestStateService} QuestStateService
+ * @typedef {import('../game/interfaces.js').IWorldStateService} WorldStateService
+ * @typedef {import('../game/interfaces.js').IQuestStateService} QuestStateService
  */
 
 /**

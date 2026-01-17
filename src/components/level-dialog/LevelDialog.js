@@ -1,12 +1,15 @@
-import "@awesome.me/webawesome/dist/components/button/button.js";
-import "@awesome.me/webawesome/dist/components/dialog/dialog.js";
-import "@awesome.me/webawesome/dist/components/icon/icon.js";
+import { consume } from "@lit/context";
 import { msg, str, updateWhenLocaleChanges } from "@lit/localize";
 import { html, LitElement } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { map } from "lit/directives/map.js";
+import "@awesome.me/webawesome/dist/components/button/button.js";
+import "@awesome.me/webawesome/dist/components/dialog/dialog.js";
+import "@awesome.me/webawesome/dist/components/icon/icon.js";
 import "syntax-highlight-element";
+import { questControllerContext } from "../../contexts/quest-controller-context.js";
 import { GameEvents } from "../../core/event-bus.js";
+import { questStateContext } from "../../game/contexts/quest-context.js";
 import { escapeHtml } from "../../utils/html-utils.js";
 import {
 	processImagePath,
@@ -37,9 +40,15 @@ import { levelDialogStyles } from "./LevelDialog.styles.js";
  * @fires close - Fired when dialog is closed
  */
 export class LevelDialog extends LitElement {
+	/** @type {import('../../controllers/quest-controller.js').QuestController} */
+	@consume({ context: questControllerContext, subscribe: true })
+	accessor questController = /** @type {any} */ (null);
+
+	/** @type {import('../../game/interfaces.js').IQuestStateService} */
+	@consume({ context: questStateContext, subscribe: true })
+	accessor questState = /** @type {any} */ (null);
+
 	static properties = {
-		config: { type: Object },
-		level: { type: String },
 		slideIndex: { state: true },
 	};
 
@@ -48,9 +57,6 @@ export class LevelDialog extends LitElement {
 	constructor() {
 		super();
 		updateWhenLocaleChanges(this);
-		/** @type {LevelConfig} */
-		this.config = /** @type {LevelConfig} */ ({});
-		this.level = "";
 		this.slideIndex = 0;
 	}
 
@@ -71,7 +77,7 @@ export class LevelDialog extends LitElement {
 	updated(changedProperties) {
 		if (
 			changedProperties.has("slideIndex") ||
-			changedProperties.has("config")
+			changedProperties.has("questController")
 		) {
 			this.dispatchEvent(
 				new CustomEvent(GameEvents.SLIDE_CHANGED, {
@@ -140,34 +146,31 @@ export class LevelDialog extends LitElement {
 		const slides = this.#getSlides();
 		const type = slides[this.slideIndex];
 
+		const config = this.questController?.currentChapter;
+		if (!config) return "";
+
 		switch (type) {
 			case "narrative":
-				return this.config.description || "";
+				return config.description || "";
 			case "problem":
-				return (this.config.problemDesc?.toString() || "").replace(
-					/<[^>]*>/g,
-					"",
-				); // Basic tag cleanup
+				return (config.problemDesc?.toString() || "").replace(/<[^>]*>/g, ""); // Basic tag cleanup
 			case "code-start":
 				return (
-					this.config.codeSnippets?.start
-						?.map((s) => `${s.title}.`)
-						.join(" ") || ""
+					config.codeSnippets?.start?.map((s) => `${s.title}.`).join(" ") || ""
 				);
 			case "code-end":
 				return (
-					this.config.codeSnippets?.end?.map((s) => `${s.title}.`).join(" ") ||
-					""
+					config.codeSnippets?.end?.map((s) => `${s.title}.`).join(" ") || ""
 				);
 			case "analysis":
 				return (
 					msg("Key architectural changes: ") +
-					(this.config.architecturalChanges?.join(". ") || "")
+					(config.architecturalChanges?.join(". ") || "")
 				);
 			case "confirmation": {
 				const levelCompleteText = msg("Level Complete!");
-				const rewardText = this.config.reward?.name
-					? msg(str`You have obtained ${this.config.reward.name}.`)
+				const rewardText = config.reward?.name
+					? msg(str`You have obtained ${config.reward.name}.`)
 					: "";
 				return `${levelCompleteText} ${rewardText}`.trim();
 			}
@@ -181,23 +184,23 @@ export class LevelDialog extends LitElement {
 	 * @returns {string[]} Array of slide type identifiers
 	 */
 	#getSlides() {
+		const config = this.questController?.currentChapter;
+		if (!config) return ["confirmation"];
+
 		const sequence = [];
-		if (this.config.description) {
+		if (config.description) {
 			sequence.push("narrative");
 		}
-		if (this.config.codeSnippets?.start) {
+		if (config.codeSnippets?.start) {
 			sequence.push("code-start");
 		}
-		if (this.config.problemDesc) {
+		if (config.problemDesc) {
 			sequence.push("problem");
 		}
-		if (this.config.codeSnippets?.end) {
+		if (config.codeSnippets?.end) {
 			sequence.push("code-end");
 		}
-		if (
-			this.config.architecturalChanges &&
-			this.config.architecturalChanges.length > 0
-		) {
+		if (config.architecturalChanges && config.architecturalChanges.length > 0) {
 			sequence.push("analysis");
 		}
 		sequence.push("confirmation");
@@ -245,10 +248,11 @@ export class LevelDialog extends LitElement {
 	 * @returns {import("lit").TemplateResult|Iterable<unknown>} The rendered slide
 	 */
 	#renderCodeSlide(type) {
+		const config = this.questController?.currentChapter;
 		const snippets =
 			type === "start"
-				? this.config.codeSnippets?.start
-				: this.config.codeSnippets?.end;
+				? config?.codeSnippets?.start
+				: config?.codeSnippets?.end;
 		return map(snippets, (/** @type {CodeSnippet} */ snippet) =>
 			this.#renderCode(snippet, `code-${type}`),
 		);
@@ -259,12 +263,13 @@ export class LevelDialog extends LitElement {
 	 * @returns {import("lit").TemplateResult} The rendered slide
 	 */
 	#renderNarrativeSlide() {
+		const config = this.questController?.currentChapter;
 		return html`
 			<div class="slide-content-centered">
 				<div class="narrative-icon">
 					<wa-icon name="scroll" class="narrative-icon-inner"></wa-icon>
 				</div>
-				${this.config.description}
+				${config?.description}
 			</div>
 		`;
 	}
@@ -274,12 +279,13 @@ export class LevelDialog extends LitElement {
 	 * @returns {import("lit").TemplateResult} The rendered slide
 	 */
 	#renderProblemSlide() {
+		const config = this.questController?.currentChapter;
 		return html`
 			<div class="slide-content-centered">
 				<div class="narrative-icon problem-icon">
 					<wa-icon name="triangle-exclamation" class="problem-icon-inner"></wa-icon>
 				</div>
-				${this.config.problemDesc}
+				${config?.problemDesc}
 			</div>
 		`;
 	}
@@ -289,10 +295,11 @@ export class LevelDialog extends LitElement {
 	 * @returns {import("lit").TemplateResult} The rendered slide
 	 */
 	#renderAnalysisSlide() {
+		const config = this.questController?.currentChapter;
 		return html`
 			<h6 class="slide-title-analysis">${msg("Key Architectural Changes")}</h6>
 			<div class="analysis-list">
-				${this.config.architecturalChanges?.map(
+				${config?.architecturalChanges?.map(
 					(change) => html`
 						<div class="analysis-item">
 							<wa-icon name="arrow-right" class="analysis-arrow"></wa-icon>
@@ -309,24 +316,25 @@ export class LevelDialog extends LitElement {
 	 * @returns {import("lit").TemplateResult} The rendered slide
 	 */
 	#renderConfirmationSlide() {
+		const config = this.questController?.currentChapter;
 		return html`
 			<div class="slide-content-between">
 				<div></div>
 				<div class="quest-complete-container">
 					<h2 class="quest-complete-title">${msg("Level Complete!")}</h2>
 					${
-						this.config.reward
+						config?.reward
 							? html`
 							<div class="reward-preview">
 								<img 
-									src="${ifDefined(processImagePath(this.config.reward.image))}" 
-									srcset="${ifDefined(processImageSrcset(this.config.reward.image))}"
+									src="${ifDefined(processImagePath(config.reward.image))}" 
+									srcset="${ifDefined(processImageSrcset(config.reward.image))}"
 									sizes="(max-width: 600px) 200px, 400px"
-									alt="${this.config.reward.name}" 
+									alt="${config.reward.name}" 
 									class="reward-img" 
 								/>
 								<div class="reward-info">
-									<h6 class="reward-name">${this.config.reward.name}</h6>
+									<h6 class="reward-name">${config.reward.name}</h6>
 									<p class="reward-desc">${msg("Acquired! This item has been added to your inventory.")}</p>
 								</div>
 							</div>
@@ -379,10 +387,11 @@ export class LevelDialog extends LitElement {
 	render() {
 		const slides = this.#getSlides();
 		const currentSlideType = slides[this.slideIndex];
+		const config = this.questController?.currentChapter;
 
 		return html`
 			<wa-dialog 
-				label="${this.config.title}" 
+				label="${config?.title || ""}" 
 				open
 				style="--width: 80ch; --body-spacing: 0;"
 				@wa-request-close="${(/** @type {Event} */ e) => e.preventDefault()}"

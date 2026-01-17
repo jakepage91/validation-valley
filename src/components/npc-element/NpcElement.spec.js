@@ -54,7 +54,7 @@ describe("NpcElement", () => {
 		await element.updateComplete;
 
 		expect(element.isClose).toBe(true);
-		expect(element.hasCollectedItem).toBe(false);
+		expect(/** @type {any} */ (element).hasCollectedItem).toBe(false);
 
 		const tooltip = /** @type {any} */ (
 			element.shadowRoot?.querySelector("wa-tooltip")

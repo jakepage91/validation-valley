@@ -4,10 +4,6 @@ import { QuestView } from "../quest-view/QuestView.js";
 import "../quest-view/quest-view.js";
 import { LevelDialog } from "./LevelDialog.js"; // Mock child component
 
-// Mock WebAwesome components to avoid rendering issues in JSDOM
-vi.mock("@awesome.me/webawesome/dist/components/dialog/dialog.js", () => ({}));
-vi.mock("@awesome.me/webawesome/dist/components/button/button.js", () => ({}));
-vi.mock("@awesome.me/webawesome/dist/components/icon/icon.js", () => ({}));
 vi.mock("../game-viewport/game-viewport.js", () => ({})); // Mock child component
 
 import { ContextProvider } from "@lit/context";
@@ -20,6 +16,8 @@ vi.mock("../../core/event-bus.js", () => ({
 	},
 }));
 
+import { questControllerContext } from "../../contexts/quest-controller-context.js";
+import { sessionContext } from "../../contexts/session-context.js";
 import { heroStateContext } from "../../game/contexts/hero-context.js";
 import { questStateContext } from "../../game/contexts/quest-context.js";
 import { worldStateContext } from "../../game/contexts/world-context.js";
@@ -29,6 +27,8 @@ class TestContextWrapper extends LitElement {
 		heroState: { type: Object },
 		questState: { type: Object },
 		worldState: { type: Object },
+		questController: { type: Object },
+		sessionService: { type: Object },
 	};
 
 	constructor() {
@@ -36,6 +36,8 @@ class TestContextWrapper extends LitElement {
 		this.heroState = {};
 		this.questState = {};
 		this.worldState = {};
+		this.questController = {};
+		this.sessionService = {};
 
 		this._heroProvider = new ContextProvider(this, {
 			context: heroStateContext,
@@ -48,6 +50,14 @@ class TestContextWrapper extends LitElement {
 		this._worldProvider = new ContextProvider(this, {
 			context: worldStateContext,
 			initialValue: this.worldState,
+		});
+		this._qcProvider = new ContextProvider(this, {
+			context: questControllerContext,
+			initialValue: /** @type {any} */ (this.questController),
+		});
+		this._sessionProvider = new ContextProvider(this, {
+			context: sessionContext,
+			initialValue: this.sessionService,
 		});
 	}
 
@@ -70,6 +80,12 @@ class TestContextWrapper extends LitElement {
 		}
 		if (changedProperties.has("worldState")) {
 			this._worldProvider.setValue(this.worldState);
+		}
+		if (changedProperties.has("questController")) {
+			this._qcProvider.setValue(/** @type {any} */ (this.questController));
+		}
+		if (changedProperties.has("sessionService")) {
+			this._sessionProvider.setValue(this.sessionService);
 		}
 	}
 
@@ -107,8 +123,11 @@ describe("LevelDialog Interactions", () => {
 		};
 
 		element = new LevelDialog();
-		element.config = /** @type {any} */ (config);
-		container.appendChild(element);
+		const wrapper = new TestContextWrapper();
+		wrapper.questController = { currentChapter: config };
+		wrapper.appendChild(element);
+		container.appendChild(wrapper);
+		await wrapper.updateComplete;
 		await element.updateComplete;
 
 		// Initial state
@@ -135,9 +154,12 @@ describe("LevelDialog Interactions", () => {
 		};
 
 		element = new LevelDialog();
-		element.config = /** @type {any} */ (config);
+		const wrapper = new TestContextWrapper();
+		wrapper.questController = { currentChapter: config };
 		element.slideIndex = 1; // Start at second slide
-		container.appendChild(element);
+		wrapper.appendChild(element);
+		container.appendChild(wrapper);
+		await wrapper.updateComplete;
 		await element.updateComplete;
 
 		expect(element.slideIndex).toBe(1);
@@ -162,10 +184,13 @@ describe("LevelDialog Interactions", () => {
 		};
 
 		element = new LevelDialog();
-		element.config = /** @type {any} */ (config);
+		const wrapper = new TestContextWrapper();
+		wrapper.questController = { currentChapter: config };
 		// Narrative is index 0. Confirmation is index 1 (last).
 		element.slideIndex = 1;
-		container.appendChild(element);
+		wrapper.appendChild(element);
+		container.appendChild(wrapper);
+		await wrapper.updateComplete;
 		await element.updateComplete;
 
 		const completeSpy = vi.fn();
@@ -265,6 +290,7 @@ describe("QuestView Integration", () => {
 
 	it("should re-dispatch 'complete' event from level-dialog", async () => {
 		element = new QuestView();
+		// @ts-expect-error
 		element.gameState = /** @type {any} */ ({
 			config: {
 				zones: [
@@ -300,11 +326,11 @@ describe("QuestView Integration", () => {
 		});
 
 		// Mock app for handleLevelComplete
-		element.app = getMockApp();
+		/** @type {any} */ (element).app = getMockApp();
 
 		// Wrap in context provider
 		const wrapper = new TestContextWrapper();
-		wrapper.heroState = element.app.gameState; // Use mock gamestate as service shim since they share props roughly or we just need presence
+		wrapper.heroState = /** @type {any} */ (element).app.gameState; // Use mock gamestate as service shim since they share props roughly or we just need presence
 		wrapper.heroState = {
 			setPos: vi.fn(),
 			setIsEvolving: vi.fn(),
@@ -333,6 +359,13 @@ describe("QuestView Integration", () => {
 			showDialog: new Signal.State(true),
 			currentDialogText: new Signal.State(""),
 		};
+		wrapper.sessionService = {
+			currentQuest: new Signal.State({ id: "q1" }),
+		};
+		// Needed by LevelDialog inside QuestView
+		wrapper.questController = {
+			currentChapter: { description: "Test" },
+		};
 
 		wrapper.appendChild(element);
 		container.appendChild(wrapper);
@@ -360,6 +393,7 @@ describe("QuestView Integration", () => {
 
 	it("should re-dispatch 'close-dialog' event from level-dialog close", async () => {
 		element = new QuestView();
+		// @ts-expect-error
 		element.gameState = /** @type {any} */ ({
 			config: {
 				zones: [
@@ -394,17 +428,20 @@ describe("QuestView Integration", () => {
 			},
 		});
 		// Mock app for close-dialog
-		element.app = getMockApp();
+		/** @type {any} */ (element).app = getMockApp();
 
 		const wrapper = new TestContextWrapper();
 		wrapper.worldState = {
 			isPaused: new Signal.State(false),
 			showDialog: new Signal.State(true), // Dialog open
-			setShowDialog: vi.fn(),
 			setCurrentDialogText: vi.fn(),
 		};
 		wrapper.questState = { isQuestCompleted: new Signal.State(false) };
 		wrapper.heroState = {};
+		wrapper.sessionService = {
+			currentQuest: new Signal.State({ id: "q1" }),
+		};
+		wrapper.questController = { currentChapter: {} };
 
 		wrapper.appendChild(element);
 		container.appendChild(wrapper);
@@ -423,12 +460,13 @@ describe("QuestView Integration", () => {
 
 	it("should ignore global interaction when dialog is open", async () => {
 		element = new QuestView();
+		// @ts-expect-error
 		element.gameState = /** @type {any} */ ({
 			config: { zones: [] },
 			ui: { showDialog: true },
 			quest: { levelId: "1" },
 		});
-		element.app = getMockApp();
+		/** @type {any} */ (element).app = getMockApp();
 
 		const wrapper = new TestContextWrapper();
 		wrapper.worldState = {
@@ -439,6 +477,9 @@ describe("QuestView Integration", () => {
 		};
 		wrapper.questState = { isQuestCompleted: new Signal.State(false) };
 		wrapper.heroState = {};
+		wrapper.sessionService = {
+			currentQuest: new Signal.State({ id: "q1" }),
+		};
 
 		wrapper.appendChild(element);
 		container.appendChild(wrapper);
@@ -447,12 +488,13 @@ describe("QuestView Integration", () => {
 		const viewport = /** @type {any} */ (
 			element.shadowRoot?.querySelector("game-viewport")
 		);
-		// Mock handleInteract directly on viewport element level since it's mocked in JSDOM
+		// Mock handleInteract directly on viewport element level
 		viewport.handleInteract = vi.fn();
 		viewport.interaction = { handleInteract: vi.fn() };
 
 		viewport.handleInteract();
 
+		// @ts-expect-error
 		expect(element.app.commandBus.execute).not.toHaveBeenCalled();
 		expect(viewport.interaction.handleInteract).not.toHaveBeenCalled();
 	});

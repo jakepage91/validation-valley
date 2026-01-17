@@ -16,6 +16,7 @@ export class QuestStateService {
 		this.totalChapters = new Signal.State(1);
 		this.levelTitle = new Signal.State("");
 		this.questTitle = new Signal.State("");
+		this.currentChapterId = new Signal.State(/** @type {string|null} */ (null));
 	}
 
 	/**
@@ -64,6 +65,11 @@ export class QuestStateService {
 	/** @param {string} title */
 	setQuestTitle(title) {
 		this.questTitle.set(title || "");
+	}
+
+	/** @param {string|null} id */
+	setCurrentChapterId(id) {
+		this.currentChapterId.set(id);
 	}
 
 	resetChapterState() {

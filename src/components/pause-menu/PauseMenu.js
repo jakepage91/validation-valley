@@ -1,8 +1,13 @@
 import "@awesome.me/webawesome/dist/components/button/button.js";
 import "@awesome.me/webawesome/dist/components/dialog/dialog.js";
 import "@awesome.me/webawesome/dist/components/icon/icon.js";
+import { consume } from "@lit/context";
 import { msg, updateWhenLocaleChanges } from "@lit/localize";
+import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
+import { questLoaderContext } from "../../contexts/quest-loader-context.js";
+import { sessionContext } from "../../contexts/session-context.js";
+import { worldStateContext } from "../../game/contexts/world-context.js";
 import { pauseMenuStyles } from "./PauseMenu.styles.js";
 
 /**
@@ -12,37 +17,46 @@ import { pauseMenuStyles } from "./PauseMenu.styles.js";
  * @event restart - Dispatched when restarting the quest
  * @event quit - Dispatched when returning to hub
  */
-export class PauseMenu extends LitElement {
-	static properties = {
-		open: { type: Boolean },
-	};
+export class PauseMenu extends SignalWatcher(LitElement) {
+	/** @type {import('../../game/interfaces.js').IWorldStateService} */
+	@consume({ context: worldStateContext, subscribe: true })
+	accessor worldState = /** @type {any} */ (null);
+
+	/** @type {import('../../services/quest-loader-service.js').QuestLoaderService} */
+	@consume({ context: questLoaderContext, subscribe: true })
+	accessor questLoader = /** @type {any} */ (null);
+
+	/** @type {import('../../services/session-service.js').SessionService} */
+	@consume({ context: sessionContext, subscribe: true })
+	accessor sessionService = /** @type {any} */ (null);
 
 	static styles = pauseMenuStyles;
 
 	constructor() {
 		super();
 		updateWhenLocaleChanges(this);
-		this.open = false;
 	}
 
 	render() {
+		const open = this.worldState?.isPaused.get() || false;
+
 		return html`
 			<wa-dialog 
 				label="${msg("PAUSED")}" 
-				?open="${this.open}"
+				?open="${open}"
 				style="--width: 320px;"
 				@wa-request-close="${this.handleRequestClose}"
 			>
 				<div class="menu-buttons">
-					<wa-button variant="brand" class="menu-btn" @click="${this.dispatchResume}">
+					<wa-button variant="brand" class="menu-btn" @click="${this.resume}">
 						<wa-icon slot="start" name="play"></wa-icon> ${msg("RESUME GAME")}
 					</wa-button>
 					
-					<wa-button variant="neutral" class="menu-btn" @click="${this.dispatchRestart}">
+					<wa-button variant="neutral" class="menu-btn" @click="${this.restart}">
 						<wa-icon slot="start" name="rotate-left"></wa-icon> ${msg("RESTART QUEST")}
 					</wa-button>
 					
-					<wa-button variant="danger" class="menu-btn" @click="${this.dispatchQuit}">
+					<wa-button variant="danger" class="menu-btn" @click="${this.quit}">
 						<wa-icon slot="start" name="door-open"></wa-icon> ${msg("RETURN TO HUB")}
 					</wa-button>
 				</div>
@@ -60,25 +74,24 @@ export class PauseMenu extends LitElement {
 			event.detail.source === "overlay" ||
 			event.detail.source === "keyboard"
 		) {
-			this.dispatchResume();
+			this.resume();
 		}
 	}
 
-	dispatchResume() {
-		this.dispatchEvent(
-			new CustomEvent("resume", { bubbles: true, composed: true }),
-		);
+	resume() {
+		this.worldState?.setPaused(false);
 	}
 
-	dispatchRestart() {
-		this.dispatchEvent(
-			new CustomEvent("restart", { bubbles: true, composed: true }),
-		);
+	restart() {
+		const currentQuest = this.sessionService?.currentQuest.get();
+		this.worldState?.setPaused(false);
+		if (currentQuest) {
+			this.questLoader?.startQuest(currentQuest.id);
+		}
 	}
 
-	dispatchQuit() {
-		this.dispatchEvent(
-			new CustomEvent("quit", { bubbles: true, composed: true }),
-		);
+	quit() {
+		this.worldState?.setPaused(false);
+		this.questLoader?.returnToHub();
 	}
 }
