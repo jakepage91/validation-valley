@@ -37,16 +37,28 @@ async function analyzeCommit(hash) {
 
 	// Cleanup previous
 	if (fs.existsSync(TEMP_DIR)) {
-		exec(`git worktree remove -f ${TEMP_DIR}`);
+		try {
+			exec(`git worktree remove -f ${TEMP_DIR}`);
+		} catch {}
+		// Force remove directory if it still exists (e.g. not a valid worktree)
+		if (fs.existsSync(TEMP_DIR)) {
+			fs.rmSync(TEMP_DIR, { recursive: true, force: true });
+			// Prune git worktree metadata
+			exec("git worktree prune");
+		}
 	}
 
 	// Create worktree
-	exec(`git worktree add ${TEMP_DIR} ${hash}`);
+	const result = exec(`git worktree add ${TEMP_DIR} ${hash}`);
+	if (result === null && !fs.existsSync(TEMP_DIR)) {
+		console.error(`Failed to create worktree for ${hash}`);
+		return { hash };
+	}
 
 	const metrics = {
 		hash,
-		timestamp: exec(`git show -s --format=%ci ${hash}`).trim(),
-		message: exec(`git show -s --format=%s ${hash}`).trim(),
+		timestamp: exec(`git show -s --format=%ci ${hash}`)?.trim() || "",
+		message: exec(`git show -s --format=%s ${hash}`)?.trim() || "",
 		project: {},
 		bundle: {},
 		tests: {},
@@ -127,42 +139,68 @@ async function analyzeCommit(hash) {
 }
 
 async function main() {
-	const limit = parseInt(process.argv[2], 10) || 5;
-	const logRaw = exec(`git log --oneline --reverse -n ${limit}`);
+	const limit = parseInt(process.argv[2], 10);
+	const logRaw = exec("git log --format=%h --reverse");
 	if (!logRaw) {
 		console.error("Failed to get git log");
 		return;
 	}
-	const log = logRaw.trim().split("\n");
+	// All commits in the current branch
+	const allCommits = logRaw.trim().split("\n");
+	const allCommitsSet = new Set(allCommits);
+
 	const outputPath = path.join(ROOT, "bundle-history.jsonl");
 
-	// Load existing hashes to skip them
-	const existingHashes = new Set();
+	// Load existing history and Prune stale entries
+	let history = [];
 	if (fs.existsSync(outputPath)) {
 		const raw = fs.readFileSync(outputPath, "utf8");
-		raw
+		history = raw
 			.trim()
 			.split("\n")
 			.filter(Boolean)
-			.forEach((line) => {
+			.map((line) => {
 				try {
-					const item = JSON.parse(line);
-					if (item.hash) {
-						existingHashes.add(item.hash);
-					}
+					return JSON.parse(line);
 				} catch {
-					// Ignore malformed lines
+					return null;
 				}
-			});
+			})
+			.filter((item) => item && item.hash);
 	}
 
-	for (const line of log) {
-		const hash = line.split(" ")[0];
-		if (existingHashes.has(hash)) {
-			console.log(`Skipping already analyzed commit: ${hash}`);
-			continue;
-		}
+	// Filter out commits that no longer exist in the branch
+	const validHistory = history.filter((item) => allCommitsSet.has(item.hash));
 
+	// Determine if we need to rewrite the file (pruning occurred)
+	if (validHistory.length !== history.length) {
+		console.log(
+			`Pruning ${history.length - validHistory.length} stale entries...`,
+		);
+		const ndjson = validHistory.map((item) => JSON.stringify(item)).join("\n");
+		fs.writeFileSync(outputPath, ndjson ? `${ndjson}\n` : "");
+	} else {
+		console.log("No stale entries found.");
+	}
+
+	// Identify missing commits to analyze
+	const analyzedHashes = new Set(validHistory.map((item) => item.hash));
+	const missingCommits = allCommits.filter((hash) => !analyzedHashes.has(hash));
+
+	if (missingCommits.length === 0) {
+		console.log("History is up to date.");
+		return;
+	}
+
+	console.log(`Found ${missingCommits.length} missing commits.`);
+
+	// Apply limit if provided
+	const targets = !Number.isNaN(limit)
+		? missingCommits.slice(0, limit)
+		: missingCommits;
+	console.log(`Analyzing ${targets.length} commits...`);
+
+	for (const hash of targets) {
 		const metrics = await analyzeCommit(hash);
 		if (metrics?.hash) {
 			fs.appendFileSync(outputPath, `${JSON.stringify(metrics)}\n`);

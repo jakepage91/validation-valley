@@ -38,3 +38,5 @@ stats.html
 test-results/
 playwright-report/
 test-results.json
+bundle-history.jsonl
+
