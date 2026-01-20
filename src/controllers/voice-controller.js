@@ -53,7 +53,7 @@ import {
  * @property {() => void} [onMoveToNpc] - Move to NPC callback
  * @property {() => void} [onMoveToExit] - Move to exit callback
  * @property {() => string} [onGetDialogText] - Get current dialog text
- * @property {() => {isDialogOpen: boolean, isRewardCollected: boolean}} [onGetContext] - Get game context
+ * @property {() => {isDialogOpen: boolean, isRewardCollected: boolean, npcName?: string|null, exitZoneName?: string|null, chapterTitle?: string|null}} [onGetContext] - Get game context
  * @property {(action: string, value: unknown) => void} [onDebugAction] - Debug action callback
  * @property {() => boolean} [isEnabled] - Check if voice control is enabled
  * @property {string} [language] - Language code (e.g., 'en-US', 'es-ES')
@@ -384,9 +384,25 @@ export class VoiceController {
 			const context = this.options.onGetContext?.() || {
 				isDialogOpen: false,
 				isRewardCollected: false,
+				npcName: null,
+				exitZoneName: null,
+				chapterTitle: null,
 			};
+
 			const targetLang = this.#getLanguage();
-			const contextStr = `[Context: Dialog=${context.isDialogOpen ? "Open" : "Closed"}, Reward=${context.isRewardCollected ? "Collected" : "Not Collected"}]`;
+
+			const contextParts = [
+				`Dialog=${context.isDialogOpen ? "Open" : "Closed"}`,
+				`Reward=${context.isRewardCollected ? "Collected" : "Not Collected"}`,
+			];
+
+			if (context.chapterTitle)
+				contextParts.push(`CurrentLocation="${context.chapterTitle}"`);
+			if (context.npcName) contextParts.push(`NearbyNPC="${context.npcName}"`);
+			if (context.exitZoneName)
+				contextParts.push(`Exit="${context.exitZoneName}"`);
+
+			const contextStr = `[Context: ${contextParts.join(", ")}]`;
 			const promptWithContext = `${contextStr} User command: "${command}". IMPORTANT: The 'lang' field in JSON MUST be '${targetLang}' and 'feedback' text MUST be in '${targetLang}'.`;
 
 			this.logger.debug(`🤖 Prompt: ${promptWithContext}`);

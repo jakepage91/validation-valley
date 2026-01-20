@@ -79,10 +79,16 @@ export function setupVoice(
 			onGetDialogText: () => {
 				return worldState.currentDialogText.get() || "";
 			},
-			onGetContext: () => ({
-				isDialogOpen: worldState.showDialog.get(),
-				isRewardCollected: questState.isRewardCollected.get(),
-			}),
+			onGetContext: () => {
+				const chapter = questController.currentChapter;
+				return {
+					isDialogOpen: worldState.showDialog.get(),
+					isRewardCollected: questState.isRewardCollected.get(),
+					npcName: chapter?.npc?.name || null,
+					exitZoneName: chapter?.exitZone ? "exit" : null, // Could be more specific if exitZone had a name
+					chapterTitle: chapter?.title || null,
+				};
+			},
 			onMoveToNpc: () => {
 				const currentChapter = questController.currentChapter;
 				const npcPos = currentChapter?.npc?.position;
