@@ -256,6 +256,10 @@ Every component must follow this strict structure in its own directory:
     test(game-state): add signal tests
     ```
 
+*   **Agent Protocol**:
+    *   **No Unvalidated Commits**: The AI Agent MUST NOT commit or push changes without explicit user validation or prior approval.
+    *   **Validation First**: Always verify changes (tests, build, manual check) AND ask the user for confirmation before finalizing a task with a commit.
+
 ---
 
 ## 8. Performance
