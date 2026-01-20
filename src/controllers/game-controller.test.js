@@ -43,11 +43,6 @@ describe("GameController", () => {
 		};
 
 		context = {
-			eventBus: {
-				on: vi.fn(),
-				off: vi.fn(),
-				emit: vi.fn(),
-			},
 			heroState,
 			questState,
 			worldState,

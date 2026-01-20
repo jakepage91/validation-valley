@@ -10,12 +10,6 @@ import { ContextProvider } from "@lit/context";
 import { Signal } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
 
-vi.mock("../../core/event-bus.js", () => ({
-	GameEvents: {
-		SLIDE_CHANGED: "slide-changed",
-	},
-}));
-
 import { questControllerContext } from "../../contexts/quest-controller-context.js";
 import { sessionContext } from "../../contexts/session-context.js";
 import { heroStateContext } from "../../game/contexts/hero-context.js";
@@ -245,8 +239,7 @@ function getMockApp(overrides = {}) {
 		},
 		gameService: {},
 		addController: vi.fn(),
-		eventBus: { on: vi.fn(), emit: vi.fn(), off: vi.fn() },
-		commandBus: { execute: vi.fn() },
+
 		sessionManager: {},
 		progressService: { updateChapterState: vi.fn() },
 		serviceController: {
@@ -494,8 +487,6 @@ describe("QuestView Integration", () => {
 
 		viewport.handleInteract();
 
-		// @ts-expect-error
-		expect(element.app.commandBus.execute).not.toHaveBeenCalled();
 		expect(viewport.interaction.handleInteract).not.toHaveBeenCalled();
 	});
 });

@@ -18,7 +18,7 @@ describe("setupVoice", () => {
 			aiService: {},
 			voiceSynthesisService: {},
 			// commandBus removed
-			eventBus: { emit: vi.fn() },
+
 			gameState: { getState: () => ({}) },
 			questController: {},
 			worldState: {

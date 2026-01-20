@@ -158,9 +158,6 @@ export class QuestController {
 			// Update state service
 			this._updateState();
 
-			// Emit global event
-			// this.#emitQuestEvents({ started: true });
-
 			// Log memory usage if available
 			if (
 				window.performance &&
@@ -225,9 +222,6 @@ export class QuestController {
 		// Update state service
 		this._updateState();
 
-		// IMPORTANT: Do NOT emit 'started' here as this might be part of specific chapter load
-		// this.#emitQuestEvents({ loaded: true }, false);
-
 		this.host.requestUpdate();
 		return true;
 	}
@@ -252,9 +246,6 @@ export class QuestController {
 
 		// Update state service
 		this._updateState();
-
-		// Emit global event
-		// this.#emitQuestEvents({ resumed: true });
 
 		this.host.requestUpdate();
 	}
@@ -286,9 +277,6 @@ export class QuestController {
 
 		// Update state service
 		this._updateState();
-
-		// Emit global event
-		// this.#emitQuestEvents({ continued: true });
 
 		this.host.requestUpdate();
 	}
@@ -337,8 +325,6 @@ export class QuestController {
 		// Update state service
 		this._updateState();
 
-		// Emit global event - NO START EMISSION, ONLY CHAPTER CHANGE
-		// this.#emitQuestEvents({ jumped: true }, false);
 		this.host.requestUpdate();
 		return true;
 	}
@@ -455,15 +441,6 @@ export class QuestController {
 		// Update state service
 		this._updateState();
 
-		// Emit global event
-		/*
-		this.eventBus.emit(GameEvents.CHAPTER_CHANGED, {
-			chapter: (this.currentChapter),
-			index: this.currentChapterIndex,
-			total: this.currentQuest?.chapterIds?.length || 0,
-		});
-		*/
-
 		// Preload next chapter assets
 		if (this.preloaderService) {
 			const nextChapterData = this.getNextChapterData();
@@ -490,8 +467,6 @@ export class QuestController {
 		this.progressService.completeQuest(this.currentQuest.id);
 
 		// Notify host - the host is responsible for calling returnToHub after any animations/messages
-		// Emit global event - consumers responsible for UI
-		// this.eventBus.emit(GameEvents.QUEST_COMPLETE, { quest: this.currentQuest });
 	}
 
 	/**
@@ -509,8 +484,7 @@ export class QuestController {
 		);
 
 		// Notify host
-		// Emit global event
-		// this.eventBus.emit(GameEvents.RETURN_TO_HUB);
+
 		this.host.requestUpdate();
 	}
 
@@ -644,17 +618,6 @@ export class QuestController {
 		const chapterIds = this.currentQuest.chapterIds;
 		return chapterIds[chapterIds.length - 1];
 	}
-
-	/**
-	 * Emits quest and chapter events
-	 * @param {Object} additionalData - Additional data to include in events
-	 * @param {boolean} [emitStart=true] - Whether to emit the 'quest-started' event
-	 */
-	/*
-	#emitQuestEvents(additionalData = {}, emitStart = true) {
-		// EventBus removed
-	}
-	*/
 
 	/**
 	 * Finds the first uncompleted chapter in a quest

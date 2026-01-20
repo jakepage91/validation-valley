@@ -47,7 +47,7 @@ describe("Reactive Flow Integration", () => {
 				returnToHub: () => {},
 				currentQuest: { id: "quest-1", name: "Test Quest" },
 			},
-			eventBus: { on: vi.fn(), emit: vi.fn(), off: vi.fn() },
+
 			logger: {
 				info: () => {},
 				error: () => {},

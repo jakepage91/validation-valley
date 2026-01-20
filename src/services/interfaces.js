@@ -69,17 +69,6 @@
  */
 
 /**
- * @typedef {Object} IEventBus
- * @property {(event: string, callback: Function) => () => void} on - Subscribe to event
- * @property {(event: string, callback: Function) => () => void} once - Subscribe once
- * @property {(event: string, callback: Function) => void} off - Unsubscribe
- * @property {(event: string, data?: any) => void} emit - Emit event
- * @property {(event?: string) => void} clear - Clear listeners
- * @property {(event: string) => number} listenerCount - Get listener count
- * @property {() => string[]} eventNames - Get all event names
- */
-
-/**
  * @typedef {Object} IGameConfiguration
  * @property {string} env - Current environment
  * @property {AnimationConfig} animation - Animation settings
