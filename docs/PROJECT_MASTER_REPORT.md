@@ -65,13 +65,14 @@ This is the main entry point and "God Component" that orchestrates the applicati
     *   Applies global themes (`applyTheme`).
 
 ### 3.2 The Game Loop & Rendering
-*   **GameView** (`src/components/game-view.js`): The primary canvas/renderer for the levels. It receives a mapped `gameState` object.
-*   **GameStateMapper** (`src/utils/game-state-mapper.js`): Transforms raw service state into a format suitable for the `GameView`, ensuring the view receives only what it needs.
+*   **GameView** (`src/components/game-view.js`): The primary canvas/renderer for the levels.
+*   **GameViewport** (`src/components/game-viewport.js`): The active game engine.
 
 ### 3.3 State Management
 The project uses a custom reactive system:
 *   **Services** extend `Observable`: Components subscribe to them to auto-update.
-*   `SessionManager` acts as the aggregate root for the current user session, coordinating between `GameStateService` (current level state) and `ProgressService` (long-term user progress).
+*   **SessionService**: Manages the current user session and active quest pointer.
+*   **QuestLoaderService**: Orchestrates the complex logic of loading quests and chapters.
 
 ### 3.4 Routing
 A custom `Router` (`src/utils/router.js`) handles client-side navigation, primarily switching between the "Hub" view and specific "Quest" views.

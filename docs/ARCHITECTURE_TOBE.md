@@ -175,9 +175,9 @@ new ContextConsumer(this, { context: worldStateContext, ... });
 2. ✅ **Define Session**: `SessionService` created. `QuestLoaderService` handles orchestration.
 3. ✅ **Standardize Classes**: `QuestRegistryService`, `AIService` implemented as injectable classes.
 4. ✅ **Wiring**: `LegacysEndApp` fully converted to Context Provider root.
-5. 🔄 **EventBus Refactoring**: `EventBus` still exists. Plan to refactor `QuestController` signals or direct service calls to remove it.
-6. 🔄 **Quest Registry**: Ensure `QuestRegistryService` is fully utilized across the app and legacy data access is minimized.
-7. 🗑️ **Cleanup**: Remove properly deprecated files/code (e.g. any remaining `CommandBus` references if any).
+7. ✅ **EventBus Refactoring**: `EventBus` removed. Components use Signals and direct service calls.
+8. ✅ **Quest Registry**: `QuestRegistryService` fully utilized for data access.
+9. ✅ **Cleanup**: Deprecated files (`GameSessionManager`, `GameService`, `CommandBus`) removed.
 
 ## Service Interfaces (Draft)
 
@@ -301,7 +301,7 @@ This detailed review ensures every service has a single responsibility and corre
 | **LocalizationService** | Global | i18n & Locale State | Well designed | ✅ **Keep**: Provided globally. |
 | **AIService** | Global | Chrome AI Wrapper | Singleton | ✅ **Refactored**: Injected via Context. |
 | **VoiceSynthesisService** | Global | Speech API Wrapper | Singleton | ✅ **Refactored**: Injected via Context. |
-| **EventBus** | Global | Global Events | Redundant | ⚠️ **Pending**: Still heavily used. Target for future refactoring. |
+| **EventBus** | Global | Global Events | Redundant | ✅ **Removed**: Replaced by direct calls and signals. |
 | **CommandBus** | Global | Command Execution | Complexity Glue | ✅ **Removed**: Controllers call services directly. |
 | **UserServices** | Global | API Client | Data Fetcher | ✅ **Renamed**: `UserApiClient` implemented. |
 | **PreloaderService** | Global | Asset Preloading | Utility | ✅ **Keep**: Remains a utility. |

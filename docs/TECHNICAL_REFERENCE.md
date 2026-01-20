@@ -50,7 +50,7 @@ In standard Lit applications, state is usually managed within components using r
 
 **Reasoning**:
 **Meaning**:
-To avoid "Prop Drilling" (passing data through many layers of components), we use Lit Context to provide a standardized `IGameContext` object. This interface contains all available Services, Controllers, and the Event Bus, allowing for clean dependency injection into any component or subsystem.
+To avoid "Prop Drilling" (passing data through many layers of components), we use Lit Context to provide a standardized `IGameContext` object. This interface contains all available Services and Controllers, allowing for clean dependency injection into any component or subsystem.
 
 ### 3. Service-Controller-Component Triad
 **Pattern**: Strict separation of concerns.
@@ -73,7 +73,6 @@ When a Controller needs to use one or more services:
 **Reasoning**:
 Lit Controllers are powerful but are designed to be **bound to a specific host component's lifecycle**.
 *   **Lifecycle Limitations**: A Controller is instantiated by a component (`new Controller(this)`). If we moved the `GameState` logic entirely into a Controller, every component would have its own isolated instance of the state, or we would still need a singleton backing store.
-*   **Non-UI Logic**: Our architecture has `Managers` (like `GameSessionManager`) that need to manipulate state but are **pure JavaScript classes**, not Lit Components. They cannot "host" a Lit Controller.
 *   **Architecture Choice**: We use **Services** for *singletons* that exist independently of the UI (Data Layer), and **Controllers** for logic that *must* interact with the Component Lifecycle (Inputs, Timers, View Bindings).
 
 ### 5. Historical Context: Migration from the Observable Pattern
@@ -86,12 +85,12 @@ The project originally used a custom `Observable` implementation for coarse-grai
 *   **Maintainability**: Removed manual subscription management. Components now use the `SignalWatcher` mixin.
 *   **Boilerplate Reduction**: Eliminated the need for `GameStateMapper` and manual `syncState` methods in the root component.
 
-### 6. Event System Simplification
-**Question**: Why were global events (`DIALOG_NEXT`, `LEVEL_COMPLETED`) replaced with direct method calls?
+### 6. Event System Removal
+**Question**: Why was the global `EventBus` removed?
 
 **Reasoning**:
-*   **Traceability**: Direct method calls (e.g., `gameView.nextDialogSlide()`) are easier to trace in IDEs than loose event strings.
-*   **Decoupling**: Reduces reliance on the central `EventBus` for local component interactions (like a View talking to its Controller).
+*   **Traceability**: Direct method calls (e.g., `gameView.nextDialogSlide()`) and Signals are easier to trace in IDEs than loose event strings.
+*   **Decoupling**: Eliminates the "Implicit Dependency" on a central bus. Components declare exactly what they need (`WorldStateService`, `QuestLoaderService`).
 *   **Simplicity**: specialized logic (like level completion) is now handled via explicit methods on `GameController` rather than generic event listeners.
 
 ---
@@ -158,39 +157,20 @@ Services are pure logic classes that manage specific domains of the application 
 ---
 
 ## ⚙️ Managers (`src/managers/`)
+(Deprecated & Removed. Logic moved to Services.)
 
-Managers are high-level coordinators that orchestrate logic between multiple services and controllers.
+### `SessionService` (formerly `GameSessionManager`)
+**Purpose**: Manages the user session.
+**Location**: `src/services/session-service.js`
 
-### `GameSessionManager`
-**Purpose**: The central "brain" of the running game session. It bridges the gap between the `QuestController` (logic) and the `GameStateService` (data). Uses strict DI for all dependencies.
-
-*   **Responsibilities**:
-    *   Orchestrates Quest Start/End lifecycles.
-    *   Handles navigation requests (Route -> Quest).
-    *   Manages "Auto-Move" logic (clicking to move).
-    *   Coordinates level transitions (evolutions).
-    *   **Note**: No longer automatically sets `hotSwitchState` based on `serviceType`. The state remains `null` unless explicitly set by zone interactions.
-*   **Key Methods**:
-    *   `startQuest(questId)`: Initializes a quest.
-    *   `returnToHub()`: Cleans up quest state and redirects to Hub.
-    *   `handleMove(dx, dy)`: Processes movement inputs and collision.
-    *   `triggerLevelTransition()`: Plays the "Evolution" animation and advances the chapter.
+### `QuestLoaderService`
+**Purpose**: Orchestrates Quest loading and transitions.
+**Location**: `src/services/quest-loader-service.js`
 
 ---
 
 ## ⚡ Commands (`src/commands/`)
-
-The Command Pattern is used to encapsulate all state-changing game actions. This enables consistent execution, undo/redo capabilities (future), and safe macro recording.
-
-### `CommandBus`
-**Purpose**: Central executor for all commands. Handles logging (via injected logger) and execution.
-
-### Key Commands
-*   `MoveHeroCommand`: Handles movement logic and side-effect triggers (checking zones/exits).
-*   `InteractCommand`: Triggers interactions with NPCs.
-*   `AdvanceChapterCommand`: Orchestrates the transition to the next chapter.
-*   `CheckZonesCommand`: Delegates zone checking to the `GameZoneController`.
-*   `PauseGameCommand`: Toggles the pause state.
+(Deprecated & Removed. Controllers call Services directly.)
 
 ---
 
@@ -319,25 +299,19 @@ Controllers are specialized classes (often using Lit's Reactive Controller patte
 **Browser Support**: Chrome/Edge (Web Speech API required).
 
 ### `GameController` (formerly `DebugController`)
-**Purpose**: The primary interface for game operations. It receives commands from the `VoiceController` or console and delegates them to the `GameService`.
+**Purpose**: The primary interface for game operations. It receives commands from the `VoiceController` or console and delegates them to relevant services (e.g., `SessionService`, `QuestLoaderService`).
 **Type**: Lit Reactive Controller.
 **Inputs**:
 *   `?debug` query parameter in URL (enables debug mode).
-*   `GameControllerOptions`: Injected `GameService` and `LoggerService`.
+*   `GameControllerOptions`: Injected `SessionService`, `QuestLoaderService`, and `LoggerService`.
 **Outputs**:
 *   Console logs for state inspection.
 *   `handleLevelCompleted()`: Public method called by GameView when a level is finished.
 *   `handleExitZoneReached()`: Public method called by CollisionController when the exit is reached.
-*   **Note**: `window.game` has been removed. Use `app.gameService` in the console for debugging if needed.
+*   **Note**: `window.game` has been removed.
 
 ### `GameService`
-**Purpose**: Centralized service for all game operations (teleporting, quest management, state retrieval).
-**Type**: Pure Logic Class.
-**Usage**: Injected into `GameController`, `VoiceController`, and available via `app.gameService`.
-**Key Methods**:
-*   `teleport(x, y)`
-*   `setLevel(chapterId)`
-*   `excludeToConsole` (Internal flag)
+(Deprecated & Removed. Logic distributed to specialized services.)
 
 ---
 
