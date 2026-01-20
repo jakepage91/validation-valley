@@ -166,7 +166,7 @@ async function main() {
 					return null;
 				}
 			})
-			.filter((item) => item && item.hash);
+			.filter((item) => item?.hash);
 	}
 
 	// Filter out commits that no longer exist in the branch

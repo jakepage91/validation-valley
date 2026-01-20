@@ -16,7 +16,7 @@ import {
 import { setupRoutes } from "../setup/routes.js";
 import { setupCharacterContexts } from "../setup/setup-character-contexts.js";
 import { setupCollision } from "../setup/setup-collision.js";
-import { setupGameController, setupGameService } from "../setup/setup-game.js";
+import { setupGameController } from "../setup/setup-game.js";
 import { setupInteraction } from "../setup/setup-interaction.js";
 import { setupQuest } from "../setup/setup-quest.js";
 import { setupService } from "../setup/setup-service.js";
@@ -67,7 +67,7 @@ import { Router } from "../utils/router.js";
  * @property {import('../game/services/hero-state-service.js').HeroStateService} heroState
  * @property {import('../game/services/quest-state-service.js').QuestStateService} questState
  * @property {import('../game/services/world-state-service.js').WorldStateService} worldState
- * @property {any} [gameService]
+
  */
 
 /**
@@ -215,17 +215,6 @@ export class GameBootstrapper {
 			router,
 		});
 
-		// 3. Setup GameService (Visual Facade)
-		const gameService = setupGameService({
-			questLoader,
-			sessionService,
-			questState,
-			heroState,
-			questController,
-			progressService,
-			themeService,
-		});
-
 		// 4. Setup Other Controllers
 		setupGameController(/** @type {any} */ (host), {
 			logger,
@@ -300,7 +289,6 @@ export class GameBootstrapper {
 			heroState,
 			questState,
 			worldState,
-			gameService,
 		};
 	}
 }

@@ -12,7 +12,7 @@
  * @property {import('../game/interfaces.js').IWorldStateService} [worldState]
  * @property {import('../controllers/quest-controller.js').QuestController} [questController]
  * @property {import('../services/quest-loader-service.js').QuestLoaderService} [questLoader]
- * @property {any} [gameService]
+
  */
 
 /**
