@@ -18,7 +18,7 @@ import { LocalStorageAdapter } from "./storage-service.js";
  * @property {string[]} unlockedQuests - List of IDs of available quests
  * @property {string[]} achievements - List of earned achievement IDs
  * @property {ProgressStats} stats - Aggregate statistics
- * @property {Object.<string, Object>} chapterStates - Persisted state per chapter (e.g. collected items)
+ * @property {Record<string, Record<string, import('./interfaces.js').JsonValue>>} chapterStates - Persisted state per chapter (e.g. collected items)
  */
 
 /**
@@ -294,7 +294,7 @@ export class ProgressService {
 
 	/**
 	 * Set the currently active quest and chapter.
-	 * @param {string} questId
+	 * @param {string|null} questId
 	 * @param {string|null} [chapterId]
 	 */
 	setCurrentQuest(questId, chapterId = null) {
@@ -359,7 +359,7 @@ export class ProgressService {
 			this.isQuestCompleted(q.id),
 		).length;
 		const playableQuests = allQuests.filter(
-			(q) => q.status !== "coming-soon",
+			(q) => q.status !== "coming_soon",
 		).length;
 
 		if (playableQuests === 0) return 0;
@@ -371,8 +371,9 @@ export class ProgressService {
 	 * @returns {ProgressState}
 	 */
 	/**
-	 * @param {keyof ProgressState} key
-	 * @returns {any}
+	 * @template {keyof ProgressState} K
+	 * @param {K} key
+	 * @returns {ProgressState[K]}
 	 */
 	getProperty(key) {
 		return this.progress[key];
@@ -389,9 +390,9 @@ export class ProgressService {
 	/**
 	 * Update state for a specific chapter (e.g. collected items).
 	 * @param {string} chapterId
-	 * @param {Object} state
+	 * @param {import('./interfaces.js').JsonValue} state
 	 */
-	updateChapterState(chapterId, state) {
+	setChapterState(chapterId, state) {
 		if (!this.progress.chapterStates) {
 			this.progress.chapterStates = {};
 		}
@@ -400,7 +401,7 @@ export class ProgressService {
 		}
 		this.progress.chapterStates[chapterId] = {
 			...this.progress.chapterStates[chapterId],
-			...state,
+			.../** @type {Object} */ (state),
 		};
 		this.saveProgress();
 	}
@@ -408,9 +409,20 @@ export class ProgressService {
 	/**
 	 * Get state for a specific chapter.
 	 * @param {string} chapterId
-	 * @returns {Object}
+	 * @returns {import('./interfaces.js').JsonValue}
 	 */
 	getChapterState(chapterId) {
 		return this.progress.chapterStates?.[chapterId] || {};
+	}
+
+	/**
+	 * Unlock a specific quest.
+	 * @param {string} questId
+	 */
+	unlockQuest(questId) {
+		if (!this.progress.unlockedQuests.includes(questId)) {
+			this.progress.unlockedQuests.push(questId);
+			this.saveProgress();
+		}
 	}
 }

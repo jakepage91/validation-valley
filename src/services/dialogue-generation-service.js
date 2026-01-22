@@ -3,8 +3,8 @@
  */
 export class DialogueGenerationService {
 	/**
-	 * @param {import('./ai-service.js').AIService} aiService
-	 * @param {import('./logger-service.js').LoggerService} logger
+	 * @param {import('./interfaces.js').IAIService} aiService
+	 * @param {import('./interfaces.js').ILoggerService} logger
 	 */
 	constructor(aiService, logger) {
 		this.aiService = aiService;

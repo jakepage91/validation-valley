@@ -25,10 +25,11 @@ export class VictoryScreen extends SignalWatcher(LitElement) {
 	@consume({ context: sessionContext, subscribe: true })
 	accessor sessionService = /** @type {any} */ (null);
 
-	/** @type {import('../../services/quest-loader-service.js').QuestLoaderService} */
+	/** @type {import('../../services/interfaces.js').IQuestLoaderService} */
 	@consume({ context: questLoaderContext, subscribe: true })
 	accessor questLoader = /** @type {any} */ (null);
 
+	/** @override */
 	static styles = victoryScreenStyles;
 
 	constructor() {
@@ -36,6 +37,7 @@ export class VictoryScreen extends SignalWatcher(LitElement) {
 		updateWhenLocaleChanges(this);
 	}
 
+	/** @override */
 	render() {
 		const quest = this.sessionService?.currentQuest.get();
 		if (!quest) {

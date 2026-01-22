@@ -19,8 +19,8 @@
  * @property {import('@lit/context').ContextProvider<any>} [characterProvider] - Combined provider if used
  * @property {import('../game/interfaces.js').IHeroStateService} heroState
  * @property {import('../game/interfaces.js').IQuestStateService} questState
- * @property {import('../controllers/quest-controller.js').QuestController} questController
- * @property {import('../services/theme-service.js').ThemeService} themeService
+ * @property {import('../services/interfaces.js').IQuestController} questController
+ * @property {import('../services/interfaces.js').IThemeService} themeService
  */
 
 /**

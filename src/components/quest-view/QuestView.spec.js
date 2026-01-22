@@ -17,6 +17,7 @@ vi.mock("../pause-menu/pause-menu.js", () => ({}));
 vi.mock("../victory-screen/victory-screen.js", () => ({}));
 
 class TestContextWrapper extends LitElement {
+	/** @override */
 	static properties = {
 		heroState: { type: Object },
 		questState: { type: Object },
@@ -39,6 +40,7 @@ class TestContextWrapper extends LitElement {
 		this.sessionService = undefined;
 	}
 
+	/** @override */
 	connectedCallback() {
 		super.connectedCallback();
 		new ContextProvider(this, {
@@ -63,6 +65,8 @@ class TestContextWrapper extends LitElement {
 		});
 	}
 
+	/** @override */
+	/** @override */
 	render() {
 		return html`<slot></slot>`;
 	}

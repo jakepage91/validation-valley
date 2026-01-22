@@ -73,6 +73,7 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 	powerProvider = /** @type {any} */ (null);
 	masteryProvider = /** @type {any} */ (null);
 
+	/** @override */
 	static properties = {
 		chapterId: { type: String },
 		hasSeenIntro: { type: Boolean },
@@ -180,11 +181,13 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 		this.requestUpdate();
 	}
 
+	/** @override */
 	connectedCallback() {
 		super.connectedCallback();
 		this.applyTheme();
 	}
 
+	/** @override */
 	firstUpdated() {
 		setTimeout(() => {
 			const introDialog = /** @type {DialogElement} */ (
@@ -211,6 +214,7 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 
 	/**
 	 * @param {import("lit").PropertyValues} _changedProperties
+	 * @override
 	 */
 	willUpdate(_changedProperties) {
 		super.willUpdate(_changedProperties);
@@ -235,6 +239,7 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 		return this.sessionService?.isInHub.get() || false;
 	}
 
+	/** @override */
 	render() {
 		if (!this.sessionService) {
 			return html`
@@ -267,22 +272,31 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 		`;
 	}
 
-	getEnrichedQuests() {
+	/**
+	 * Gets all quests with their current progress and status
+	 * @returns {import('../../content/quests/quest-types.js').Quest[]}
+	 */
+	getQuests() {
 		if (!this.questController) return [];
 		const quests = this.questController.getAvailableQuests();
-		return quests.map((/** @type {any} */ quest) => ({
-			...quest,
-			progress: this.questController.getQuestProgress(quest.id),
-			isCompleted: this.questController.isQuestCompleted(quest.id),
-			isLocked: !this.progressService.isQuestAvailable(quest.id),
-			inProgress: this.progressService.getProgress().currentQuest === quest.id,
-		}));
+		return quests.map(
+			(
+				/** @type {import('../../content/quests/quest-types.js').Quest} */ quest,
+			) => ({
+				...quest,
+				progress: this.questController.getQuestProgress(quest.id),
+				isCompleted: this.questController.isQuestCompleted(quest.id),
+				isLocked: !this.progressService.isQuestAvailable(quest.id),
+				inProgress:
+					this.progressService.getProgress().currentQuest === quest.id,
+			}),
+		);
 	}
 
 	renderHub() {
 		return html`
 			<quest-hub
-				.quests="${this.getEnrichedQuests()}"
+				.quests="${this.getQuests()}"
 				.comingSoonQuests="${this.questController?.getComingSoonQuests() || []}"
 				.localizationService="${this.localizationService}"
 				@quest-select="${(/** @type {CustomEvent} */ e) => this.questLoader?.startQuest(e.detail.questId)}"
@@ -315,5 +329,6 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 		`;
 	}
 
+	/** @override */
 	static styles = legacysEndAppStyles;
 }

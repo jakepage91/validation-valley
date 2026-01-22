@@ -14,12 +14,14 @@ import { rewardElementStyles } from "./RewardElement.styles.js";
  * @attribute image
  */
 export class RewardElement extends LitElement {
+	/** @override */
 	static properties = {
 		image: { type: String },
 		x: { type: Number },
 		y: { type: Number },
 	};
 
+	/** @override */
 	static styles = rewardElementStyles;
 
 	constructor() {
@@ -29,6 +31,7 @@ export class RewardElement extends LitElement {
 		this.y = 0;
 	}
 
+	/** @override */
 	render() {
 		// Apply position to host
 		this.style.left = `${this.x}%`;

@@ -46,11 +46,10 @@ In standard Lit applications, state is usually managed within components using r
 *   **Multiple Consumers**: A single signal update (e.g., `hasCollectedItem.set(true)`) can simultaneously update the HUD, trigger a sound effect manager, and notify the Quest Controller, without these systems knowing about each other.
 
 ### 2. Dependency Injection (DI) via Context
-**Pattern**: Usage of `@lit/context` and a simple Services Object.
+**Pattern**: Usage of `@lit/context` and standardized Interfaces.
 
 **Reasoning**:
-**Meaning**:
-To avoid "Prop Drilling" (passing data through many layers of components), we use Lit Context to provide a standardized `IGameContext` object. This interface contains all available Services and Controllers, allowing for clean dependency injection into any component or subsystem.
+To avoid "Prop Drilling" (passing data through many layers of components), we use Lit Context to provide service instances. However, components should NOT depend on concrete classes. They MUST depend on **Interfaces** defined in `src/services/interfaces.js`. This allows for easy mocking in tests and swapping implementations (e.g., swapping a `LocalStorageService` for a `CloudStorageService`) without changing component logic.
 
 ### 3. Service-Controller-Component Triad
 **Pattern**: Strict separation of concerns.
@@ -398,24 +397,26 @@ gameStateService = new GameStateService();
 import { SignalWatcher } from "@lit-labs/signals";
 
 class MyNewComponent extends SignalWatcher(LitElement) {
-  @consume({ context: gameContext })
-  gameStateService;
+  /** @type {import('../services/interfaces.js').IQuestStateService} */
+  @consume({ context: questStateContext, subscribe: true })
+  questStateService;
 
   render() {
     // Simply access signals; the mixin tracks dependencies automatically
-    const pos = this.gameStateService.heroPos.get();
+    const pos = this.questStateService.heroPos.get();
     return html`Hero is at: ${pos.x}, ${pos.y}`;
   }
 }
 ```
 
 ### Consumer Map
-| Service | Consumers (Examples) | Usage |
+| Service Interface | Consumers (Examples) | Usage |
 | :--- | :--- | :--- |
-| `GameStateService` | `GameView`, `GameViewport`, `GameHud` | Rendering UI, Hero movement, Theme changes. |
-| `SessionManager` | `LegacysEndApp` | Controlling global flow (Home <-> Game). |
-| `ProgressService` | `QuestController`, `QuestHub` | Saving/Loading progress, unlocking chapters. |
-| `LoggerService` | `*` | Injected everywhere for unified logging. |
+| `IQuestStateService` | `GameView`, `GameViewport`, `GameHud` | Rendering UI, Hero movement, Theme changes. |
+| `IQuestLoaderService` | `LegacysEndApp`, `PauseMenu`, `VictoryScreen` | Controlling global flow (Home <-> Game). |
+| `IQuestController` | `GameViewport`, `GameHud`, `QuestView` | Quest logic orchestration and chapter management. |
+| `IProgressService` | `QuestController`, `QuestHub` | Saving/Loading progress, unlocking chapters. |
+| `ILoggerService` | `*` | Injected everywhere for unified logging. |
 
 ### How to Include a Service in a New Component
 To use an existing service (e.g., `GameStateService`) in a new component:

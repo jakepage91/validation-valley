@@ -12,7 +12,7 @@
 /**
  * Execute a voice command action
  * @param {string} action - The action to execute
- * @param {unknown} value - Optional value for the action
+ * @param {import('../services/interfaces.js').JsonValue} value - Optional value for the action
  * @param {VoiceController} controller - VoiceController instance with options
  * @param {string|null} [lang] - Language for feedback
  */
@@ -20,7 +20,7 @@ export function executeVoiceAction(action, value, controller, lang = null) {
 	const { options } = controller;
 
 	// Command action mapping
-	/** @type {Object.<string, Function>} */
+	/** @type {Record<string, () => void>} */
 	const actionHandlers = {
 		move_up: () => options.onMove?.(0, -5),
 		move_down: () => options.onMove?.(0, 5),

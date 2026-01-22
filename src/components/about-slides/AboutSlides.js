@@ -13,6 +13,7 @@ import { aboutSlidesStyles } from "./AboutSlides.styles.js";
  * @element about-slides
  */
 export class AboutSlides extends LitElement {
+	/** @override */
 	static styles = aboutSlidesStyles;
 
 	constructor() {
@@ -20,6 +21,7 @@ export class AboutSlides extends LitElement {
 		updateWhenLocaleChanges(this);
 	}
 
+	/** @override */
 	render() {
 		const slides = getAboutSlidesContent();
 		return html`

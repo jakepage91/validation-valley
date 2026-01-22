@@ -1,3 +1,4 @@
+import { Signal } from "@lit-labs/signals";
 import { logger } from "./logger-service.js";
 
 /**
@@ -29,7 +30,7 @@ import { logger } from "./logger-service.js";
  * @typedef {Object} AIOptions
  * @property {string} language
  * @property {{role: string, content: string}[]} [initialPrompts]
- * @property {function(any): void} [onDownloadProgress]
+ * @property {function(import('./interfaces.js').AIDownloadProgressEvent): void} [onDownloadProgress]
  */
 
 export class AIService {
@@ -38,8 +39,9 @@ export class AIService {
 		this.availabilityStatus = "no";
 		/** @type {boolean} */
 		this.isAvailable = false;
-		/** @type {Map<string, any>} */
+		/** @type {Map<string, import('./interfaces.js').AIModelSession>} */
 		this.sessions = new Map();
+		this.isEnabled = new Signal.State(true);
 	}
 
 	/**
@@ -93,7 +95,7 @@ export class AIService {
 	 * Create a new AI session with a unique identifier
 	 * @param {string} sessionId - Unique identifier for this session
 	 * @param {AIOptions} options - Session configuration
-	 * @returns {Promise<any>} Created AI session
+	 * @returns {Promise<import('./interfaces.js').AIModelSession>} Created AI session
 	 */
 	async createSession(sessionId, options) {
 		// Check if session already exists
@@ -120,13 +122,16 @@ export class AIService {
 		}
 
 		try {
-			// @ts-expect-error
+			// @ts-expect-error - experimental API LanguageModel
 			const session = await LanguageModel.create({
 				language: options.language,
 				initialPrompts: options.initialPrompts,
 			});
 
-			this.sessions.set(sessionId, session);
+			this.sessions.set(
+				sessionId,
+				/** @type {import('./interfaces.js').AIModelSession} */ (session),
+			);
 			logger.debug(`✅ Session "${sessionId}" created successfully`);
 			return session;
 		} catch (error) {
@@ -138,7 +143,7 @@ export class AIService {
 	/**
 	 * Download the AI model (for "downloadable" status)
 	 * @param {AIOptions} options - Download options
-	 * @returns {Promise<any>} AI session after download
+	 * @returns {Promise<import('./interfaces.js').AIModelSession>} AI session after download
 	 */
 	async downloadModel(options) {
 		logger.info(
@@ -147,19 +152,24 @@ export class AIService {
 		);
 
 		try {
-			// @ts-expect-error
+			// @ts-expect-error - experimental API LanguageModel
 			const session = await LanguageModel.create({
 				language: options.language,
 				monitor: (/** @type {any} */ m) => {
-					m.addEventListener("downloadprogress", (/** @type {any} */ e) => {
-						const progress = Math.round((e.loaded / e.total) * 100);
-						logger.info(
-							`📥 Downloading AI model: ${e.loaded}/${e.total} bytes (${progress}%)`,
-						);
-						if (options.onDownloadProgress) {
-							options.onDownloadProgress(e);
-						}
-					});
+					m.addEventListener(
+						"downloadprogress",
+						(
+							/** @type {import('./interfaces.js').AIDownloadProgressEvent} */ e,
+						) => {
+							const progress = Math.round((e.loaded / e.total) * 100);
+							logger.info(
+								`📥 Downloading AI model: ${e.loaded}/${e.total} bytes (${progress}%)`,
+							);
+							if (options.onDownloadProgress) {
+								options.onDownloadProgress(e);
+							}
+						},
+					);
 				},
 			});
 
@@ -180,7 +190,7 @@ export class AIService {
 	/**
 	 * Get an existing session by ID
 	 * @param {string} sessionId - Session identifier
-	 * @returns {any|null} The session or null if not found
+	 * @returns {import('./interfaces.js').AIModelSession|null} The session or null if not found
 	 */
 	getSession(sessionId) {
 		const session = this.sessions.get(sessionId);
@@ -230,5 +240,17 @@ export class AIService {
 			}
 		}
 		this.sessions.clear();
+	}
+
+	/**
+	 * Get a chat response from a session
+	 * @param {string} sessionId
+	 * @param {string} prompt
+	 * @returns {Promise<string>}
+	 */
+	async getChatResponse(sessionId, prompt) {
+		const session = this.getSession(sessionId);
+		if (!session) return "AI session not available.";
+		return await session.prompt(prompt);
 	}
 }

@@ -79,7 +79,9 @@ export class LocalizationService {
 		if (!browserLang) return null;
 
 		// Try exact match first (e.g., "es-ES" -> "es")
-		const langCode = browserLang.split("-")[0].toLowerCase();
+		const parts = browserLang.split("-");
+		const langCode = parts[0]?.toLowerCase();
+		if (!langCode) return null;
 
 		// Check if the language code matches any supported locale
 		if (langCode === sourceLocale || targetLocales.includes(langCode)) {
@@ -104,6 +106,18 @@ export class LocalizationService {
 	 */
 	getLocale() {
 		return this._localeSignal.get();
+	}
+
+	/**
+	 * Translate a key using @lit/localize msg()
+	 * @param {string} key
+	 * @returns {string}
+	 */
+	t(key) {
+		// msg() is usually used directly in templates, but service can provide a wrapper
+		// if needed for non-template translations.
+		// For now, we return the key or look into a more robust way to use msg() here.
+		return key;
 	}
 
 	/**

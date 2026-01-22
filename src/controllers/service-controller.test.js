@@ -1,5 +1,6 @@
 import { TaskStatus } from "@lit/task";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ServiceType } from "../services/user-api-client.js";
 import { ServiceController } from "./service-controller.js";
 
 describe("ServiceController", () => {
@@ -80,27 +81,27 @@ describe("ServiceController", () => {
 		});
 
 		it("should return legacy service for 'legacy' type", () => {
-			const service = controller.getActiveService("legacy", null);
+			const service = controller.getActiveService(ServiceType.LEGACY, null);
 			expect(service).toBe(legacyService);
 		});
 
 		it("should return mock service for 'mock' type", () => {
-			const service = controller.getActiveService("mock", null);
+			const service = controller.getActiveService(ServiceType.MOCK, null);
 			expect(service).toBe(mockService);
 		});
 
 		it("should return legacy service for 'new' type with 'legacy' hotSwitch", () => {
-			const service = controller.getActiveService("new", "legacy");
+			const service = controller.getActiveService(ServiceType.NEW, "legacy");
 			expect(service).toBe(legacyService);
 		});
 
 		it("should return new service for 'new' type with 'new' hotSwitch", () => {
-			const service = controller.getActiveService("new", "new");
+			const service = controller.getActiveService(ServiceType.NEW, "new");
 			expect(service).toBe(newService);
 		});
 
 		it("should return null for 'new' type in neutral zone", () => {
-			const service = controller.getActiveService("new", null);
+			const service = controller.getActiveService(ServiceType.NEW, null);
 			expect(service).toBeNull();
 		});
 	});

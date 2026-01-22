@@ -1,5 +1,4 @@
 import { msg } from "@lit/localize";
-import { ServiceType } from "../../../services/user-api-client.js";
 
 /**
  * The Token of Agnosticism Quest - Chapter Data
@@ -71,7 +70,7 @@ export const getChromaticLoomChapters = () => ({
 			],
 		},
 		stats: { maintainability: 25, portability: 35 },
-		serviceType: ServiceType.LEGACY,
+		serviceType: "Legacy API",
 		startPos: { x: 50, y: 15 },
 		exitZone: {
 			x: 95,

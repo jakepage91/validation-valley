@@ -1,13 +1,15 @@
 import { msg } from "@lit/localize";
 import { Difficulty } from "../content/quests/quest-types.js";
 
+/** @typedef {import('../content/quests/quest-types.js').DifficultyType} DifficultyType */
+
 /**
- * @typedef {import('../content/quests/quest-types.js').EnrichedQuest} EnrichedQuest
+ * @typedef {import('../content/quests/quest-types.js').Quest} Quest
  */
 
 /**
  * Gets the variant for a quest card based on its state
- * @param {EnrichedQuest} quest - The quest to get the variant for
+ * @param {Quest} quest - The quest to get the variant for
  * @returns {"success" | "neutral" | "brand"} The variant name
  */
 export function getQuestVariant(quest) {
@@ -18,11 +20,11 @@ export function getQuestVariant(quest) {
 
 /**
  * Gets the variant for a difficulty badge
- * @param {string} [difficulty=Difficulty.BEGINNER] - The difficulty level
+ * @param {DifficultyType} [difficulty=Difficulty.BEGINNER] - The difficulty level
  * @returns {"success" | "warning" | "danger" | "neutral"} The variant name
  */
 export function getDifficultyVariant(difficulty = Difficulty.BEGINNER) {
-	switch (difficulty.toLowerCase()) {
+	switch (difficulty) {
 		case Difficulty.BEGINNER:
 			return "success";
 		case Difficulty.INTERMEDIATE:
@@ -30,7 +32,7 @@ export function getDifficultyVariant(difficulty = Difficulty.BEGINNER) {
 		case Difficulty.ADVANCED:
 			return "danger";
 		case Difficulty.EXPERT:
-			return "danger"; // Or a specific color for expert
+			return "danger";
 		default:
 			return "neutral";
 	}
@@ -38,11 +40,11 @@ export function getDifficultyVariant(difficulty = Difficulty.BEGINNER) {
 
 /**
  * Gets the localized label for a difficulty level
- * @param {string} [difficulty=Difficulty.BEGINNER] - The difficulty level
+ * @param {DifficultyType} [difficulty=Difficulty.BEGINNER] - The difficulty level
  * @returns {string} The localized label
  */
 export function getDifficultyLabel(difficulty = Difficulty.BEGINNER) {
-	switch (difficulty.toLowerCase()) {
+	switch (difficulty) {
 		case Difficulty.BEGINNER:
 			return msg("Beginner");
 		case Difficulty.INTERMEDIATE:
@@ -52,6 +54,6 @@ export function getDifficultyLabel(difficulty = Difficulty.BEGINNER) {
 		case Difficulty.EXPERT:
 			return msg("Expert");
 		default:
-			return difficulty;
+			return /** @type {string} */ (difficulty);
 	}
 }

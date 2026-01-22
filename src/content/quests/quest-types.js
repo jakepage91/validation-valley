@@ -4,11 +4,33 @@
  * Separated from quest-registry to avoid circular dependencies
  */
 
+/**
+ * @typedef {"hub" | "quest"} QuestCategory
+ */
+
+/**
+ * @typedef {"beginner" | "intermediate" | "advanced" | "expert"} DifficultyType
+ */
+
+/**
+ * @typedef {"available" | "coming_soon" | "locked"} QuestStatus
+ */
+
+/**
+ * @typedef {"THEME_CHANGE" | "CONTEXT_CHANGE" | "NONE"} ZoneType
+ */
+
+/**
+ * @typedef {"Legacy API" | "Mock Service" | "New V2 API"} ServiceBrand
+ */
+
+/** @type {{ HUB: "hub", QUEST: "quest" }} */
 export const QuestType = {
 	HUB: "hub",
 	QUEST: "quest",
 };
 
+/** @type {{ BEGINNER: "beginner", INTERMEDIATE: "intermediate", ADVANCED: "advanced", EXPERT: "expert" }} */
 export const Difficulty = {
 	BEGINNER: "beginner",
 	INTERMEDIATE: "intermediate",
@@ -33,7 +55,7 @@ export const Difficulty = {
  */
 
 /**
- * @typedef {Rect & { label?: string, type?: string, payload?: any, requiresItem?: boolean }} Zone
+ * @typedef {Rect & { label?: string, type?: ZoneType, payload?: import('../../services/interfaces.js').JsonValue, requiresItem?: boolean }} Zone
  */
 
 /**
@@ -56,7 +78,7 @@ export const Difficulty = {
  */
 
 /**
- * @typedef {PlacedConfig & { name: string, requirements?: Record<string, { value: any, message: string }> }} NpcConfig
+ * @typedef {PlacedConfig & { name: string, requirements?: Record<string, { value: import('../../services/interfaces.js').JsonValue, message: string }> }} NpcConfig
  */
 
 /**
@@ -85,13 +107,13 @@ export const Difficulty = {
  * @property {string} title
  * @property {string} description
  * @property {string} problemTitle
- * @property {any} problemDesc
+ * @property {string | import('lit').TemplateResult} problemDesc
  * @property {string} [solutionTitle]
  * @property {string} [solutionDesc]
  * @property {string[]} [architecturalChanges]
  * @property {CodeSnippetsConfig} [codeSnippets]
  * @property {GameStats} [stats]
- * @property {string} [serviceType]
+ * @property {ServiceBrand | null} [serviceType]
  * @property {Vector2} startPos
  * @property {Zone} [exitZone]
  * @property {string} [backgroundStyle]
@@ -111,7 +133,7 @@ export const Difficulty = {
  * @property {string} [subtitle]
  * @property {string} description
  * @property {string} icon
- * @property {string} difficulty
+ * @property {DifficultyType} difficulty
  * @property {string} [estimatedTime]
  * @property {string} [color]
  * @property {string} [legacyProblem]
@@ -120,8 +142,8 @@ export const Difficulty = {
  * @property {string[]} [shortcuts]
  * @property {string[]} [concepts]
  * @property {string[]} [chapterIds]
- * @property {Record<string, any>} [chapters]
- * @property {string} [status]
+ * @property {Record<string, Chapter>} [chapters]
+ * @property {QuestStatus} [status]
  * @property {{ badge: string; ability: string; description?: string; }} [reward]
  */
 
@@ -139,9 +161,4 @@ export const Difficulty = {
 
 /**
  * @typedef {LevelConfig} Chapter
- */
-
-/**
- * @deprecated Use Quest instead
- * @typedef {Quest} EnrichedQuest
  */

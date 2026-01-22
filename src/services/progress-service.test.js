@@ -42,7 +42,9 @@ describe("ProgressService", () => {
 		service = new ProgressService(
 			mockStorage,
 			/** @type {import('../services/quest-registry-service.js').QuestRegistryService} */ (
-				/** @type {unknown} */ (mockRegistry)
+				/** @type {import('./quest-registry-service.js').QuestRegistryService} */ (
+					mockRegistry
+				)
 			),
 		);
 	});
@@ -78,11 +80,11 @@ describe("ProgressService", () => {
 		});
 
 		it("should update and get chapter state", () => {
-			service.updateChapterState("c1", { foundKey: true });
+			service.setChapterState("c1", { foundKey: true });
 			expect(service.getChapterState("c1")).toEqual({ foundKey: true });
 
 			// Merge update
-			service.updateChapterState("c1", { openedDoor: true });
+			service.setChapterState("c1", { openedDoor: true });
 			expect(service.getChapterState("c1")).toEqual({
 				foundKey: true,
 				openedDoor: true,
@@ -93,7 +95,7 @@ describe("ProgressService", () => {
 			service.progress.chapterStates = {};
 
 			// Should recover and set default
-			service.updateChapterState("c1", { visited: true });
+			service.setChapterState("c1", { visited: true });
 			expect(service.progress.chapterStates).toBeDefined();
 			expect(service.getChapterState("c1")).toEqual({ visited: true });
 
@@ -206,9 +208,10 @@ describe("ProgressService", () => {
 
 			service.resetQuestProgress(questId);
 
-			expect(service.progress.chapterStates.c1).toBeUndefined();
-			expect(service.progress.chapterStates.c2).toBeUndefined();
-			expect(service.progress.chapterStates.c3).toBeDefined(); // Belonged to another quest
+			const states = /** @type {any} */ (service.progress.chapterStates);
+			expect(states.c1).toBeUndefined();
+			expect(states.c2).toBeUndefined();
+			expect(states.c3).toBeDefined(); // Belonged to another quest
 		});
 
 		it("should safely handle resetting unknown quest", () => {
@@ -242,9 +245,9 @@ describe("ProgressService", () => {
 
 		it("should calculate overall progress", () => {
 			mockRegistry.getAllQuests.mockReturnValue([
-				{ id: "q1", status: "active" },
-				{ id: "q2", status: "active" },
-				{ id: "q3", status: "coming-soon" }, // Should be ignored
+				{ id: "q1", status: "available" },
+				{ id: "q2", status: "available" },
+				{ id: "q3", status: "coming_soon" }, // Should be ignored
 			]);
 			service.progress.completedQuests = ["q1"]; // 1 out of 2 active quests
 

@@ -22,7 +22,7 @@ export class PauseMenu extends SignalWatcher(LitElement) {
 	@consume({ context: worldStateContext, subscribe: true })
 	accessor worldState = /** @type {any} */ (null);
 
-	/** @type {import('../../services/quest-loader-service.js').QuestLoaderService} */
+	/** @type {import('../../services/interfaces.js').IQuestLoaderService} */
 	@consume({ context: questLoaderContext, subscribe: true })
 	accessor questLoader = /** @type {any} */ (null);
 
@@ -30,6 +30,7 @@ export class PauseMenu extends SignalWatcher(LitElement) {
 	@consume({ context: sessionContext, subscribe: true })
 	accessor sessionService = /** @type {any} */ (null);
 
+	/** @override */
 	static styles = pauseMenuStyles;
 
 	constructor() {
@@ -37,6 +38,7 @@ export class PauseMenu extends SignalWatcher(LitElement) {
 		updateWhenLocaleChanges(this);
 	}
 
+	/** @override */
 	render() {
 		const open = this.worldState?.isPaused.get() || false;
 

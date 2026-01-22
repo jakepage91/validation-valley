@@ -18,19 +18,19 @@ describe("PositionValidator", () => {
 		const result = PositionValidator.validate(-1, 50);
 		expect(result.isValid).toBe(false);
 		expect(result.errors).toHaveLength(1);
-		expect(result.errors[0].field).toBe("x");
+		expect(result.errors[0]?.field).toBe("x");
 	});
 
 	it("should reject x > 100", () => {
 		const result = PositionValidator.validate(101, 50);
 		expect(result.isValid).toBe(false);
-		expect(result.errors[0].field).toBe("x");
+		expect(result.errors[0]?.field).toBe("x");
 	});
 
 	it("should reject non-number x", () => {
 		const result = PositionValidator.validate(/** @type {any} */ ("50"), 50);
 		expect(result.isValid).toBe(false);
-		expect(result.errors[0].field).toBe("x");
+		expect(result.errors[0]?.field).toBe("x");
 	});
 
 	it("should reject NaN", () => {
@@ -71,7 +71,7 @@ describe("ThemeModeValidator", () => {
 	it("should reject invalid theme", () => {
 		const result = ThemeModeValidator.validate("blue");
 		expect(result.isValid).toBe(false);
-		expect(result.errors[0].field).toBe("themeMode");
+		expect(result.errors[0]?.field).toBe("themeMode");
 	});
 
 	it("should reject non-string theme", () => {

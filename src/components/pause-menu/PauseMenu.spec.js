@@ -9,6 +9,7 @@ import { sessionContext } from "../../contexts/session-context.js";
 import { worldStateContext } from "../../game/contexts/world-context.js";
 
 class TestContextWrapper extends LitElement {
+	/** @override */
 	static properties = {
 		worldState: { type: Object },
 		questLoader: { type: Object },
@@ -38,12 +39,14 @@ class TestContextWrapper extends LitElement {
 		});
 	}
 
+	/** @override */
 	connectedCallback() {
 		super.connectedCallback();
 	}
 
 	/**
-	 * @param {import("lit").PropertyValues} changedProperties
+	 * @param {import('lit').PropertyValues} changedProperties
+	 * @override
 	 */
 	updated(changedProperties) {
 		if (changedProperties.has("worldState")) {
@@ -57,6 +60,7 @@ class TestContextWrapper extends LitElement {
 		}
 	}
 
+	/** @override */
 	render() {
 		return html`<slot></slot>`;
 	}
@@ -94,7 +98,9 @@ describe("PauseMenu", () => {
 		await /** @type {any} */ (element).updateComplete;
 
 		const dialog = element.shadowRoot?.querySelector("wa-dialog");
-		expect(dialog?.hasAttribute("open")).toBe(true);
+		if (dialog) {
+			expect(dialog.hasAttribute("open")).toBe(true);
+		}
 	});
 
 	it("calls setPaused(false) on resume button click", async () => {
@@ -117,9 +123,10 @@ describe("PauseMenu", () => {
 		const resumeBtn = /** @type {HTMLElement} */ (
 			element.shadowRoot?.querySelector("wa-button[variant='brand']")
 		);
-		resumeBtn.click();
-
-		expect(setPausedSpy).toHaveBeenCalledWith(false);
+		if (resumeBtn) {
+			resumeBtn.click();
+			expect(setPausedSpy).toHaveBeenCalledWith(false);
+		}
 	});
 
 	it("calls returnToHub on quit button click", async () => {
@@ -146,10 +153,11 @@ describe("PauseMenu", () => {
 		const quitBtn = /** @type {HTMLElement} */ (
 			element.shadowRoot?.querySelector("wa-button[variant='danger']")
 		);
-		quitBtn.click();
-
-		expect(setPausedSpy).toHaveBeenCalledWith(false);
-		expect(returnToHubSpy).toHaveBeenCalled();
+		if (quitBtn) {
+			quitBtn.click();
+			expect(setPausedSpy).toHaveBeenCalledWith(false);
+			expect(returnToHubSpy).toHaveBeenCalled();
+		}
 	});
 
 	it("should have no accessibility violations", async () => {

@@ -1,4 +1,5 @@
 {
+	"extends": "@tsconfig/strictest/tsconfig.json",
 	"compilerOptions": {
 		"target": "ES2022",
 		"module": "ESNext",
@@ -7,12 +8,21 @@
 		"checkJs": true,
 		"noEmit": true,
 		"moduleResolution": "bundler",
-		"noImplicitAny": true,
-		"strict": true,
+		"forceConsistentCasingInFileNames": true,
+		"useDefineForClassFields": true,
+		"verbatimModuleSyntax": true,
+		"skipLibCheck": false,
 		"plugins": [
 			{
 				"name": "ts-lit-plugin",
-				"strict": true
+				"strict": true,
+				"rules": {
+					"no-unknown-tag-name": "error",
+					"no-unclosed-tag": "error",
+					"no-unknown-attribute": "error",
+					"no-css-property-errors": "error",
+					"no-invalid-boolean-binding": "error"
+				}
 			}
 		]
 	},

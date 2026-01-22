@@ -14,8 +14,8 @@ import {
 import { DialogueGenerationService } from "../services/dialogue-generation-service.js";
 
 /**
- * @typedef {import('../services/ai-service.js').AIService} AIService
- * @typedef {import('../services/voice-synthesis-service.js').VoiceSynthesisService} VoiceSynthesisService
+ * @typedef {import('../services/interfaces.js').IAIService} AIService
+ * @typedef {import('../services/interfaces.js').IVoiceSynthesisService} VoiceSynthesisService
  * @typedef {Object} AISession
  * @property {function(string): Promise<string>} prompt
  * @property {function(): void} destroy
@@ -36,7 +36,7 @@ import { DialogueGenerationService } from "../services/dialogue-generation-servi
 
 /**
  * @typedef {Object} VoiceControllerOptions
- * @property {import('../services/logger-service.js').LoggerService} logger - Logger service
+ * @property {import('../services/interfaces.js').ILoggerService} logger - Logger service
  * @property {AIService} aiService - AI Service
  * @property {VoiceSynthesisService} voiceSynthesisService - Voice Synthesis Service
  * @property {(dx: number, dy: number) => void} [onMove] - Movement callback
@@ -49,10 +49,10 @@ import { DialogueGenerationService } from "../services/dialogue-generation-servi
  * @property {() => string} [onGetDialogText] - Get current dialog text
  * @property {() => string} [onGetNextDialogText] - Get next dialog text for prefetching
  * @property {() => VoiceContext} [onGetContext] - Get game context for AI
- * @property {(action: string, value: unknown) => void} [onDebugAction] - Debug action callback
+ * @property {(action: string, value: import('../services/interfaces.js').JsonValue) => void} [onDebugAction] - Debug action callback
  * @property {() => boolean} [isEnabled] - Callback to check if voice control is enabled from host
  * @property {string} [language] - Language code (e.g., 'en-US', 'es-ES')
- * @property {import('../services/localization-service.js').LocalizationService} [localizationService] - Localization service
+ * @property {import('../services/interfaces.js').ILocalizationService} [localizationService] - Localization service
  * @property {() => void} [onCompleteLevel] - Complete level callback
  */
 
@@ -240,7 +240,7 @@ export class VoiceController {
 
 		await this.voiceSynthesisService.speak(text, {
 			lang: targetLang,
-			voice,
+			voice: voice || undefined,
 			rate: profile.rate,
 			pitch,
 			queue: queue || false,
@@ -337,7 +337,9 @@ export class VoiceController {
 		const last = event.results.length - 1;
 		const transcript = event.results[last][0].transcript.toLowerCase().trim();
 		this.logger.info(`🗣️ Voice command: "${transcript}"`);
-		this.processCommand(transcript);
+		this.processCommand(transcript).catch((err) =>
+			this.logger.error(`Error processing command: ${err}`),
+		);
 	}
 
 	/**
@@ -376,7 +378,7 @@ export class VoiceController {
 
 	async executeAction(
 		/** @type {string} */ action,
-		/** @type {any} */ value,
+		/** @type {import('../services/interfaces.js').JsonValue} */ value,
 		lang = null,
 	) {
 		const targetLang = lang || this.#getLanguage();
@@ -422,7 +424,7 @@ export class VoiceController {
 					"¡Victoria! Hemos recuperado otro sector del código legado.",
 				];
 
-		const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+		const phrase = phrases[Math.floor(Math.random() * phrases.length)] || "";
 		await this.speak(phrase, lang, "hero", true);
 		this.options.onCompleteLevel?.();
 	}

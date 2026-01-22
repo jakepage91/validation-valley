@@ -4,10 +4,11 @@ import { VoiceController } from "../controllers/voice-controller.js";
 /**
  * @typedef {import('lit').LitElement} LitElement
  * @typedef {Object} VoiceHost
- * @property {import('../controllers/game-controller.js').GameController} gameController
- * @property {import('../controllers/interaction-controller.js').InteractionController} interaction
- * @property {ShadowRoot} shadowRoot
+ * @property {import('../controllers/game-controller.js').GameController | null} gameController
+ * @property {import('../controllers/interaction-controller.js').InteractionController | null} interaction
+ * @property {ShadowRoot | null} shadowRoot
  * @property {() => void} [handleLevelComplete]
+ * @property {(dx: number, dy: number, isAuto?: boolean) => void} [handleMove]
  * @property {(x: number, y: number) => void} [moveTo]
  * @property {() => void} [nextDialogSlide]
  * @property {() => void} [prevDialogSlide]
@@ -18,8 +19,20 @@ import { VoiceController } from "../controllers/voice-controller.js";
  */
 
 /**
+ * @typedef {Object} VoiceDependencies
+ * @property {import('../services/interfaces.js').ILoggerService} logger
+ * @property {import('../services/interfaces.js').ILocalizationService} localizationService
+ * @property {import('../services/interfaces.js').IAIService} aiService
+ * @property {import('../services/interfaces.js').IVoiceSynthesisService} voiceSynthesisService
+ * @property {import('../game/interfaces.js').IWorldStateService} worldState
+ * @property {import('../game/interfaces.js').IQuestStateService} questState
+ * @property {import('../services/interfaces.js').IQuestController} questController
+ * @property {import('../services/interfaces.js').IQuestLoaderService} questLoader
+ */
+
+/**
  * Helper to wait for dialog text to change (or a timeout)
- * @param {import('../game/services/world-state-service.js').WorldStateService} worldState
+ * @param {import('../game/interfaces.js').IWorldStateService} worldState
  * @param {string|null} oldText
  * @returns {Promise<void>}
  */
@@ -40,10 +53,12 @@ function waitForDialogChange(worldState, oldText) {
 
 /**
  * Setup VoiceController
+ * @param {VoiceElement} host
+ * @param {VoiceDependencies} dependencies
  */
 export function setupVoice(
-	/** @type {VoiceElement} */ host,
-	/** @type {any} */ {
+	host,
+	{
 		logger,
 		localizationService,
 		aiService,

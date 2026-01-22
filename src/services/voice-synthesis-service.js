@@ -59,7 +59,7 @@ export class VoiceSynthesisService {
 		}
 
 		// 2. Fallback to first available for that language
-		return langVoices[0];
+		return langVoices[0] || null;
 	}
 
 	/**

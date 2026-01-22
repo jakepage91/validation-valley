@@ -15,7 +15,7 @@ import {
 import { questCardStyles } from "./QuestCard.styles.js";
 
 /**
- * @typedef {import('../../../../content/quests/quest-types.js').EnrichedQuest} EnrichedQuest
+ * @typedef {import('../../../../content/quests/quest-types.js').Quest} Quest
  */
 
 /**
@@ -28,14 +28,16 @@ import { questCardStyles } from "./QuestCard.styles.js";
  * - Action buttons (Start, Continue, Restart)
  *
  * @element quest-card
- * @property {EnrichedQuest} quest - The quest data to display
+ * @property {Quest} quest - The quest data to display
  * @property {boolean} isComingSoon - Whether this is a coming soon quest
  * @fires quest-select - Fired when the user starts a quest
  * @fires quest-continue - Fired when the user continues a quest
  */
 export class QuestCard extends LitElement {
+	/** @override */
 	static styles = questCardStyles;
 
+	/** @override */
 	static properties = {
 		quest: { type: Object },
 		isComingSoon: { type: Boolean },
@@ -44,8 +46,8 @@ export class QuestCard extends LitElement {
 	constructor() {
 		super();
 		updateWhenLocaleChanges(this);
-		/** @type {EnrichedQuest} */
-		this.quest = /** @type {EnrichedQuest} */ ({});
+		/** @type {Quest} */
+		this.quest = /** @type {Quest} */ ({});
 		this.isComingSoon = false;
 	}
 
@@ -77,6 +79,7 @@ export class QuestCard extends LitElement {
 		);
 	}
 
+	/** @override */
 	render() {
 		const progress = this.quest.progress || 0;
 		const completed = this.quest.isCompleted || false;

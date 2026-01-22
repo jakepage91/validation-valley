@@ -3,8 +3,8 @@ import { logger } from "./logger-service.js";
 /**
  * Storage Interface (Implicit)
  * @typedef {Object} StorageAdapter
- * @property {function(string): unknown} getItem
- * @property {function(string, any): void} setItem
+ * @property {function(string): import('./interfaces.js').JsonValue} getItem
+ * @property {function(string, import('./interfaces.js').JsonValue): void} setItem
  * @property {function(string): void} removeItem
  * @property {function(): void} clear
  */
@@ -19,7 +19,7 @@ export class LocalStorageAdapter {
 	 * Get item from storage.
 	 * Parses JSON automatically.
 	 * @param {string} key - The key to retrieve
-	 * @returns {unknown} Parsed value or null if not found or error
+	 * @returns {import('./interfaces.js').JsonValue | null} Parsed value or null if not found or error
 	 */
 	getItem(key) {
 		try {
@@ -35,7 +35,7 @@ export class LocalStorageAdapter {
 	 * Set item in storage.
 	 * Stringifies value to JSON automatically.
 	 * @param {string} key - The key to set
-	 * @param {unknown} value - The value to store
+	 * @param {import('./interfaces.js').JsonValue} value - The value to store
 	 */
 	setItem(key, value) {
 		try {

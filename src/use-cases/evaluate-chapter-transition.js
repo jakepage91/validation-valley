@@ -28,7 +28,7 @@ export class EvaluateChapterTransitionUseCase {
 			return {
 				action: "ADVANCE",
 				nextIndex,
-				nextChapterId: quest.chapterIds[nextIndex],
+				nextChapterId: quest.chapterIds[nextIndex] || "",
 			};
 		}
 

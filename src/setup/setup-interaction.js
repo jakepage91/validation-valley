@@ -13,8 +13,8 @@ import { InteractWithNpcUseCase } from "../use-cases/interact-with-npc.js";
  * @param {import('../game/interfaces.js').IWorldStateService} dependencies.worldState
  * @param {import('../game/interfaces.js').IQuestStateService} dependencies.questState
  * @param {import('../game/interfaces.js').IHeroStateService} dependencies.heroState
- * @param {import('../controllers/quest-controller.js').QuestController} dependencies.questController
- * @param {import('../services/quest-loader-service.js').QuestLoaderService} [dependencies.questLoader]
+ * @param {import('../services/interfaces.js').IQuestController} dependencies.questController
+ * @param {import('../services/interfaces.js').IQuestLoaderService} [dependencies.questLoader]
  */
 export function setupInteraction(
 	host,
@@ -35,6 +35,6 @@ export function setupInteraction(
 		},
 		getNpcPosition: () => questController.currentChapter?.npc?.position,
 		interactWithNpcUseCase:
-			questLoader?._interactWithNpcUseCase || new InteractWithNpcUseCase(),
+			questLoader?.interactWithNpcUseCase || new InteractWithNpcUseCase(),
 	});
 }

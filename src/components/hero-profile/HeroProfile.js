@@ -41,6 +41,7 @@ export class HeroProfile extends SignalWatcher(LitElement) {
 	@consume({ context: characterContext, subscribe: true })
 	accessor suitData = /** @type {any} */ (null);
 
+	/** @override */
 	static properties = {
 		/**
 		 * Base image source for the hero.
@@ -53,6 +54,7 @@ export class HeroProfile extends SignalWatcher(LitElement) {
 		hotSwitchState: { type: String },
 	};
 
+	/** @override */
 	static styles = heroProfileStyles;
 
 	constructor() {
@@ -65,6 +67,7 @@ export class HeroProfile extends SignalWatcher(LitElement) {
 
 	/**
 	 * @param {import('lit').PropertyValues} changedProperties
+	 * @override
 	 */
 	update(changedProperties) {
 		const heroState = this.heroState;
@@ -97,6 +100,7 @@ export class HeroProfile extends SignalWatcher(LitElement) {
 
 	/**
 	 * @param {import('lit').PropertyValues} changedProperties
+	 * @override
 	 */
 	updated(changedProperties) {
 		// theme logic moved to update() for signal reactivity
@@ -116,6 +120,7 @@ export class HeroProfile extends SignalWatcher(LitElement) {
 		}
 	}
 
+	/** @override */
 	render() {
 		const { name, loading, error } = this.profileData || {};
 

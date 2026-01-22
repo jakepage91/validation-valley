@@ -35,7 +35,7 @@ export class CollisionController {
 	 * @param {Object} dependencies
 	 * @param {import('../game/interfaces.js').IHeroStateService} dependencies.heroState
 	 * @param {import('../game/interfaces.js').IQuestStateService} dependencies.questState
-	 * @param {import('../controllers/quest-controller.js').QuestController} [dependencies.questController]
+	 * @param {import('../services/interfaces.js').IQuestController} [dependencies.questController]
 	 * @param {{ heroSize?: number }} [config]
 	 */
 	constructor(host, { heroState, questState, questController }, config = {}) {

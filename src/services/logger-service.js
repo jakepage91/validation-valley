@@ -13,8 +13,13 @@ export const LogLevel = {
  */
 
 /**
+ * @typedef {import('./interfaces.js').ILoggerService} ILoggerService
+ */
+
+/**
  * Logger Service
  * Centralized logging with levels and structured output
+ * @implements {ILoggerService}
  */
 export class LoggerService {
 	/**
@@ -43,7 +48,10 @@ export class LoggerService {
 	 * @returns {boolean} True if the message should be logged
 	 */
 	shouldLog(level) {
-		return this.levels[level] >= this.levels[this.level];
+		const levelVal = this.levels[level];
+		const currentVal = this.levels[this.level];
+		if (levelVal === undefined || currentVal === undefined) return false;
+		return levelVal >= currentVal;
 	}
 
 	/**

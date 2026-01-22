@@ -33,6 +33,7 @@ export class NpcElement extends SignalWatcher(LitElement) {
 	@consume({ context: questStateContext, subscribe: true })
 	accessor questState = /** @type {any} */ (null);
 
+	/** @override */
 	static properties = {
 		/** @type {import('lit').PropertyDeclaration} */
 		name: { type: String },
@@ -50,6 +51,7 @@ export class NpcElement extends SignalWatcher(LitElement) {
 		action: { type: String },
 	};
 
+	/** @override */
 	static styles = npcElementStyles;
 
 	constructor() {
@@ -65,6 +67,7 @@ export class NpcElement extends SignalWatcher(LitElement) {
 		this.action = undefined;
 	}
 
+	/** @override */
 	render() {
 		// Apply position to host
 		this.style.left = `${this.x}%`;

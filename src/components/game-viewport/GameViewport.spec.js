@@ -15,10 +15,23 @@ import { worldStateContext } from "../../game/contexts/world-context.js";
 import { GameViewport } from "./GameViewport.js";
 import "./game-viewport.js";
 
+/** @typedef {import('../../game/interfaces.js').IHeroStateService} IHeroStateService */
+/** @typedef {import('../../game/interfaces.js').IQuestStateService} IQuestStateService */
+/** @typedef {import('../../game/interfaces.js').IWorldStateService} IWorldStateService */
+/** @typedef {import('../../services/interfaces.js').IQuestController} IQuestController */
+/** @typedef {import('../../services/interfaces.js').IQuestLoaderService} IQuestLoaderService */
+/** @typedef {import('../../services/quest-loader-service.js').QuestLoaderService} QuestLoaderService */
+/** @typedef {import('../../services/session-service.js').SessionService} SessionService */
+/** @typedef {import('../../services/localization-service.js').LocalizationService} LocalizationService */
+/** @typedef {import('../../services/theme-service.js').ThemeService} ThemeService */
+/** @typedef {import('../../services/ai-service.js').AIService} AIService */
+/** @typedef {import('../../services/voice-synthesis-service.js').VoiceSynthesisService} VoiceSynthesisService */
+
 /**
  * Test wrapper to provide contexts
  */
 class TestContextWrapper extends LitElement {
+	/** @override */
 	static properties = {
 		heroState: { type: Object },
 		questState: { type: Object },
@@ -34,103 +47,113 @@ class TestContextWrapper extends LitElement {
 
 	constructor() {
 		super();
-		/** @type {any} */
+		/** @type {IHeroStateService | null} */
 		this.heroState = null;
-		/** @type {any} */
+		/** @type {IQuestStateService | null} */
 		this.questState = null;
-		/** @type {any} */
+		/** @type {IWorldStateService | null} */
 		this.worldState = null;
-		/** @type {any} */
+		/** @type {IQuestController | null} */
 		this.questController = null;
-		/** @type {any} */
+		/** @type {IQuestLoaderService | null} */
 		this.questLoader = null;
-		/** @type {any} */
+		/** @type {SessionService | null} */
 		this.sessionService = null;
-		/** @type {any} */
+		/** @type {LocalizationService | null} */
 		this.localizationService = null;
-		/** @type {any} */
+		/** @type {ThemeService | null} */
 		this.themeService = null;
-		/** @type {any} */
+		/** @type {AIService | null} */
 		this.aiService = null;
-		/** @type {any} */
+		/** @type {VoiceSynthesisService | null} */
 		this.voiceSynthesisService = null;
 
-		/** @type {any} */
+		/** @type {ContextProvider<typeof heroStateContext>} */
 		this.heroProvider = new ContextProvider(this, {
 			context: heroStateContext,
-			initialValue: undefined,
+			initialValue: /** @type {any} */ (null),
 		});
-		/** @type {any} */
+		/** @type {ContextProvider<typeof questStateContext>} */
 		this.questStateProvider = new ContextProvider(this, {
 			context: questStateContext,
-			initialValue: undefined,
+			initialValue: /** @type {any} */ (null),
 		});
-		/** @type {any} */
+		/** @type {ContextProvider<typeof worldStateContext>} */
 		this.worldStateProvider = new ContextProvider(this, {
 			context: worldStateContext,
-			initialValue: undefined,
+			initialValue: /** @type {any} */ (null),
 		});
-		/** @type {any} */
+		/** @type {ContextProvider<typeof questControllerContext>} */
 		this.questControllerProvider = new ContextProvider(this, {
 			context: questControllerContext,
-			initialValue: undefined,
+			initialValue: /** @type {any} */ (null),
 		});
-		/** @type {any} */
+		/** @type {ContextProvider<typeof questLoaderContext>} */
 		this.questLoaderProvider = new ContextProvider(this, {
 			context: questLoaderContext,
-			initialValue: undefined,
+			initialValue: /** @type {any} */ (null),
 		});
-		/** @type {any} */
+		/** @type {ContextProvider<typeof sessionContext>} */
 		this.sessionProvider = new ContextProvider(this, {
 			context: sessionContext,
-			initialValue: undefined,
+			initialValue: /** @type {any} */ (null),
 		});
-		/** @type {any} */
+		/** @type {ContextProvider<typeof localizationContext>} */
 		this.localizationProvider = new ContextProvider(this, {
 			context: localizationContext,
-			initialValue: undefined,
+			initialValue: /** @type {any} */ (null),
 		});
-		/** @type {any} */
+		/** @type {ContextProvider<typeof themeContext>} */
 		this.themeProvider = new ContextProvider(this, {
 			context: themeContext,
-			initialValue: undefined,
+			initialValue: /** @type {any} */ (null),
 		});
-		/** @type {any} */
+		/** @type {ContextProvider<typeof aiContext>} */
 		this.aiProvider = new ContextProvider(this, {
 			context: aiContext,
-			initialValue: undefined,
+			initialValue: /** @type {any} */ (null),
 		});
-		/** @type {any} */
+		/** @type {ContextProvider<typeof voiceContext>} */
 		this.voiceProvider = new ContextProvider(this, {
 			context: voiceContext,
-			initialValue: undefined,
+			initialValue: /** @type {any} */ (null),
 		});
 	}
 
-	/** @param {import("lit").PropertyValues} changedProperties */
+	/**
+	 * @param {import("lit").PropertyValues<this>} changedProperties
+	 * @override
+	 */
 	updated(changedProperties) {
-		if (changedProperties.has("heroState"))
+		if (changedProperties.has("heroState") && this.heroState)
 			this.heroProvider.setValue(this.heroState);
-		if (changedProperties.has("questState"))
+		if (changedProperties.has("questState") && this.questState)
 			this.questStateProvider.setValue(this.questState);
-		if (changedProperties.has("worldState"))
+		if (changedProperties.has("worldState") && this.worldState)
 			this.worldStateProvider.setValue(this.worldState);
-		if (changedProperties.has("questController"))
+		if (changedProperties.has("questController") && this.questController)
 			this.questControllerProvider.setValue(this.questController);
-		if (changedProperties.has("questLoader"))
+		if (changedProperties.has("questLoader") && this.questLoader)
 			this.questLoaderProvider.setValue(this.questLoader);
-		if (changedProperties.has("sessionService"))
+		if (changedProperties.has("sessionService") && this.sessionService)
 			this.sessionProvider.setValue(this.sessionService);
-		if (changedProperties.has("localizationService"))
+		if (
+			changedProperties.has("localizationService") &&
+			this.localizationService
+		)
 			this.localizationProvider.setValue(this.localizationService);
-		if (changedProperties.has("themeService"))
+		if (changedProperties.has("themeService") && this.themeService)
 			this.themeProvider.setValue(this.themeService);
-		if (changedProperties.has("aiService"))
+		if (changedProperties.has("aiService") && this.aiService)
 			this.aiProvider.setValue(this.aiService);
-		if (changedProperties.has("voiceSynthesisService"))
+		if (
+			changedProperties.has("voiceSynthesisService") &&
+			this.voiceSynthesisService
+		)
 			this.voiceProvider.setValue(this.voiceSynthesisService);
 	}
 
+	/** @override */
 	render() {
 		return html`<slot></slot>`;
 	}
@@ -152,32 +175,96 @@ describe("GameViewport", () => {
 		vi.clearAllMocks();
 	});
 
-	const createHeroStateMock = () => ({
-		pos: new Signal.State({ x: 0, y: 0 }),
-		setImageSrc: vi.fn(),
-		imageSrc: new Signal.State(""),
-		isEvolving: new Signal.State(false),
-		hotSwitchState: new Signal.State("legacy"),
-	});
+	/** @returns {IHeroStateService} */
+	const createHeroStateMock = () => {
+		const pos = new Signal.State({ x: 0, y: 0 });
+		const imageSrc = new Signal.State("");
+		const isEvolving = new Signal.State(false);
+		const hotSwitchState = new Signal.State(
+			/** @type {import('../../game/interfaces.js').HotSwitchState} */ (
+				"legacy"
+			),
+		);
 
-	const createQuestStateMock = () => ({
-		hasCollectedItem: new Signal.State(false),
-		isRewardCollected: new Signal.State(false),
-		lockedMessage: new Signal.State(null),
-		currentChapterNumber: new Signal.State(1),
-		totalChapters: new Signal.State(10),
-		levelTitle: new Signal.State("Test Level"),
-		questTitle: new Signal.State("Test Quest"),
-	});
+		return {
+			pos,
+			imageSrc,
+			isEvolving,
+			hotSwitchState,
+			setPos: vi.fn((p) => pos.set(p)),
+			setImageSrc: vi.fn((s) => imageSrc.set(s)),
+			setIsEvolving: vi.fn((e) => isEvolving.set(e)),
+			setHotSwitchState: vi.fn((h) => hotSwitchState.set(h)),
+		};
+	};
 
-	const createWorldStateMock = () => ({
-		isPaused: new Signal.State(false),
-		showDialog: new Signal.State(false),
-	});
+	/** @returns {IQuestStateService} */
+	const createQuestStateMock = () => {
+		const hasCollectedItem = new Signal.State(false);
+		const isRewardCollected = new Signal.State(false);
+		const isQuestCompleted = new Signal.State(false);
+		const lockedMessage = new Signal.State(/** @type {string|null} */ (null));
+		const currentChapterNumber = new Signal.State(1);
+		const totalChapters = new Signal.State(10);
+		const levelTitle = new Signal.State("Test Level");
+		const questTitle = new Signal.State("Test Quest");
+		const currentChapterId = new Signal.State(
+			/** @type {string|null} */ (null),
+		);
+
+		return {
+			hasCollectedItem,
+			isRewardCollected,
+			isQuestCompleted,
+			lockedMessage,
+			currentChapterNumber,
+			totalChapters,
+			levelTitle,
+			questTitle,
+			currentChapterId,
+			setHasCollectedItem: vi.fn((v) => hasCollectedItem.set(v)),
+			setIsRewardCollected: vi.fn((v) => isRewardCollected.set(v)),
+			setIsQuestCompleted: vi.fn((v) => isQuestCompleted.set(v)),
+			setLockedMessage: vi.fn((m) => lockedMessage.set(m)),
+			setCurrentChapterNumber: vi.fn((n) => currentChapterNumber.set(n)),
+			setTotalChapters: vi.fn((n) => totalChapters.set(n)),
+			setLevelTitle: vi.fn((t) => levelTitle.set(t)),
+			setQuestTitle: vi.fn((t) => questTitle.set(t)),
+			setCurrentChapterId: vi.fn((id) => currentChapterId.set(id)),
+			resetChapterState: vi.fn(),
+			resetQuestState: vi.fn(),
+		};
+	};
+
+	/** @returns {IWorldStateService} */
+	const createWorldStateMock = () => {
+		const isPaused = new Signal.State(false);
+		const showDialog = new Signal.State(false);
+		const currentDialogText = new Signal.State("");
+		const nextDialogText = new Signal.State("");
+
+		return {
+			isPaused,
+			showDialog,
+			currentDialogText,
+			nextDialogText,
+			setPaused: vi.fn((v) => isPaused.set(v)),
+			setShowDialog: vi.fn((v) => showDialog.set(v)),
+			setCurrentDialogText: vi.fn((t) => currentDialogText.set(t)),
+			setNextDialogText: vi.fn((t) => nextDialogText.set(t)),
+		};
+	};
 
 	const setupBasicServices = (/** @type {TestContextWrapper} */ wrapper) => {
-		wrapper.questController = {
-			currentChapter: { id: "ch1" },
+		wrapper.questController = /** @type {any} */ ({
+			currentChapter: {
+				id: "ch1",
+				title: "Chapter 1",
+				description: "Desc",
+				problemTitle: "Problem",
+				problemDesc: "Problem Desc",
+				startPos: { x: 0, y: 0 },
+			},
 			options: {
 				logger: {
 					info: vi.fn(),
@@ -186,13 +273,19 @@ describe("GameViewport", () => {
 					error: vi.fn(),
 				},
 			},
-		};
+		});
 		wrapper.heroState = createHeroStateMock();
 		wrapper.questState = createQuestStateMock();
 		wrapper.worldState = createWorldStateMock();
-		wrapper.sessionService = {};
-		wrapper.themeService = { themeMode: new Signal.State("light") };
-		wrapper.aiService = {
+		wrapper.sessionService = /** @type {any} */ ({
+			isLoading: new Signal.State(false),
+			isInHub: new Signal.State(false),
+			currentQuest: new Signal.State(null),
+		});
+		wrapper.themeService = /** @type {any} */ ({
+			themeMode: new Signal.State("light"),
+		});
+		wrapper.aiService = /** @type {any} */ ({
 			isEnabled: new Signal.State(false),
 			checkAvailability: vi.fn().mockResolvedValue("available"),
 			createSession: vi.fn().mockResolvedValue(undefined),
@@ -201,15 +294,15 @@ describe("GameViewport", () => {
 				.mockReturnValue({ prompt: vi.fn(), destroy: vi.fn() }),
 			destroySession: vi.fn(),
 			getChatResponse: vi.fn(),
-		};
-		wrapper.voiceSynthesisService = {
+		});
+		wrapper.voiceSynthesisService = /** @type {any} */ ({
 			speak: vi.fn(),
 			cancel: vi.fn(),
-		};
-		wrapper.localizationService = {
+		});
+		wrapper.localizationService = /** @type {any} */ ({
 			t: (/** @type {string} */ key) => key,
 			getLocale: () => "en-US",
-		};
+		});
 	};
 
 	it("should render initial state correctly", async () => {
@@ -217,15 +310,19 @@ describe("GameViewport", () => {
 		container.appendChild(wrapper);
 		setupBasicServices(wrapper);
 
-		wrapper.questController.currentChapter.backgroundStyle =
-			"url('/assets/default-bg.png')";
+		if (wrapper.questController?.currentChapter) {
+			wrapper.questController.currentChapter.backgroundStyle =
+				"url('/assets/default-bg.png')";
+		}
 
 		await wrapper.updateComplete;
 
-		const element = document.createElement("game-viewport");
+		const element = /** @type {GameViewport} */ (
+			document.createElement("game-viewport")
+		);
 		wrapper.appendChild(element);
 
-		await /** @type {any} */ (element).updateComplete;
+		await element.updateComplete;
 
 		expect(element.shadowRoot?.querySelector(".game-area")).toBeTruthy();
 	});
@@ -234,37 +331,50 @@ describe("GameViewport", () => {
 		const wrapper = new TestContextWrapper();
 		container.appendChild(wrapper);
 
-		const element = document.createElement("game-viewport");
+		const element = /** @type {any} */ (
+			document.createElement("game-viewport")
+		);
 		wrapper.appendChild(element);
 
 		// Initially not initialized
-		expect(/** @type {any} */ (element)._controllersInitialized).toBe(false);
+		expect(element._controllersInitialized).toBe(false);
 
 		// Provide services
 		setupBasicServices(wrapper);
 
 		await wrapper.updateComplete;
-		await /** @type {any} */ (element).updateComplete;
+		await element.updateComplete;
 
-		expect(/** @type {any} */ (element)._controllersInitialized).toBe(true);
-		expect(/** @type {any} */ (element).keyboard).toBeTruthy();
+		expect(element._controllersInitialized).toBe(true);
+		expect(element.keyboard).toBeTruthy();
 	});
 
 	it("should pass zones from current chapter to indicators", async () => {
 		const wrapper = new TestContextWrapper();
 		container.appendChild(wrapper);
 
+		/** @type {import('../../services/interfaces.js').Chapter['zones']} */
 		const zones = [
-			{ type: "THEME_CHANGE", x: 10, y: 10, width: 100, height: 100 },
+			/** @type {any} */ ({
+				type: "THEME_CHANGE",
+				x: 10,
+				y: 10,
+				width: 100,
+				height: 100,
+			}),
 		];
 		setupBasicServices(wrapper);
-		wrapper.questController.currentChapter.zones = zones;
+		if (wrapper.questController?.currentChapter) {
+			wrapper.questController.currentChapter.zones = zones;
+		}
 
 		await wrapper.updateComplete;
 
-		const element = document.createElement("game-viewport");
+		const element = /** @type {GameViewport} */ (
+			document.createElement("game-viewport")
+		);
 		wrapper.appendChild(element);
-		await /** @type {any} */ (element).updateComplete;
+		await element.updateComplete;
 
 		const indicators = Array.from(
 			element.shadowRoot?.querySelectorAll("game-zone-indicator") || [],
@@ -281,26 +391,30 @@ describe("GameViewport", () => {
 		container.appendChild(wrapper);
 
 		setupBasicServices(wrapper);
-		wrapper.questController.currentChapter.backgroundStyle =
-			"url('/assets/default-bg.png')";
-		wrapper.questController.currentChapter.backgroundStyleReward =
-			"url('/assets/reward-bg.png')";
+		if (wrapper.questController?.currentChapter) {
+			wrapper.questController.currentChapter.backgroundStyle =
+				"url('/assets/default-bg.png')";
+			wrapper.questController.currentChapter.backgroundStyleReward =
+				"url('/assets/reward-bg.png')";
+		}
 
 		const questState = wrapper.questState;
 
 		await wrapper.updateComplete;
 
-		const element = document.createElement("game-viewport");
+		const element = /** @type {GameViewport} */ (
+			document.createElement("game-viewport")
+		);
 		wrapper.appendChild(element);
-		await /** @type {any} */ (element).updateComplete;
+		await element.updateComplete;
 
 		// Initial background
 		let bg = element.shadowRoot?.querySelector(".game-area-bg");
 		expect(bg?.getAttribute("src")).toContain("default-bg");
 
 		// Collect reward
-		questState.isRewardCollected.set(true);
-		await /** @type {any} */ (element).updateComplete;
+		questState?.setIsRewardCollected(true);
+		await element.updateComplete;
 
 		bg = element.shadowRoot?.querySelector(".game-area-bg");
 		expect(bg?.getAttribute("src")).toContain("reward-bg");
@@ -317,12 +431,14 @@ describe("GameViewport", () => {
 
 		await wrapper.updateComplete;
 
-		const element = document.createElement("game-viewport");
+		const element = /** @type {GameViewport} */ (
+			document.createElement("game-viewport")
+		);
 		wrapper.appendChild(element);
-		await /** @type {any} */ (element).updateComplete;
+		await element.updateComplete;
 
-		questState.hasCollectedItem.set(true);
-		await /** @type {any} */ (element).updateComplete;
+		questState?.setHasCollectedItem(true);
+		await element.updateComplete;
 
 		expect(spy).toHaveBeenCalled();
 		spy.mockRestore();

@@ -10,8 +10,8 @@
  * @property {import('../game/interfaces.js').IHeroStateService} [heroState]
  * @property {import('../game/interfaces.js').IQuestStateService} [questState]
  * @property {import('../game/interfaces.js').IWorldStateService} [worldState]
- * @property {import('../controllers/quest-controller.js').QuestController} [questController]
- * @property {import('../services/quest-loader-service.js').QuestLoaderService} [questLoader]
+ * @property {import('../services/interfaces.js').IQuestController} [questController]
+ * @property {import('../services/interfaces.js').IQuestLoaderService} [questLoader]
 
  */
 

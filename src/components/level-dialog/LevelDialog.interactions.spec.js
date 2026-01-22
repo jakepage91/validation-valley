@@ -17,6 +17,7 @@ import { questStateContext } from "../../game/contexts/quest-context.js";
 import { worldStateContext } from "../../game/contexts/world-context.js";
 
 class TestContextWrapper extends LitElement {
+	/** @override */
 	static properties = {
 		heroState: { type: Object },
 		questState: { type: Object },
@@ -57,6 +58,7 @@ class TestContextWrapper extends LitElement {
 
 	/**
 	 * @param {import("lit").PropertyValues} changedProperties
+	 * @override
 	 */
 	update(changedProperties) {
 		super.update(changedProperties);
@@ -64,6 +66,7 @@ class TestContextWrapper extends LitElement {
 
 	/**
 	 * @param {import("lit").PropertyValues} changedProperties
+	 * @override
 	 */
 	updated(changedProperties) {
 		if (changedProperties.has("heroState")) {
@@ -83,6 +86,9 @@ class TestContextWrapper extends LitElement {
 		}
 	}
 
+	/**
+	 * @override
+	 */
 	render() {
 		return html`<slot></slot>`;
 	}
@@ -129,15 +135,15 @@ describe("LevelDialog Interactions", () => {
 
 		// Find NEXT button
 		const buttons = element.shadowRoot?.querySelectorAll("wa-button");
-		if (!buttons) throw new Error("Shadow root not found");
+		if (!buttons || buttons.length === 0) throw new Error("Buttons not found");
 		const nextBtn = buttons[buttons.length - 1];
 
-		expect(nextBtn.textContent.trim()).toContain("NEXT");
-
-		nextBtn.click();
-		await element.updateComplete;
-
-		expect(element.slideIndex).toBe(1);
+		if (nextBtn) {
+			expect(nextBtn.textContent?.trim()).toContain("NEXT");
+			nextBtn.click();
+			await element.updateComplete;
+			expect(element.slideIndex).toBe(1);
+		}
 	});
 
 	it("should decrement slideIndex when PREV is clicked", async () => {
@@ -159,15 +165,15 @@ describe("LevelDialog Interactions", () => {
 		expect(element.slideIndex).toBe(1);
 
 		const buttons = element.shadowRoot?.querySelectorAll("wa-button");
-		if (!buttons) throw new Error("Shadow root not found");
+		if (!buttons || buttons.length === 0) throw new Error("Buttons not found");
 		const prevBtn = buttons[0]; // First button is PREV
 
-		expect(prevBtn.textContent.trim()).toContain("PREV");
-
-		prevBtn.click();
-		await element.updateComplete;
-
-		expect(element.slideIndex).toBe(0);
+		if (prevBtn) {
+			expect(prevBtn.textContent?.trim()).toContain("PREV");
+			prevBtn.click();
+			await element.updateComplete;
+			expect(element.slideIndex).toBe(0);
+		}
 	});
 
 	it("should dispatch 'complete' event on final slide button click", async () => {
@@ -191,14 +197,14 @@ describe("LevelDialog Interactions", () => {
 		element.addEventListener("complete", completeSpy);
 
 		const buttons = element.shadowRoot?.querySelectorAll("wa-button");
-		if (!buttons) throw new Error("Shadow root not found");
+		if (!buttons || buttons.length === 0) throw new Error("Buttons not found");
 		const actionBtn = buttons[buttons.length - 1]; // "EVOLVE" or "COMPLETE"
 
-		expect(actionBtn.textContent.trim()).toMatch(/EVOLVE|COMPLETE/);
-
-		actionBtn.click();
-
-		expect(completeSpy).toHaveBeenCalled();
+		if (actionBtn) {
+			expect(actionBtn.textContent?.trim()).toMatch(/EVOLVE|COMPLETE/);
+			actionBtn.click();
+			expect(completeSpy).toHaveBeenCalled();
+		}
 	});
 });
 

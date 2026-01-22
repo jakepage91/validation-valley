@@ -178,7 +178,12 @@ describe("QuestCard Component", () => {
 		button?.click();
 
 		expect(selectHandler).toHaveBeenCalled();
-		expect(selectHandler.mock.calls[0][0].detail.questId).toBe("q1");
+		const firstCall = selectHandler.mock.calls[0];
+		if (firstCall?.[0]) {
+			expect(/** @type {CustomEvent} */ (firstCall[0]).detail.questId).toBe(
+				"q1",
+			);
+		}
 	});
 
 	it("emits quest-continue event when continuing a quest", async () => {
@@ -205,7 +210,12 @@ describe("QuestCard Component", () => {
 		button?.click();
 
 		expect(continueHandler).toHaveBeenCalled();
-		expect(continueHandler.mock.calls[0][0].detail.questId).toBe("q1");
+		const firstCall = continueHandler.mock.calls[0];
+		if (firstCall?.[0]) {
+			expect(/** @type {CustomEvent} */ (firstCall[0]).detail.questId).toBe(
+				"q1",
+			);
+		}
 	});
 
 	it("should have no accessibility violations", async () => {

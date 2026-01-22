@@ -10,8 +10,10 @@ import "@awesome.me/webawesome/dist/components/icon/icon.js";
  * @summary Displays game controls instructions.
  */
 export class GameControls extends LitElement {
+	/** @override */
 	static styles = gameControlsStyles;
 
+	/** @override */
 	static properties = {
 		isVoiceActive: { type: Boolean },
 	};
@@ -22,6 +24,7 @@ export class GameControls extends LitElement {
 		this.isVoiceActive = false;
 	}
 
+	/** @override */
 	render() {
 		return html`
 			<div class="controls-container">

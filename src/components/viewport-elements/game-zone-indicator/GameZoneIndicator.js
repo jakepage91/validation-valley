@@ -18,11 +18,11 @@ import { gameZoneIndicatorStyles } from "./GameZoneIndicator.styles.js";
  * @property {String} type - The type of zones to filter and render (e.g. 'THEME_CHANGE', 'CONTEXT_CHANGE').
  */
 export class GameZoneIndicator extends SignalWatcher(LitElement) {
-	/** @type {import('../../../controllers/quest-controller.js').QuestController} */
+	/** @type {import('../../../services/interfaces.js').IQuestController} */
 	@consume({ context: questControllerContext, subscribe: true })
 	accessor questController = /** @type {any} */ (null);
 
-	/** @type {import('../../../services/theme-service.js').ThemeService} */
+	/** @type {import('../../../services/interfaces.js').IThemeService} */
 	@consume({ context: themeContext, subscribe: true })
 	accessor themeService = /** @type {any} */ (null);
 
@@ -30,8 +30,10 @@ export class GameZoneIndicator extends SignalWatcher(LitElement) {
 	@consume({ context: heroStateContext, subscribe: true })
 	accessor heroState = /** @type {any} */ (null);
 
+	/** @override */
 	static styles = gameZoneIndicatorStyles;
 
+	/** @override */
 	static properties = {
 		type: { type: String },
 		zones: { type: Array },
@@ -115,6 +117,7 @@ export class GameZoneIndicator extends SignalWatcher(LitElement) {
 		`;
 	}
 
+	/** @override */
 	render() {
 		/** @type {any[]} */
 		const zones = this.zones || [];

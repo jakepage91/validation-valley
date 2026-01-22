@@ -1,5 +1,4 @@
 import { msg } from "@lit/localize";
-import { ServiceType } from "../../../services/user-api-client.js";
 
 /**
  * The Orb of Inquiry Quest - Chapter Data
@@ -351,7 +350,7 @@ export class ProductProviderMock extends LitElement {
 			],
 		},
 		stats: { maintainability: 90, portability: 90 },
-		serviceType: ServiceType.MOCK,
+		serviceType: "Mock Service",
 		startPos: { x: 50, y: 10 },
 		exitZone: {
 			x: 50,

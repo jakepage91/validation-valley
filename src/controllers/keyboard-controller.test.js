@@ -8,7 +8,7 @@ describe("KeyboardController", () => {
 	let context;
 	/** @type {KeyboardController} */
 	let controller;
-	/** @type {Record<string, Function>} */
+	/** @type {{ keydown?: (e: any) => void }} */
 	let eventMap = {};
 
 	beforeEach(() => {
@@ -33,10 +33,10 @@ describe("KeyboardController", () => {
 
 		// Mock window event listeners
 		window.addEventListener = vi.fn((event, callback) => {
-			eventMap[event] = callback;
+			if (event === "keydown") eventMap.keydown = callback;
 		});
 		window.removeEventListener = vi.fn((event) => {
-			delete eventMap[event];
+			if (event === "keydown") delete eventMap.keydown;
 		});
 
 		// Initialize controller
@@ -59,7 +59,7 @@ describe("KeyboardController", () => {
 
 	it("should call host.handleMove for arrow keys", () => {
 		const event = { key: "ArrowUp", preventDefault: vi.fn() };
-		eventMap.keydown(event);
+		eventMap.keydown?.(event);
 
 		expect(event.preventDefault).toHaveBeenCalled();
 		expect(host.handleMove).toHaveBeenCalledWith(0, -2.5);
@@ -67,7 +67,7 @@ describe("KeyboardController", () => {
 
 	it("should call host.handleMove for WASD keys", () => {
 		const event = { key: "d", preventDefault: vi.fn() };
-		eventMap.keydown(event);
+		eventMap.keydown?.(event);
 
 		expect(event.preventDefault).toHaveBeenCalled();
 		expect(host.handleMove).toHaveBeenCalledWith(2.5, 0);
@@ -75,7 +75,7 @@ describe("KeyboardController", () => {
 
 	it("should call interaction.handleInteract() on Space", () => {
 		const event = { code: "Space", preventDefault: vi.fn() };
-		eventMap.keydown(event);
+		eventMap.keydown?.(event);
 
 		expect(event.preventDefault).toHaveBeenCalled();
 		expect(host.interaction.handleInteract).toHaveBeenCalled();
@@ -83,7 +83,7 @@ describe("KeyboardController", () => {
 
 	it("should call worldState.setPaused() on Escape", () => {
 		const event = { code: "Escape", preventDefault: vi.fn() };
-		eventMap.keydown(event);
+		eventMap.keydown?.(event);
 
 		expect(event.preventDefault).toHaveBeenCalled();
 		expect(context.worldState.setPaused).toHaveBeenCalledWith(true);
@@ -98,7 +98,7 @@ describe("KeyboardController", () => {
 
 		// WASD 'd' (Right)
 		const event = { key: "d", preventDefault: vi.fn() };
-		eventMap.keydown(event);
+		eventMap.keydown?.(event);
 
 		expect(host.handleMove).toHaveBeenCalledWith(5.0, 0);
 	});

@@ -8,6 +8,7 @@ import { questLoaderContext } from "../../contexts/quest-loader-context.js";
 import { sessionContext } from "../../contexts/session-context.js";
 
 class TestContextWrapper extends LitElement {
+	/** @override */
 	static properties = {
 		sessionService: { type: Object },
 		questLoader: { type: Object },
@@ -25,6 +26,7 @@ class TestContextWrapper extends LitElement {
 		this.qlProvider = undefined;
 	}
 
+	/** @override */
 	connectedCallback() {
 		super.connectedCallback();
 		this.sessionProvider = new ContextProvider(this, {
@@ -39,6 +41,7 @@ class TestContextWrapper extends LitElement {
 
 	/**
 	 * @param {import("lit").PropertyValues} changedProperties
+	 * @override
 	 */
 	updated(changedProperties) {
 		if (changedProperties.has("sessionService")) {
@@ -49,6 +52,7 @@ class TestContextWrapper extends LitElement {
 		}
 	}
 
+	/** @override */
 	render() {
 		return html`<slot></slot>`;
 	}

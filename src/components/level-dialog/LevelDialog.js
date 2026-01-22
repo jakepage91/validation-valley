@@ -2,7 +2,6 @@ import { consume } from "@lit/context";
 import { msg, str, updateWhenLocaleChanges } from "@lit/localize";
 import { html, LitElement } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
-import { map } from "lit/directives/map.js";
 import "@awesome.me/webawesome/dist/components/button/button.js";
 import "@awesome.me/webawesome/dist/components/dialog/dialog.js";
 import "@awesome.me/webawesome/dist/components/icon/icon.js";
@@ -40,7 +39,7 @@ import { levelDialogStyles } from "./LevelDialog.styles.js";
  * @fires close - Fired when dialog is closed
  */
 export class LevelDialog extends LitElement {
-	/** @type {import('../../controllers/quest-controller.js').QuestController} */
+	/** @type {import('../../services/interfaces.js').IQuestController} */
 	@consume({ context: questControllerContext, subscribe: true })
 	accessor questController = /** @type {any} */ (null);
 
@@ -48,10 +47,12 @@ export class LevelDialog extends LitElement {
 	@consume({ context: questStateContext, subscribe: true })
 	accessor questState = /** @type {any} */ (null);
 
+	/** @override */
 	static properties = {
 		slideIndex: { state: true },
 	};
 
+	/** @override */
 	static styles = levelDialogStyles;
 
 	constructor() {
@@ -60,11 +61,13 @@ export class LevelDialog extends LitElement {
 		this.slideIndex = 0;
 	}
 
+	/** @override */
 	connectedCallback() {
 		super.connectedCallback();
 		window.addEventListener("keydown", this.#handleKeyDown);
 	}
 
+	/** @override */
 	disconnectedCallback() {
 		super.disconnectedCallback();
 		window.removeEventListener("keydown", this.#handleKeyDown);
@@ -72,7 +75,8 @@ export class LevelDialog extends LitElement {
 
 	/**
 	 * Updates the component when properties change
-	 * @param {Map<string, any>} changedProperties - The properties that have changed
+	 * @param {import("lit").PropertyValues<this>} changedProperties - The properties that have changed
+	 * @override
 	 */
 	updated(changedProperties) {
 		if (
@@ -245,7 +249,7 @@ export class LevelDialog extends LitElement {
 	/**
 	 * Renders code snippets slide
 	 * @param {'start' | 'end'} type - The type of code slide
-	 * @returns {import("lit").TemplateResult|Iterable<unknown>} The rendered slide
+	 * @returns {import("lit").TemplateResult|Iterable<import("lit").TemplateResult>} The rendered slide
 	 */
 	#renderCodeSlide(type) {
 		const config = this.questController?.currentChapter;
@@ -253,7 +257,7 @@ export class LevelDialog extends LitElement {
 			type === "start"
 				? config?.codeSnippets?.start
 				: config?.codeSnippets?.end;
-		return map(snippets, (/** @type {CodeSnippet} */ snippet) =>
+		return (snippets || []).map((/** @type {CodeSnippet} */ snippet) =>
 			this.#renderCode(snippet, `code-${type}`),
 		);
 	}
@@ -358,7 +362,7 @@ export class LevelDialog extends LitElement {
 
 	/**
 	 * Slide renderers mapping
-	 * @type {Record<string, () => import("lit").TemplateResult | Iterable<unknown>>}
+	 * @type {Record<string, () => import("lit").TemplateResult | Iterable<import("lit").TemplateResult>>}
 	 */
 	#SLIDE_RENDERERS = {
 		"code-start": () => this.#renderCodeSlide("start"),
@@ -372,7 +376,7 @@ export class LevelDialog extends LitElement {
 	/**
 	 * Renders the content of a slide
 	 * @param {string} type - The type of the slide
-	 * @returns {import("lit").TemplateResult|Iterable<unknown>|null} The rendered slide content
+	 * @returns {import("lit").TemplateResult|Iterable<import("lit").TemplateResult>|null} The rendered slide content
 	 */
 	#renderSlideContent(type) {
 		// Try custom slides first (for extensibility)
@@ -384,14 +388,17 @@ export class LevelDialog extends LitElement {
 		return renderer ? renderer() : null;
 	}
 
+	/** @override */
 	render() {
 		const slides = this.#getSlides();
 		const currentSlideType = slides[this.slideIndex];
 		const config = this.questController?.currentChapter;
 
+		if (!currentSlideType) return html``;
+
 		return html`
 			<wa-dialog 
-				label="${config?.title || ""}" 
+				label="${/** @type {any} */ (config?.title ?? "")}" 
 				open
 				style="--width: 80ch; --body-spacing: 0;"
 				@wa-request-close="${(/** @type {Event} */ e) => e.preventDefault()}"

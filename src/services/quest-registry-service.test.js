@@ -25,7 +25,7 @@ vi.mock("../content/quests/quests-data.js", () => {
 			id: "quest-coming-soon",
 			name: "Coming Soon Quest",
 			prerequisites: [],
-			status: "coming-soon",
+			status: "coming_soon",
 		},
 	};
 
@@ -125,10 +125,10 @@ describe("Quest Registry Service", () => {
 			expect(quests.map((q) => q.id)).not.toContain("quest-coming-soon");
 		});
 
-		it("should exclude coming-soon quests", () => {
+		it("should exclude coming_soon quests", () => {
 			const quests = service.getAvailableQuests();
 			quests.forEach((quest) => {
-				expect(quest.status).not.toBe("coming-soon");
+				expect(quest.status).not.toBe("coming_soon");
 			});
 		});
 
@@ -139,11 +139,11 @@ describe("Quest Registry Service", () => {
 	});
 
 	describe("getComingSoonQuests", () => {
-		it("should return only coming-soon quests", () => {
+		it("should return only coming_soon quests", () => {
 			const quests = service.getComingSoonQuests();
 			expect(quests).toHaveLength(1);
-			expect(quests[0].id).toBe("quest-coming-soon");
-			expect(quests[0].status).toBe("coming-soon");
+			expect(quests[0]?.id).toBe("quest-coming-soon");
+			expect(quests[0]?.status).toBe("coming_soon");
 		});
 
 		it("should exclude available quests", () => {

@@ -30,7 +30,7 @@ export class QuestView extends SignalWatcher(LitElement) {
 	@consume({ context: worldStateContext, subscribe: true })
 	accessor worldState = /** @type {any} */ (null);
 
-	/** @type {import('../../services/quest-loader-service.js').QuestLoaderService} */
+	/** @type {import('../../services/interfaces.js').IQuestLoaderService} */
 	@consume({ context: questLoaderContext, subscribe: true })
 	accessor questLoader = /** @type {any} */ (null);
 
@@ -38,7 +38,15 @@ export class QuestView extends SignalWatcher(LitElement) {
 	@consume({ context: sessionContext, subscribe: true })
 	accessor sessionService = /** @type {any} */ (null);
 
+	/** @override */
 	static styles = questViewStyles;
+
+	/** @override */
+	static properties = {
+		isMenuOpen: { state: true },
+		isInventoryOpen: { state: true },
+		showLevelTitle: { state: true },
+	};
 
 	/**
 	 * @param {CustomEvent<{text: string, nextText: string}>} e
@@ -48,6 +56,7 @@ export class QuestView extends SignalWatcher(LitElement) {
 		this.worldState?.setNextDialogText(e.detail.nextText);
 	}
 
+	/** @override */
 	render() {
 		if (!this.worldState || !this.questState || !this.sessionService) {
 			return html`<div>Loading services...</div>`;

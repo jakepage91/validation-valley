@@ -11,6 +11,7 @@ import { questStateContext } from "../../game/contexts/quest-context.js";
 import { worldStateContext } from "../../game/contexts/world-context.js";
 
 class TestContextWrapper extends LitElement {
+	/** @override */
 	static properties = {
 		heroState: { type: Object },
 		questState: { type: Object },
@@ -49,7 +50,10 @@ class TestContextWrapper extends LitElement {
 		});
 	}
 
-	/** @param {Map<PropertyKey, unknown>} changedProperties */
+	/**
+	 * @param {Map<PropertyKey, unknown>} changedProperties
+	 * @override
+	 */
 	updated(changedProperties) {
 		if (changedProperties.has("questController")) {
 			this._qcProvider.setValue(/** @type {any} */ (this.questController));
@@ -59,6 +63,7 @@ class TestContextWrapper extends LitElement {
 		}
 	}
 
+	/** @override */
 	render() {
 		return html`<slot></slot>`;
 	}

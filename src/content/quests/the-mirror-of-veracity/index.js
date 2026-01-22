@@ -35,7 +35,7 @@ export const getMirrorOfVeracityQuest = () => ({
 		),
 		ability: msg("Automated Verification"),
 	},
-	status: "coming-soon",
+	status: "coming_soon",
 });
 
 /** @deprecated Use getMirrorOfVeracityQuest() instead */

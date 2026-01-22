@@ -3,15 +3,21 @@
  */
 
 import { Task, TaskStatus } from "@lit/task";
+import { ServiceType } from "../services/user-api-client.js";
 
 /** @typedef {import("../services/user-api-client.js").IUserApiClient} IUserApiClient */
 /** @typedef {import("../services/user-api-client.js").UserData} UserData */
-/** @typedef {import("../services/user-api-client.js").ServiceType} ServiceType */
 
 /**
+ * @typedef {Object} ServiceMap
+ * @property {IUserApiClient} [legacy]
+ * @property {IUserApiClient} [mock]
+ * @property {IUserApiClient} [new]
+ */
+/**
  * @typedef {Object} ServiceControllerOptions
- * @property {Record<string, IUserApiClient>} [services] - Map of service instances {legacy, mock, new}
- * @property {import('@lit/context').ContextProvider<any>} [profileProvider] - Profile context provider
+ * @property {ServiceMap} [services] - Map of service instances {legacy, mock, new}
+ * @property {import('@lit/context').ContextProvider<any, any> | null} [profileProvider] - Profile context provider
  * @property {() => IUserApiClient|null} [getActiveService] - Function to get active service
  */
 
@@ -36,7 +42,7 @@ export class ServiceController {
 		/** @type {ServiceControllerOptions} */
 		this.options = {
 			services: {},
-			profileProvider: undefined,
+			profileProvider: null,
 			getActiveService: () => null,
 			...options,
 		};
@@ -86,7 +92,7 @@ export class ServiceController {
 
 	/**
 	 * Get active service based on service type and hot switch state
-	 * @param {ServiceType} serviceType - ServiceType from chapter data
+	 * @param {import('../services/user-api-client.js').ServiceType | string | null} serviceType - ServiceType from chapter data
 	 * @param {import('../game/interfaces.js').HotSwitchState} hotSwitchState - Current zone state (for dynamic injection)
 	 * @returns {IUserApiClient|null} Active service or null
 	 */
@@ -94,7 +100,7 @@ export class ServiceController {
 		if (!serviceType) return null;
 
 		// If service type is NEW (dynamic), check hotSwitchState
-		if (serviceType === "new") {
+		if (serviceType === ServiceType.NEW) {
 			if (hotSwitchState === "legacy")
 				return this.options.services?.legacy || null;
 			if (hotSwitchState === "new") return this.options.services?.new || null;
@@ -102,8 +108,10 @@ export class ServiceController {
 		}
 
 		// Static service mapping
-		if (serviceType === "legacy") return this.options.services?.legacy || null;
-		if (serviceType === "mock") return this.options.services?.mock || null;
+		if (serviceType === ServiceType.LEGACY)
+			return this.options.services?.legacy || null;
+		if (serviceType === ServiceType.MOCK)
+			return this.options.services?.mock || null;
 
 		return null;
 	}

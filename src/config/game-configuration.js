@@ -68,11 +68,14 @@ export class GameConfiguration {
 		this.env = /** @type {Environment} */ (
 			env || import.meta.env.MODE || "production"
 		);
+		/** @type {GameConfig} */
 		this._config = this._loadConfig();
 
 		// Apply overrides (useful for testing)
 		if (overrides) {
-			this._config = this._deepMerge(this._config, overrides);
+			this._config = /** @type {GameConfig} */ (
+				this._deepMerge(this._config, overrides)
+			);
 		}
 
 		this._validate();
@@ -86,7 +89,6 @@ export class GameConfiguration {
 	_loadConfig() {
 		const isDev = this.env === "development";
 		const isTest = this.env === "test";
-		const _isProd = this.env === "production";
 
 		return {
 			env: this.env,
@@ -162,9 +164,9 @@ export class GameConfiguration {
 
 	/**
 	 * Deep merge two objects
-	 * @param {any} target
-	 * @param {any} source
-	 * @returns {any}
+	 * @param {Record<string, any>} target
+	 * @param {Record<string, any>} source
+	 * @returns {Record<string, any>}
 	 * @private
 	 */
 	_deepMerge(target, source) {
@@ -186,10 +188,15 @@ export class GameConfiguration {
 	/**
 	 * Get configuration value by path
 	 * @param {string} path - Dot-separated path (e.g., 'animation.rewardDuration')
-	 * @returns {any}
+	 * @returns {number | string | boolean | Object | undefined}
 	 */
 	get(path) {
-		return path.split(".").reduce((obj, key) => obj?.[key], this._config);
+		return path
+			.split(".")
+			.reduce(
+				(obj, key) => (obj ? /** @type {any} */ (obj)[key] : undefined),
+				this._config,
+			);
 	}
 
 	/**

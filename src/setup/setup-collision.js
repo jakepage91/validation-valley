@@ -9,9 +9,9 @@ import { CollisionController } from "../controllers/collision-controller.js";
  * Setup CollisionController
  * @param {CollisionHost} host
  * @param {Object} dependencies
- * @param {import('../game/services/hero-state-service.js').HeroStateService} dependencies.heroState
- * @param {import('../game/services/quest-state-service.js').QuestStateService} dependencies.questState
- * @param {import('../controllers/quest-controller.js').QuestController} [dependencies.questController]
+ * @param {import('../game/interfaces.js').IHeroStateService} dependencies.heroState
+ * @param {import('../game/interfaces.js').IQuestStateService} dependencies.questState
+ * @param {import('../services/interfaces.js').IQuestController} [dependencies.questController]
  */
 export function setupCollision(
 	host,

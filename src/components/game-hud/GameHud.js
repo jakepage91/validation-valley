@@ -14,8 +14,10 @@ export class GameHud extends SignalWatcher(LitElement) {
 	@consume({ context: questStateContext, subscribe: true })
 	accessor questState = /** @type {any} */ (null);
 
+	/** @override */
 	static styles = gameHudStyles;
 
+	/** @override */
 	render() {
 		if (!this.questState) return html``;
 

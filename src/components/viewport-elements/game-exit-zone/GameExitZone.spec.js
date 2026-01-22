@@ -8,6 +8,7 @@ import { questControllerContext } from "../../../contexts/quest-controller-conte
 import { questStateContext } from "../../../game/contexts/quest-context.js";
 
 class TestContextWrapper extends LitElement {
+	/** @override */
 	static properties = {
 		questController: { type: Object },
 		questState: { type: Object },
@@ -25,6 +26,7 @@ class TestContextWrapper extends LitElement {
 		this.qsProvider = undefined;
 	}
 
+	/** @override */
 	connectedCallback() {
 		super.connectedCallback();
 		this.qcProvider = new ContextProvider(this, {
@@ -38,7 +40,8 @@ class TestContextWrapper extends LitElement {
 	}
 
 	/**
-	 * @param {import("lit").PropertyValues} changedProperties
+	 * @param {import("lit").PropertyValues<this>} changedProperties
+	 * @override
 	 */
 	updated(changedProperties) {
 		if (changedProperties.has("questController")) {
@@ -49,6 +52,7 @@ class TestContextWrapper extends LitElement {
 		}
 	}
 
+	/** @override */
 	render() {
 		return html`<slot></slot>`;
 	}

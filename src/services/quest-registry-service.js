@@ -75,7 +75,7 @@ export class QuestRegistryService {
 	 */
 	getAvailableQuests(_completedQuests = []) {
 		return this.getAllQuests().filter(
-			(quest) => quest.status !== "coming-soon",
+			(quest) => quest.status !== "coming_soon",
 		);
 	}
 
@@ -85,7 +85,7 @@ export class QuestRegistryService {
 	 */
 	getComingSoonQuests() {
 		return this.getAllQuests().filter(
-			(quest) => quest.status === "coming-soon",
+			(quest) => quest.status === "coming_soon",
 		);
 	}
 

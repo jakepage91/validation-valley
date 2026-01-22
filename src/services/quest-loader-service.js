@@ -43,6 +43,7 @@ export class QuestLoaderService {
 		this.router = router;
 
 		this._isReturningToHub = false;
+		this._isAdvancingChapter = false;
 
 		// Use Cases
 		this._startQuestUseCase = new StartQuestUseCase({
@@ -71,6 +72,7 @@ export class QuestLoaderService {
 	/**
 	 * Start a new quest
 	 * @param {string} questId
+	 * @returns {Promise<{success: boolean, quest: any, error?: Error}>}
 	 */
 	async startQuest(questId) {
 		this.#setLoadingState(true);
@@ -107,6 +109,7 @@ export class QuestLoaderService {
 	/**
 	 * Continue quest from last checkpoint
 	 * @param {string} questId
+	 * @returns {Promise<{success: boolean, quest: any, error?: Error}>}
 	 */
 	async continueQuest(questId) {
 		this.#setLoadingState(true);
@@ -147,6 +150,7 @@ export class QuestLoaderService {
 	 * Load a specific chapter of a quest
 	 * @param {string} questId
 	 * @param {string} chapterId
+	 * @returns {Promise<void>}
 	 */
 	async loadChapter(questId, chapterId) {
 		this.sessionService.setLoading(true);
@@ -159,7 +163,7 @@ export class QuestLoaderService {
 					this.logger.warn(
 						`🚫 Quest ${questId} not available. Redirecting to hub.`,
 					);
-					this.returnToHub(true);
+					await this.returnToHub(true);
 					return;
 				}
 				await this.questController.loadQuest(questId);
@@ -184,7 +188,7 @@ export class QuestLoaderService {
 				);
 			}
 		} catch (error) {
-			this.logger.error("Failed to load chapter:", error);
+			this.logger.error(`Failed to load chapter ${questId}:`, error);
 		} finally {
 			this.sessionService.setLoading(false);
 		}
@@ -192,6 +196,7 @@ export class QuestLoaderService {
 
 	/**
 	 * Advance to next chapter with evolution animation
+	 * @returns {Promise<void>}
 	 */
 	async advanceChapter() {
 		if (this._isAdvancingChapter) return;
@@ -225,6 +230,7 @@ export class QuestLoaderService {
 
 	/**
 	 * Complete current chapter
+	 * @returns {void}
 	 */
 	completeChapter() {
 		this.questController?.completeChapter();
@@ -232,6 +238,7 @@ export class QuestLoaderService {
 
 	/**
 	 * Complete entire quest
+	 * @returns {void}
 	 */
 	completeQuest() {
 		const result = this._completeQuestUseCase.execute();
@@ -244,6 +251,7 @@ export class QuestLoaderService {
 	/**
 	 * Return to quest hub
 	 * @param {boolean} replace
+	 * @returns {Promise<{success: boolean, error?: Error}>}
 	 */
 	async returnToHub(replace = false) {
 		this.questState.setIsQuestCompleted(false);
@@ -278,7 +286,7 @@ export class QuestLoaderService {
 
 	/**
 	 * Syncs hero state with chapter configuration
-	 * @param {import('../controllers/quest-controller.js').Chapter} chapter
+	 * @param {import('../content/quests/quest-types.js').Chapter} chapter
 	 */
 	_syncHeroState(chapter) {
 		if (chapter?.startPos) {

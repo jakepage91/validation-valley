@@ -1,5 +1,4 @@
 import { GameController } from "../controllers/game-controller.js";
-import { logger } from "../services/logger-service.js";
 
 /**
  * @typedef {import('../core/game-context.js').IGameContext} IGameContext
@@ -14,11 +13,11 @@ import { logger } from "../services/logger-service.js";
  * @param {GameHost} host
  * @param {Object} dependencies
  * @param {import('../services/logger-service.js').LoggerService} dependencies.logger
- * @param {import('../game/services/hero-state-service.js').HeroStateService} dependencies.heroState
- * @param {import('../game/services/quest-state-service.js').QuestStateService} dependencies.questState
- * @param {import('../game/services/world-state-service.js').WorldStateService} dependencies.worldState
- * @param {import('../controllers/quest-controller.js').QuestController} dependencies.questController
- * @param {import('../services/quest-loader-service.js').QuestLoaderService} dependencies.questLoader
+ * @param {import('../game/interfaces.js').IHeroStateService} dependencies.heroState
+ * @param {import('../game/interfaces.js').IQuestStateService} dependencies.questState
+ * @param {import('../game/interfaces.js').IWorldStateService} dependencies.worldState
+ * @param {import('../services/interfaces.js').IQuestController} dependencies.questController
+ * @param {import('../services/interfaces.js').IQuestLoaderService} dependencies.questLoader
  */
 export function setupGameController(
 	host,

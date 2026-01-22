@@ -3,6 +3,8 @@ import { ROUTES } from "../constants/routes.js";
 /** @typedef {import('../utils/router.js').Router} Router */
 
 /** @typedef {import('../core/game-context.js').IGameContext} IGameContext */
+/** @typedef {{ id: string }} QuestParams */
+/** @typedef {{ id: string, chapterId: string }} ChapterParams */
 
 /**
  * Setup application routes
@@ -14,17 +16,14 @@ export function setupRoutes(router, context) {
 		context.questLoader?.returnToHub();
 	});
 
-	router.addRoute(
-		ROUTES.QUEST(":id"),
-		(/** @type {Record<string, string>} */ params) => {
-			context.questLoader?.startQuest(params.id);
-		},
-	);
+	router.addRoute(ROUTES.QUEST(":id"), (/** @type {QuestParams} */ params) => {
+		context.questLoader?.startQuest(params.id || "");
+	});
 
 	router.addRoute(
 		ROUTES.CHAPTER(":id", ":chapterId"),
-		(/** @type {Record<string, string>} */ params) => {
-			context.questLoader?.loadChapter(params.id, params.chapterId);
+		(/** @type {ChapterParams} */ params) => {
+			context.questLoader?.loadChapter(params.id || "", params.chapterId || "");
 		},
 	);
 }

@@ -1,6 +1,6 @@
 import { createContext } from "@lit/context";
 
 /**
- * @type {import("@lit/context").Context<unknown, import("../services/voice-synthesis-service.js").VoiceSynthesisService>}
+ * @type {import("@lit/context").Context<symbol, import("../services/interfaces.js").IVoiceSynthesisService>}
  */
 export const voiceContext = createContext(Symbol("voice-service"));

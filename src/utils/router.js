@@ -3,7 +3,7 @@
  */
 /**
  * @callback RouteCallback
- * @param {Record<string, string>} params
+ * @param {any} params
  * @returns {void}
  */
 
@@ -117,9 +117,9 @@ export class Router {
 			const patternPart = patternParts[i];
 			const pathPart = pathParts[i];
 
-			if (patternPart.startsWith(":")) {
+			if (patternPart?.startsWith(":")) {
 				const paramName = patternPart.slice(1);
-				params[paramName] = pathPart;
+				params[paramName] = pathPart || "";
 			} else if (patternPart !== pathPart) {
 				return null;
 			}

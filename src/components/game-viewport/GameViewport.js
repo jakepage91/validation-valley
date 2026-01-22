@@ -41,45 +41,77 @@ import { gameViewportStyles } from "./GameViewport.styles.js";
  * @element game-viewport
  */
 export class GameViewport extends SignalWatcher(LitElement) {
+	/** @type {import('../../game/interfaces.js').IHeroStateService} */
 	@consume({ context: heroStateContext, subscribe: true })
-	accessor heroState = /** @type {any} */ (null);
+	accessor heroState =
+		/** @type {import('../../game/interfaces.js').IHeroStateService} */ (
+			/** @type {unknown} */ (null)
+		);
 
 	/** @type {import('../../game/interfaces.js').IQuestStateService} */
 	@consume({ context: questStateContext, subscribe: true })
-	accessor questState = /** @type {any} */ (null);
+	accessor questState =
+		/** @type {import('../../game/interfaces.js').IQuestStateService} */ (
+			/** @type {unknown} */ (null)
+		);
 
 	/** @type {import('../../game/interfaces.js').IWorldStateService} */
 	@consume({ context: worldStateContext, subscribe: true })
-	accessor worldState = /** @type {any} */ (null);
+	accessor worldState =
+		/** @type {import('../../game/interfaces.js').IWorldStateService} */ (
+			/** @type {unknown} */ (null)
+		);
 
-	/** @type {import('../../controllers/quest-controller.js').QuestController} */
+	/** @type {import('../../services/interfaces.js').IQuestController} */
 	@consume({ context: questControllerContext, subscribe: true })
-	accessor questController = /** @type {any} */ (null);
+	accessor questController =
+		/** @type {import('../../services/interfaces.js').IQuestController} */ (
+			/** @type {unknown} */ (null)
+		);
 
-	/** @type {import('../../services/quest-loader-service.js').QuestLoaderService} */
+	/** @type {import('../../services/interfaces.js').IQuestLoaderService} */
 	@consume({ context: questLoaderContext, subscribe: true })
-	accessor questLoader = /** @type {any} */ (null);
+	accessor questLoader =
+		/** @type {import('../../services/interfaces.js').IQuestLoaderService} */ (
+			/** @type {unknown} */ (null)
+		);
 
 	/** @type {import('../../services/session-service.js').SessionService} */
 	@consume({ context: sessionContext, subscribe: true })
-	accessor sessionService = /** @type {any} */ (null);
+	accessor sessionService =
+		/** @type {import('../../services/session-service.js').SessionService} */ (
+			/** @type {unknown} */ (null)
+		);
 
-	/** @type {import('../../services/localization-service.js').LocalizationService} */
+	/** @type {import('../../services/interfaces.js').ILocalizationService} */
 	@consume({ context: localizationContext, subscribe: true })
-	accessor localizationService = /** @type {any} */ (null);
+	accessor localizationService =
+		/** @type {import('../../services/interfaces.js').ILocalizationService} */ (
+			/** @type {unknown} */ (null)
+		);
 
-	/** @type {import('../../services/theme-service.js').ThemeService} */
+	/** @type {import('../../services/interfaces.js').IThemeService} */
 	@consume({ context: themeContext, subscribe: true })
-	accessor themeService = /** @type {any} */ (null);
+	accessor themeService =
+		/** @type {import('../../services/interfaces.js').IThemeService} */ (
+			/** @type {unknown} */ (null)
+		);
 
-	/** @type {import('../../services/ai-service.js').AIService} */
+	/** @type {import('../../services/interfaces.js').IAIService} */
 	@consume({ context: aiContext, subscribe: true })
-	accessor aiService = /** @type {any} */ (null);
+	accessor aiService =
+		/** @type {import('../../services/interfaces.js').IAIService} */ (
+			/** @type {unknown} */ (null)
+		);
 
-	/** @type {import('../../services/voice-synthesis-service.js').VoiceSynthesisService} */
+	/** @type {import('../../services/interfaces.js').IVoiceSynthesisService} */
 	@consume({ context: voiceContext, subscribe: true })
-	accessor voiceSynthesisService = /** @type {any} */ (null);
+	accessor voiceSynthesisService =
+		/** @type {import('../../services/interfaces.js').IVoiceSynthesisService} */ (
+			/** @type {unknown} */ (null)
+		);
 
+	/** @override */
 	static properties = {
 		isAnimatingReward: { state: true },
 		rewardAnimState: { state: true },
@@ -87,6 +119,7 @@ export class GameViewport extends SignalWatcher(LitElement) {
 		isVoiceActive: { type: Boolean },
 	};
 
+	/** @override */
 	static styles = gameViewportStyles;
 
 	constructor() {
@@ -115,7 +148,8 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	}
 
 	/**
-	 * @param {import("lit").PropertyValues} changedProperties
+	 * @param {import("lit").PropertyValues<this>} changedProperties
+	 * @override
 	 */
 	updated(changedProperties) {
 		super.updated(changedProperties);
@@ -146,6 +180,7 @@ export class GameViewport extends SignalWatcher(LitElement) {
 		}
 	}
 
+	/** @override */
 	disconnectedCallback() {
 		super.disconnectedCallback();
 		if (typeof this.stopAutoMove === "function") {
@@ -167,42 +202,30 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	 * Setup fundamental game mechanics controllers
 	 */
 	#setupGameMechanics() {
-		setupZones(
-			this,
-			/** @type {any} */ ({
-				heroState: this.heroState,
-				questState: this.questState,
-				questController: this.questController,
-				themeService: this.themeService,
-			}),
-		);
-		setupCollision(
-			this,
-			/** @type {any} */ ({
-				heroState: this.heroState,
-				questState: this.questState,
-				questController: this.questController,
-			}),
-		);
-		setupCharacterContexts(
-			this,
-			/** @type {any} */ ({
-				heroState: this.heroState,
-				questState: this.questState,
-				questController: this.questController,
-				themeService: this.themeService,
-			}),
-		);
-		setupInteraction(
-			this,
-			/** @type {any} */ ({
-				worldState: this.worldState,
-				questState: this.questState,
-				heroState: this.heroState,
-				questController: this.questController,
-				questLoader: this.questLoader,
-			}),
-		);
+		setupZones(this, {
+			heroState: this.heroState,
+			questState: this.questState,
+			questController: this.questController,
+			themeService: this.themeService,
+		});
+		setupCollision(this, {
+			heroState: this.heroState,
+			questState: this.questState,
+			questController: this.questController,
+		});
+		setupCharacterContexts(this, {
+			heroState: this.heroState,
+			questState: this.questState,
+			questController: this.questController,
+			themeService: this.themeService,
+		});
+		setupInteraction(this, {
+			worldState: this.worldState,
+			questState: this.questState,
+			heroState: this.heroState,
+			questController: this.questController,
+			questLoader: this.questLoader,
+		});
 	}
 
 	/**
@@ -210,36 +233,30 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	 */
 	#setupInputHandlers() {
 		this.#setupKeyboard();
-		setupVoice(
-			/** @type {any} */ (this),
-			/** @type {any} */ ({
-				logger: this.questController?.options?.logger,
-				localizationService: this.localizationService,
-				aiService: this.aiService,
-				voiceSynthesisService: this.voiceSynthesisService,
-				worldState: this.worldState,
-				questState: this.questState,
-				questController: this.questController,
-				questLoader: this.questLoader,
-			}),
-		);
+		setupVoice(this, {
+			logger: this.questController?.options?.logger,
+			localizationService: this.localizationService,
+			aiService: this.aiService,
+			voiceSynthesisService: this.voiceSynthesisService,
+			worldState: this.worldState,
+			questState: this.questState,
+			questController: this.questController,
+			questLoader: this.questLoader,
+		});
 	}
 
 	/**
 	 * Setup high-level game flow controllers
 	 */
 	#setupGameFlow() {
-		setupGameController(
-			this,
-			/** @type {any} */ ({
-				logger: this.questController?.options?.logger,
-				heroState: this.heroState,
-				questState: this.questState,
-				worldState: this.worldState,
-				questController: this.questController,
-				questLoader: this.questLoader,
-			}),
-		);
+		setupGameController(this, {
+			logger: this.questController?.options?.logger,
+			heroState: this.heroState,
+			questState: this.questState,
+			worldState: this.worldState,
+			questController: this.questController,
+			questLoader: this.questLoader,
+		});
 	}
 
 	/**
@@ -383,7 +400,8 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	}
 
 	/**
-	 * @param {import("lit").PropertyValues} changedProperties
+	 * @param {import("lit").PropertyValues<this>} changedProperties
+	 * @override
 	 */
 	willUpdate(changedProperties) {
 		super.willUpdate(changedProperties);
@@ -432,6 +450,7 @@ export class GameViewport extends SignalWatcher(LitElement) {
 		}, gameConfig.animation.rewardDuration);
 	}
 
+	/** @override */
 	render() {
 		if (!this.questState || !this.questController) return html``;
 

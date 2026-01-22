@@ -7,7 +7,9 @@
 > 1.  **Strict 3-Layer Structure**: `App (Router)` -> `QuestView (Context Provider)` -> `GameViewport (Engine)`.
 > 2.  **Domain-Driven State**: No monolithic `GameState`. Use `HeroState`, `QuestState`, `WorldState`.
 > 3.  **No Global Singletons**: All services must be Classes injected via `@lit/context`.
-> 4.  **No EventBus/CommandBus**: Use direct Service Injection.
+> 4.  **Interface-Driven Architecture**: All core services MUST define an abstract interface in `src/services/interfaces.js`.
+> 5.  **Strict Context Typing**: Components MUST consume services using their interface type in JSDoc for better decoupling and testability.
+> 6.  **No EventBus/CommandBus**: Use direct Service Injection.
 
 This document outlines the mandatory architectural and coding standards for "Legacy's End". All contributions must adhere to these rules to ensure consistency, maintainability, and quality.
 
@@ -38,7 +40,14 @@ This document outlines the mandatory architectural and coding standards for "Leg
      * @property {number} y
      */
     ```
-*   **No "Any"**: Avoid generic `Object` types where possible; define the shape.
+*   **No "Any"**: The use of `any` is strictly forbidden. Use `unknown` for truly dynamic types or define specific shapes.
+*   **Stricter Typing**: All variables, parameters, and return types must be explicitly typed using JSDoc. Avoid generic `Object` types; define the shape.
+*   **Interface Casting**: When using `@consume`, cast the context initial value using JSDoc to the interface type.
+    ```javascript
+    /** @type {import('../../services/interfaces.js').IQuestLoaderService} */
+    @consume({ context: questLoaderContext, subscribe: true })
+    accessor questLoader = /** @type {any} */ (null);
+    ```
 *   **Private Methods**: Document private methods with JSDoc but mark them as internal.
 
 ---
@@ -52,6 +61,7 @@ This document outlines the mandatory architectural and coding standards for "Leg
     *   **Project Coverage**: Must not drop by more than **1%**.
 *   **Tooling**: Use `vitest` for unit tests. Run `npm run test:coverage` to verify locally.
 *   **Linting**: Code must pass `npm run lint:biome`, `npm run lint:tsc`, and `npm run lint:lit`.
+*   **TSC Hardening**: The project uses an ultra-strict configuration (`verbatimModuleSyntax`, `useDefineForClassFields`, `skipLibCheck: false`). Any code that breaks these checks must be refactored to comply; do not use `@ts-ignore` unless absolutely necessary and documented.
 *   **Environment**: Tests must not rely on global side-effects. Use dependency injection (e.g., passing `env` or `options` in constructors) to test different configurations.
 *   **Component Testing**:
     *   Must use **Vitest Browser Mode** (Chromium).

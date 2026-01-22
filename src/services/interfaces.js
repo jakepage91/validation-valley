@@ -9,13 +9,39 @@
 // Import types from their source files
 
 /** @typedef {import('./progress-service.js').ProgressState} ProgressState */
-/** @typedef {import('./quest-registry-service.js').Quest} Quest */
+/** @typedef {import('../content/quests/quest-types.js').Quest} Quest */
+/** @typedef {import('../content/quests/quest-types.js').Chapter} Chapter */
 /** @typedef {import('../config/game-configuration.js').AnimationConfig} AnimationConfig */
 /** @typedef {import('../config/game-configuration.js').GameplayConfig} GameplayConfig */
 /** @typedef {import('../config/game-configuration.js').StorageConfig} StorageConfig */
-/** @typedef {import('../config/game-configuration.js').FeaturesConfig} FeaturesConfig */
 /** @typedef {import('../config/game-configuration.js').ViewportConfig} ViewportConfig */
 /** @typedef {import('../config/game-configuration.js').GameConfig} GameConfig */
+/** @typedef {import('../config/game-configuration.js').FeaturesConfig} FeaturesConfig */
+/** @typedef {import('../content/quests/quest-types.js').DifficultyType} DifficultyType */
+/** @typedef {import('../content/quests/quest-types.js').QuestStatus} QuestStatus */
+/** @typedef {import('../content/quests/quest-types.js').ZoneType} ZoneType */
+/** @typedef {import('../content/quests/quest-types.js').ServiceBrand} ServiceBrand */
+/**
+ * @typedef {string | number | boolean | null | Object | Array<*>} JsonValue
+ */
+
+/**
+ * @typedef {Object} AIDownloadProgressEvent
+ * @property {number} loaded
+ * @property {number} total
+ */
+
+/**
+ * @typedef {Object} AIModelSession
+ * @property {function(string): Promise<string>} prompt
+ * @property {function(): void} destroy
+ */
+
+/**
+ * @typedef {Object} AILanguageModel
+ * @property {function(Object): Promise<AIModelSession>} create
+ * @property {function(): Promise<string>} availability
+ */
 
 /**
  * @typedef {Object} IProgressService
@@ -23,9 +49,9 @@
  * @property {() => void} saveProgress - Save progress to storage
  * @property {() => void} resetProgress - Reset all progress
  * @property {(questId: string) => void} resetQuestProgress - Reset specific quest
- * @property {(questId: string, chapterId: string) => void} setCurrentQuest - Set active quest/chapter
- * @property {(chapterId: string, state: Object) => void} setChapterState - Update chapter state
- * @property {(chapterId: string) => Object} getChapterState - Get chapter state
+ * @property {(questId: string|null, chapterId: string|null) => void} setCurrentQuest - Set active quest/chapter
+ * @property {(chapterId: string, state: JsonValue) => void} setChapterState - Update chapter state
+ * @property {(chapterId: string) => JsonValue} getChapterState - Get chapter state
  * @property {(chapterId: string) => void} completeChapter - Mark chapter complete
  * @property {(questId: string) => void} completeQuest - Mark quest complete
  * @property {(questId: string) => void} unlockQuest - Unlock a quest
@@ -33,34 +59,41 @@
  * @property {(questId: string) => number} getQuestProgress - Get quest completion %
  * @property {() => number} getOverallProgress - Get overall completion %
  * @property {(questId: string) => boolean} isQuestCompleted - Check if quest done
+ * @property {(questId: string) => boolean} isQuestCompleted - Check if quest done
  * @property {(questId: string) => boolean} isQuestAvailable - Check if quest available
+ * @property {(chapterId: string) => boolean} isChapterCompleted - Check if chapter done
  */
 
 /**
  * @typedef {Object} IStorageAdapter
- * @property {(key: string) => any} getItem - Get item from storage
- * @property {(key: string, value: any) => void} setItem - Set item in storage
+ * @property {(key: string) => JsonValue} getItem - Get item from storage
+ * @property {(key: string, value: JsonValue) => void} setItem - Set item in storage
  * @property {(key: string) => void} removeItem - Remove item from storage
  * @property {() => void} clear - Clear all storage
  */
 
 /**
  * @typedef {Object} IQuestController
- * @property {Object|null} currentQuest - Currently active quest
- * @property {Object|null} currentChapter - Currently active chapter
+ * @property {import('lit').ReactiveControllerHost} [host]
+ * @property {any} [options]
+ * @property {import('./interfaces.js').ILoggerService | undefined} [logger]
+ * @property {import('./quest-registry-service.js').QuestRegistryService | undefined} [registry]
+ * @property {import('./preloader-service.js').PreloaderService | undefined} [preloaderService]
+ * @property {Quest|null} currentQuest - Currently active quest
+ * @property {Chapter|null} currentChapter - Currently active chapter
  * @property {number} currentChapterIndex - Index of current chapter
- * @property {(questId: string) => Promise<void>} startQuest - Start a new quest
- * @property {(questId: string) => Promise<void>} loadQuest - Load quest without reset
+ * @property {(questId: string) => Promise<boolean>} startQuest - Start a new quest
+ * @property {(questId: string) => Promise<boolean>} loadQuest - Load quest without reset
  * @property {() => Promise<void>} resumeQuest - Resume from saved state
  * @property {(questId: string) => Promise<void>} continueQuest - Continue from last chapter
  * @property {(chapterId: string) => boolean} jumpToChapter - Jump to specific chapter
- * @property {() => Object|null} getCurrentChapterData - Get current chapter data
- * @property {() => Object|null} getNextChapterData - Get next chapter data
+ * @property {() => Chapter|null} getCurrentChapterData - Get current chapter data
+ * @property {() => Chapter|null} getNextChapterData - Get next chapter data
  * @property {() => void} completeChapter - Complete current chapter
  * @property {() => boolean} hasNextChapter - Check if next chapter exists
  * @property {() => void} nextChapter - Move to next chapter
  * @property {() => void} completeQuest - Complete current quest
- * @property {() => void} returnToHub - Return to quest hub
+ * @property {(replace?: boolean) => Promise<{success: boolean}>} returnToHub - Return to quest hub
  * @property {() => Quest[]} getAvailableQuests - Get available quests
  * @property {(questId: string) => number} getQuestProgress - Get quest progress %
  * @property {(questId: string) => boolean} isQuestCompleted - Check completion
@@ -76,9 +109,75 @@
  * @property {StorageConfig} storage - Storage settings
  * @property {FeaturesConfig} features - Feature flags
  * @property {ViewportConfig} viewport - Viewport settings
- * @property {(path: string) => any} get - Get config value by path
- * @property {(feature: string) => boolean} isFeatureEnabled - Check if feature enabled
+ * @property {(path: string) => JsonValue | undefined} get - Get config value by path
+ * @property {(feature: keyof FeaturesConfig) => boolean} isFeatureEnabled - Check if feature enabled
  * @property {() => GameConfig} getAll - Get all configuration
+ */
+
+/**
+ * @typedef {Object} IThemeService
+ * @property {import('./interfaces.js').ILoggerService | undefined} [logger]
+ * @property {IStorageAdapter | undefined} [storage]
+ * @property {import('@lit-labs/signals').State<import('./theme-service.js').ThemeMode>} themeMode
+ * @property {(mode: import('./theme-service.js').ThemeMode) => void} setTheme
+ * @property {() => void} toggleTheme
+ */
+
+/**
+ * @typedef {Object} ILocalizationService
+ * @property {import('./interfaces.js').ILoggerService | undefined} [logger]
+ * @property {IStorageAdapter | undefined} [storage]
+ * @property {(key: string) => string} t
+ * @property {() => string} getLocale
+ * @property {(locale: string) => Promise<void>} setLocale
+ */
+
+/**
+ * @typedef {Object} IAIService
+ * @property {string | undefined} [availabilityStatus]
+ * @property {boolean | undefined} [isAvailable]
+ * @property {Map<string, AIModelSession> | undefined} [sessions]
+ * @property {import('@lit-labs/signals').State<boolean>} isEnabled
+ * @property {() => Promise<string>} checkAvailability
+ * @property {(key: string, options: import('./ai-service.js').AIOptions) => Promise<any>} createSession
+ * @property {(key: string) => AIModelSession | null | undefined} getSession
+ * @property {(key: string) => void} destroySession
+ * @property {() => void} destroyAllSessions
+ * @property {(key: string, prompt: string) => Promise<string>} getChatResponse
+ */
+
+/**
+ * @typedef {Object} IVoiceSynthesisService
+ * @property {SpeechSynthesis | undefined} [synthesis]
+ * @property {SpeechSynthesisVoice[] | undefined} [voices]
+ * @property {boolean} [isSpeaking]
+ * @property {(text: string, options?: { lang?: string, voice?: SpeechSynthesisVoice | null | undefined, rate?: number, pitch?: number, queue?: boolean, onStart?: () => void, onEnd?: () => void, onError?: (e: any) => void }) => Promise<void>} speak
+ * @property {() => void} cancel
+ * @property {(lang: string, preferredNames?: string[]) => SpeechSynthesisVoice|null} getBestVoice
+ */
+
+/**
+ * @typedef {Object} IQuestLoaderService
+ * @property {import('./logger-service.js').LoggerService | undefined} [logger]
+ * @property {import('../game/interfaces.js').IQuestStateService | undefined} [questState]
+ * @property {import('./session-service.js').SessionService | undefined} [sessionService]
+ * @property {IProgressService | undefined} [progressService]
+ * @property {(questId: string) => Promise<{success: boolean, quest: any, error?: Error}>} startQuest
+ * @property {(questId: string) => Promise<{success: boolean, quest: any, error?: Error}>} continueQuest
+ * @property {(questId: string, chapterId: string) => Promise<void>} loadChapter
+ * @property {() => Promise<void>} advanceChapter
+ * @property {() => void} completeChapter
+ * @property {() => void} completeQuest
+ * @property {(replace?: boolean) => Promise<{success: boolean, error?: Error}>} returnToHub
+ * @property {any} [interactWithNpcUseCase]
+ */
+
+/**
+ * @typedef {Object} ILoggerService
+ * @property {(message: string, meta?: any) => void} debug
+ * @property {(message: string, meta?: any) => void} info
+ * @property {(message: string, meta?: any) => void} warn
+ * @property {(message: string, error?: any) => void} error
  */
 
 // Export type definitions for use in other files

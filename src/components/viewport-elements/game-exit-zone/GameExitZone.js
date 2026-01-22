@@ -19,7 +19,7 @@ import "@awesome.me/webawesome/dist/components/tag/tag.js";
  */
 
 export class GameExitZone extends SignalWatcher(LitElement) {
-	/** @type {import('../../../controllers/quest-controller.js').QuestController} */
+	/** @type {import('../../../services/interfaces.js').IQuestController} */
 	@consume({ context: questControllerContext, subscribe: true })
 	accessor questController = /** @type {any} */ (null);
 
@@ -27,8 +27,10 @@ export class GameExitZone extends SignalWatcher(LitElement) {
 	@consume({ context: questStateContext, subscribe: true })
 	accessor questState = /** @type {any} */ (null);
 
+	/** @override */
 	static styles = gameExitZoneStyles;
 
+	/** @override */
 	render() {
 		const zoneConfig = this.questController?.currentChapter?.exitZone;
 		const active = this.questState?.hasCollectedItem.get() || false;

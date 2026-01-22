@@ -10,8 +10,8 @@ import { CharacterContextController } from "../controllers/character-context-con
  * @param {Object} dependencies
  * @param {import('../game/interfaces.js').IHeroStateService} dependencies.heroState
  * @param {import('../game/interfaces.js').IQuestStateService} dependencies.questState
- * @param {import('../controllers/quest-controller.js').QuestController} dependencies.questController
- * @param {import('../services/theme-service.js').ThemeService} dependencies.themeService
+ * @param {import('../services/interfaces.js').IQuestController} dependencies.questController
+ * @param {import('../services/interfaces.js').IThemeService} dependencies.themeService
  * @returns {CharacterContextController}
  */
 export function setupCharacterContexts(

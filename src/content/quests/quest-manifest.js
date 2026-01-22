@@ -6,6 +6,7 @@ import { Difficulty } from "./quest-types.js";
  * @typedef {import("./quest-types.js").Difficulty} DifficultyType
  */
 
+/** @returns {Partial<Quest>} */
 export const getAuraOfSovereigntyMetadata = () => ({
 	id: "the-aura-of-sovereignty",
 	name: msg("The Aura of Sovereignty"),
@@ -19,6 +20,7 @@ export const getAuraOfSovereigntyMetadata = () => ({
 	prerequisites: [],
 });
 
+/** @returns {any} */
 export const getTokenOfAgnosticismMetadata = () => ({
 	id: "the-chromatic-loom",
 	name: msg("The Chromatic Loom"),
@@ -28,10 +30,11 @@ export const getTokenOfAgnosticismMetadata = () => ({
 	),
 	difficulty: Difficulty.BEGINNER,
 	icon: "palette",
-	status: "coming-soon",
+	status: "coming_soon",
 	prerequisites: ["the-aura-of-sovereignty"],
 });
 
+/** @returns {any} */
 export const getOrbOfInquiryMetadata = () => ({
 	id: "the-orb-of-inquiry",
 	name: msg("The Orb of Inquiry"),
@@ -45,6 +48,7 @@ export const getOrbOfInquiryMetadata = () => ({
 	prerequisites: [],
 });
 
+/** @returns {any} */
 export const getStateManagementRaidMetadata = () => ({
 	id: "the-flowing-heartstone",
 	name: msg("The Flowing Heartstone"),
@@ -54,10 +58,11 @@ export const getStateManagementRaidMetadata = () => ({
 	),
 	difficulty: Difficulty.INTERMEDIATE,
 	icon: "hexagon-nodes",
-	status: "coming-soon",
+	status: "coming_soon",
 	prerequisites: ["the-orb-of-inquiry"],
 });
 
+/** @returns {any} */
 export const getGateOfIdentityMetadata = () => ({
 	id: "the-watchers-bastion",
 	name: msg("The Watcher's Bastion"),
@@ -67,10 +72,11 @@ export const getGateOfIdentityMetadata = () => ({
 	),
 	difficulty: Difficulty.INTERMEDIATE,
 	icon: "radio",
-	status: "coming-soon",
+	status: "coming_soon",
 	prerequisites: ["the-flowing-heartstone"],
 });
 
+/** @returns {any} */
 export const getMirrorOfVeracityMetadata = () => ({
 	id: "the-mirror-of-veracity",
 	name: msg("The Mirror of Veracity"),
@@ -80,10 +86,11 @@ export const getMirrorOfVeracityMetadata = () => ({
 	),
 	difficulty: Difficulty.ADVANCED,
 	icon: "list-check",
-	status: "coming-soon",
+	status: "coming_soon",
 	prerequisites: ["the-watchers-bastion"],
 });
 
+/** @returns {any} */
 export const getScryingPoolOfChaosMetadata = () => ({
 	id: "the-crimson-altar",
 	name: msg("The Crimson Altar"),
@@ -93,10 +100,11 @@ export const getScryingPoolOfChaosMetadata = () => ({
 	),
 	difficulty: Difficulty.ADVANCED,
 	icon: "flask-vial",
-	status: "coming-soon",
+	status: "coming_soon",
 	prerequisites: ["the-mirror-of-veracity"],
 });
 
+/** @returns {any} */
 export const getScrollOfTonguesMetadata = () => ({
 	id: "the-scroll-of-tongues",
 	name: msg("The Scroll of Tongues"),
@@ -106,10 +114,11 @@ export const getScrollOfTonguesMetadata = () => ({
 	),
 	difficulty: Difficulty.ADVANCED,
 	icon: "language",
-	status: "coming-soon",
+	status: "coming_soon",
 	prerequisites: ["the-crimson-altar"],
 });
 
+/** @returns {any} */
 export const getUnseenHarmonyMetadata = () => ({
 	id: "the-unseen-harmony",
 	name: msg("The Unseen Harmony"),
@@ -119,10 +128,11 @@ export const getUnseenHarmonyMetadata = () => ({
 	),
 	difficulty: Difficulty.EXPERT,
 	icon: "eye-low-vision",
-	status: "coming-soon",
+	status: "coming_soon",
 	prerequisites: ["the-scroll-of-tongues"],
 });
 
+/** @returns {Partial<Quest>} */
 export const getOracleOfSiliconMetadata = () => ({
 	id: "the-oracle-of-silicon",
 	name: msg("The Oracle of Silicon"),
@@ -132,7 +142,7 @@ export const getOracleOfSiliconMetadata = () => ({
 	),
 	difficulty: Difficulty.EXPERT,
 	icon: "microchip",
-	status: "coming-soon",
+	status: "coming_soon",
 	prerequisites: ["the-unseen-harmony"],
 });
 
@@ -152,7 +162,9 @@ export const getQuestManifest = () => {
 
 	return manifests.reduce(
 		(acc, current) => {
-			acc[current.id] = current;
+			if (current.id) {
+				acc[current.id] = current;
+			}
 			return acc;
 		},
 		/** @type {Record<string, any>} */ ({}),

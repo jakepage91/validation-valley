@@ -12,7 +12,6 @@ import "./components/quest-card/quest-card.js";
  *
  * @typedef {import("../about-slides/AboutSlides.js").AboutSlides} AboutSlides
  * @typedef {import("../../content/quests/quest-types.js").Quest} Quest
- * @typedef {import("../../content/quests/quest-types.js").EnrichedQuest} EnrichedQuest
  *
  * Displays available quests with:
  * - Quest cards for each available quest
@@ -22,8 +21,8 @@ import "./components/quest-card/quest-card.js";
  * - Progress reset
  *
  * @element quest-hub
- * @property {Array<EnrichedQuest>} quests - Available quests
- * @property {Array<EnrichedQuest>} comingSoonQuests - Coming soon quests
+ * @property {Array<Quest>} quests - Available quests
+ * @property {Array<Quest>} comingSoonQuests - Coming soon quests
  * @property {boolean} showFullDescription - Whether to show full description
  * @property {boolean} isFullscreen - Whether the app is in fullscreen mode
  * @fires quest-select - Fired when a quest is selected
@@ -31,8 +30,10 @@ import "./components/quest-card/quest-card.js";
  * @fires reset-progress - Fired when progress reset is requested
  */
 export class QuestHub extends LitElement {
+	/** @override */
 	static styles = questHubStyles;
 
+	/** @override */
 	static properties = {
 		quests: { type: Array },
 		comingSoonQuests: { type: Array },
@@ -44,16 +45,17 @@ export class QuestHub extends LitElement {
 	constructor() {
 		super();
 		updateWhenLocaleChanges(this);
-		/** @type {EnrichedQuest[]} */
+		/** @type {Quest[]} */
 		this.quests = [];
-		/** @type {EnrichedQuest[]} */
+		/** @type {Quest[]} */
 		this.comingSoonQuests = [];
 		this.showFullDescription = false;
 		this.isFullscreen = !!document.fullscreenElement;
-		/** @type {import('../../services/localization-service.js').LocalizationService | undefined} */
-		this.localizationService = undefined;
+		/** @type {import('../../services/localization-service.js').LocalizationService | null} */
+		this.localizationService = null;
 	}
 
+	/** @override */
 	connectedCallback() {
 		super.connectedCallback();
 		document.addEventListener(
@@ -62,6 +64,7 @@ export class QuestHub extends LitElement {
 		);
 	}
 
+	/** @override */
 	disconnectedCallback() {
 		super.disconnectedCallback();
 		document.removeEventListener(
@@ -84,6 +87,8 @@ export class QuestHub extends LitElement {
 		this.showFullDescription = !this.showFullDescription;
 	}
 
+	/** @override */
+	/** @override */
 	render() {
 		return html`
 			<div class="hub-container">

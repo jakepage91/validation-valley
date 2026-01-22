@@ -12,10 +12,12 @@ import { languageSelectorStyles } from "./LanguageSelector.styles.js";
  * @property {import('../../services/localization-service.js').LocalizationService} localizationService
  */
 export class LanguageSelector extends SignalWatcher(LitElement) {
+	/** @override */
 	static properties = {
 		localizationService: { attribute: false },
 	};
 
+	/** @override */
 	static styles = languageSelectorStyles;
 
 	constructor() {
@@ -25,6 +27,7 @@ export class LanguageSelector extends SignalWatcher(LitElement) {
 		this.localizationService = null;
 	}
 
+	/** @override */
 	render() {
 		if (!this.localizationService) return nothing;
 

@@ -57,7 +57,7 @@ export class InteractionController {
 			getState: () => ({
 				level: "",
 				heroPos: { x: 0, y: 0 },
-				hotSwitchState: null,
+				hotSwitchState: /** @type {any} */ (null),
 				hasCollectedItem: false,
 			}),
 			getNpcPosition: () => null,
@@ -124,14 +124,14 @@ export class InteractionController {
 
 		const result = this.options.interactWithNpcUseCase.execute({
 			isClose,
-			chapterData,
+			chapterData: /** @type {any} */ (chapterData),
 			gameState: state,
 			hasCollectedItem,
 		});
 
 		if (result.action === "showDialog") {
-			/** @type {HTMLElement} */ (
-				/** @type {unknown} */ (this.host)
+			/** @type {import('lit').ReactiveElement} */ (
+				/** @type {any} */ (this.host)
 			).dispatchEvent(
 				new CustomEvent("request-dialog", {
 					bubbles: true,
@@ -139,8 +139,8 @@ export class InteractionController {
 				}),
 			);
 		} else if (result.action === "showLocked") {
-			/** @type {HTMLElement} */ (
-				/** @type {unknown} */ (this.host)
+			/** @type {import('lit').ReactiveElement} */ (
+				/** @type {any} */ (this.host)
 			).dispatchEvent(
 				new CustomEvent("show-locked-message", {
 					detail: { message: result.message || null },

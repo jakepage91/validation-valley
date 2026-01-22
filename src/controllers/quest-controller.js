@@ -8,15 +8,18 @@ import { QuestStateService } from "../game/services/quest-state-service.js";
 /**
  * @typedef {import("../services/quest-registry-service.js").Quest} Quest
  * @typedef {import("../content/quests/quest-types.js").LevelConfig} Chapter
+ * @typedef {import('../services/interfaces.js').IProgressService} IProgressService
+ * @typedef {import('../game/interfaces.js').IQuestStateService} IQuestStateService
+ * @typedef {import('../services/interfaces.js').ILoggerService} ILoggerService
  *
  * @typedef {Object} QuestControllerOptions
- * @property {import('../services/progress-service.js').ProgressService} progressService - Progress tracking service
+ * @property {IProgressService} progressService - Progress tracking service
  * @property {import('../services/quest-registry-service.js').QuestRegistryService} registry - Quest registry service
  *
- * @property {import('../services/logger-service.js').LoggerService} logger - Logger
+ * @property {ILoggerService} logger - Logger
  * @property {import('../use-cases/evaluate-chapter-transition.js').EvaluateChapterTransitionUseCase} evaluateChapterTransition - Use case
- * @property {import('../services/preloader-service.js').PreloaderService} [preloaderService] - Preloader
- * @property {QuestStateService} [state] - Quest state service
+ * @property {import('../services/preloader-service.js').PreloaderService | undefined} [preloaderService] - Preloader
+ * @property {IQuestStateService} [state] - Quest state service
  */
 
 /**
@@ -31,9 +34,9 @@ import { QuestStateService } from "../game/services/quest-state-service.js";
  * @implements {ReactiveController}
  * @property {import('lit').ReactiveControllerHost} host
  * @property {QuestControllerOptions} options
- * @property {import('../services/progress-service.js').ProgressService} progressService
+ * @property {IProgressService} progressService
  * @property {import('../services/quest-registry-service.js').QuestRegistryService} registry
- * @property {QuestStateService} state
+ * @property {IQuestStateService} state
  * @property {Object|null} currentQuest
  * @property {Object|null} currentChapter
  * @property {number} currentChapterIndex
@@ -135,10 +138,10 @@ export class QuestController {
 		const start = performance.now();
 
 		try {
-			await this.loadQuest(questId);
+			const success = await this.loadQuest(questId);
 			const quest = this.loadQuestTask.value;
 
-			if (!quest) return;
+			if (!success || !quest) return false;
 
 			const loadTime = Math.round(performance.now() - start);
 			this.logger.debug(
@@ -170,8 +173,10 @@ export class QuestController {
 			}
 
 			this.host.requestUpdate();
+			return true;
 		} catch (e) {
 			this.logger.error("Failed to start quest", e);
+			return false;
 		}
 	}
 
@@ -314,9 +319,10 @@ export class QuestController {
 				return false;
 			}
 		}
-
 		this.currentChapterIndex = index;
-		this.currentChapter = this.getCurrentChapterData();
+		this.currentChapter = /** @type {Chapter | null} */ (
+			this.currentQuest?.chapters?.[chapterId] || null
+		);
 
 		// Update progress tracking
 		const targetChapterId = this.currentQuest.chapterIds?.[index] ?? null;
@@ -344,7 +350,9 @@ export class QuestController {
 		}
 
 		// Fetch full chapter data from quest definition
-		const rawChapterData = this.currentQuest.chapters?.[chapterId];
+		const rawChapterData = /** @type {Chapter | null} */ (
+			this.currentQuest.chapters?.[chapterId] || null
+		);
 
 		if (!rawChapterData) {
 			this.logger.warn(`Chapter data not found for ID: ${chapterId}`);
@@ -379,7 +387,7 @@ export class QuestController {
 				? this.currentQuest.chapters[nextChapterId]
 				: null;
 
-		return nextChapterData;
+		return nextChapterData || null;
 	}
 
 	/**
@@ -471,8 +479,9 @@ export class QuestController {
 
 	/**
 	 * Return to hub (quest selection screen)
+	 * @returns {Promise<{success: boolean}>}
 	 */
-	returnToHub() {
+	async returnToHub() {
 		this.currentQuest = null;
 		this.currentChapter = null;
 		this.currentChapterIndex = 0;
@@ -486,6 +495,7 @@ export class QuestController {
 		// Notify host
 
 		this.host.requestUpdate();
+		return { success: true };
 	}
 
 	/**
@@ -616,7 +626,7 @@ export class QuestController {
 			return null;
 		}
 		const chapterIds = this.currentQuest.chapterIds;
-		return chapterIds[chapterIds.length - 1];
+		return chapterIds[chapterIds.length - 1] || null;
 	}
 
 	/**
@@ -629,9 +639,9 @@ export class QuestController {
 			return 0;
 		}
 
-		for (let i = 0; i < quest.chapterIds.length; i++) {
-			const chapterId = quest.chapterIds[i];
-			if (!this.progressService.isChapterCompleted(chapterId)) {
+		for (let i = 0; i < (quest.chapterIds?.length || 0); i++) {
+			const chapterId = quest.chapterIds?.[i];
+			if (chapterId && !this.progressService.isChapterCompleted(chapterId)) {
 				return i;
 			}
 		}
