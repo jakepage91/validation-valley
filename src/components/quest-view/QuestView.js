@@ -10,6 +10,7 @@ import "../game-viewport/game-viewport.js";
 import "../level-dialog/level-dialog.js";
 import "../pause-menu/pause-menu.js";
 import "../victory-screen/victory-screen.js";
+import { UIEvents } from "../../core/events.js";
 import { questViewStyles } from "./quest-view.css.js";
 
 /**
@@ -92,7 +93,7 @@ export class QuestView extends SignalWatcher(LitElement) {
 					? html`
 				<level-dialog
 					@complete="${() => this.#handleLevelComplete()}"
-					@close="${() => this.dispatchEvent(new CustomEvent("close-dialog"))}"
+					@close="${() => this.dispatchEvent(new CustomEvent(UIEvents.CLOSE_DIALOG))}"
 					@slide-changed="${(/** @type {CustomEvent} */ e) => this.#handleSlideChanged(e)}"
 				></level-dialog>
 			`

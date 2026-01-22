@@ -3,6 +3,7 @@
  */
 
 import { gameConfig } from "../config/game-configuration.js";
+import { UIEvents } from "../core/events.js";
 
 /**
  * @typedef {import('../game/interfaces.js').HotSwitchState} HotSwitchState
@@ -133,7 +134,7 @@ export class InteractionController {
 			/** @type {import('lit').ReactiveElement} */ (
 				/** @type {any} */ (this.host)
 			).dispatchEvent(
-				new CustomEvent("request-dialog", {
+				new CustomEvent(UIEvents.REQUEST_DIALOG, {
 					bubbles: true,
 					composed: true,
 				}),
@@ -142,7 +143,7 @@ export class InteractionController {
 			/** @type {import('lit').ReactiveElement} */ (
 				/** @type {any} */ (this.host)
 			).dispatchEvent(
-				new CustomEvent("show-locked-message", {
+				new CustomEvent(UIEvents.SHOW_LOCKED_MESSAGE, {
 					detail: { message: result.message || null },
 					bubbles: true,
 					composed: true,

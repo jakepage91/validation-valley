@@ -1,5 +1,6 @@
 import { msg, updateWhenLocaleChanges } from "@lit/localize";
 import { html, LitElement } from "lit";
+import { UIEvents } from "../../../core/events.js";
 import { gameControlsStyles } from "./GameControls.styles.js";
 import "@awesome.me/webawesome/dist/components/button/button.js";
 import "@awesome.me/webawesome/dist/components/details/details.js";
@@ -50,7 +51,7 @@ export class GameControls extends LitElement {
 
 	_toggleVoice() {
 		this.dispatchEvent(
-			new CustomEvent("toggle-voice", {
+			new CustomEvent(UIEvents.TOGGLE_VOICE, {
 				bubbles: true,
 				composed: true,
 			}),

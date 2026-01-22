@@ -7,7 +7,7 @@ import "@awesome.me/webawesome/dist/components/dialog/dialog.js";
 import "@awesome.me/webawesome/dist/components/icon/icon.js";
 import "syntax-highlight-element";
 import { questControllerContext } from "../../contexts/quest-controller-context.js";
-
+import { UIEvents } from "../../core/events.js";
 import { questStateContext } from "../../game/contexts/quest-context.js";
 import { escapeHtml } from "../../utils/html-utils.js";
 import {
@@ -84,7 +84,7 @@ export class LevelDialog extends LitElement {
 			changedProperties.has("questController")
 		) {
 			this.dispatchEvent(
-				new CustomEvent("slide-changed", {
+				new CustomEvent(UIEvents.SLIDE_CHANGED, {
 					detail: { text: this.#getCurrentSlideText() },
 					bubbles: true,
 					composed: true,
@@ -216,7 +216,7 @@ export class LevelDialog extends LitElement {
 	 */
 	#dispatchComplete() {
 		this.dispatchEvent(
-			new CustomEvent("complete", { bubbles: true, composed: true }),
+			new CustomEvent(UIEvents.COMPLETE, { bubbles: true, composed: true }),
 		);
 	}
 
@@ -225,7 +225,7 @@ export class LevelDialog extends LitElement {
 	 */
 	#dispatchClose() {
 		this.dispatchEvent(
-			new CustomEvent("close", { bubbles: true, composed: true }),
+			new CustomEvent(UIEvents.CLOSE, { bubbles: true, composed: true }),
 		);
 	}
 

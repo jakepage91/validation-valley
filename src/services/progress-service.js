@@ -1,3 +1,4 @@
+import { StorageKeys } from "../core/constants.js";
 import { LocalStorageAdapter } from "./storage-service.js";
 
 /** @typedef {import('./storage-service').StorageAdapter} StorageAdapter */
@@ -44,7 +45,7 @@ export class ProgressService {
 				registry
 			);
 		this.logger = logger;
-		this.storageKey = "legacys-end-progress";
+		this.storageKey = StorageKeys.PROGRESS;
 		this.progress = this._initializeProgress();
 	}
 

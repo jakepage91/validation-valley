@@ -1,4 +1,5 @@
 import { Signal } from "@lit-labs/signals";
+import { StorageKeys } from "../core/constants.js";
 import { ThemeModeValidator } from "../utils/validators.js";
 
 /**
@@ -17,7 +18,7 @@ export class ThemeService {
 	constructor(logger, storage) {
 		this.logger = logger;
 		this.storage = storage;
-		this.storageKey = "legacys-end-theme";
+		this.storageKey = StorageKeys.THEME;
 
 		/** @type {Signal.State<ThemeMode>} */
 		this.themeMode = new Signal.State(this.#loadStoredTheme());

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { UIEvents } from "../../core/events.js";
 import { logger } from "../../services/logger-service.js";
 import { QuestView } from "../quest-view/QuestView.js";
 import "../quest-view/quest-view.js";
@@ -194,7 +195,7 @@ describe("LevelDialog Interactions", () => {
 		await element.updateComplete;
 
 		const completeSpy = vi.fn();
-		element.addEventListener("complete", completeSpy);
+		element.addEventListener(UIEvents.COMPLETE, completeSpy);
 
 		const buttons = element.shadowRoot?.querySelectorAll("wa-button");
 		if (!buttons || buttons.length === 0) throw new Error("Buttons not found");
@@ -373,7 +374,7 @@ describe("QuestView Integration", () => {
 		await element.updateComplete;
 
 		const completeSpy = vi.fn();
-		element.addEventListener("complete", completeSpy);
+		element.addEventListener(UIEvents.COMPLETE, completeSpy);
 
 		const dialog = element.shadowRoot?.querySelector("level-dialog");
 		expect(dialog).toBeTruthy();
@@ -387,7 +388,7 @@ describe("QuestView Integration", () => {
 			handleLevelCompleted: vi.fn(),
 		};
 
-		dialog?.dispatchEvent(new CustomEvent("complete"));
+		dialog?.dispatchEvent(new CustomEvent(UIEvents.COMPLETE));
 
 		expect(viewport.handleLevelComplete).toHaveBeenCalled();
 	});
@@ -450,12 +451,12 @@ describe("QuestView Integration", () => {
 		await element.updateComplete;
 
 		const closeSpy = vi.fn();
-		element.addEventListener("close-dialog", closeSpy);
+		element.addEventListener(UIEvents.CLOSE_DIALOG, closeSpy);
 
 		const dialog = element.shadowRoot?.querySelector("level-dialog");
 		expect(dialog).toBeTruthy();
 
-		dialog?.dispatchEvent(new CustomEvent("close"));
+		dialog?.dispatchEvent(new CustomEvent(UIEvents.CLOSE));
 
 		expect(closeSpy).toHaveBeenCalled();
 	});

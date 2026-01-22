@@ -8,6 +8,7 @@ import "@awesome.me/webawesome/dist/components/tooltip/tooltip.js";
 import { msg, updateWhenLocaleChanges } from "@lit/localize";
 import { html, LitElement, nothing } from "lit";
 import { classMap } from "lit/directives/class-map.js";
+import { UIEvents } from "../../../../core/events.js";
 import {
 	getDifficultyLabel,
 	getDifficultyVariant,
@@ -56,7 +57,8 @@ export class QuestCard extends LitElement {
 	 */
 	#handleQuestAction() {
 		const progress = this.quest.progress || 0;
-		const eventName = progress > 0 ? "quest-continue" : "quest-select";
+		const eventName =
+			progress > 0 ? UIEvents.QUEST_CONTINUE : UIEvents.QUEST_SELECT;
 		this.dispatchEvent(
 			new CustomEvent(eventName, {
 				detail: { questId: this.quest.id },
@@ -71,7 +73,7 @@ export class QuestCard extends LitElement {
 	 */
 	#handleRestart() {
 		this.dispatchEvent(
-			new CustomEvent("quest-select", {
+			new CustomEvent(UIEvents.QUEST_SELECT, {
 				detail: { questId: this.quest.id },
 				bubbles: true,
 				composed: true,

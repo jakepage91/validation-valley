@@ -6,6 +6,7 @@ import "@awesome.me/webawesome/dist/components/icon/icon.js";
 import "../about-slides/about-slides.js";
 import "../language-selector/language-selector.js";
 import "./components/quest-card/quest-card.js";
+import { UIEvents } from "../../core/events.js";
 
 /**
  * QuestHub - Quest selection UI
@@ -227,7 +228,10 @@ export class QuestHub extends LitElement {
 			)
 		) {
 			this.dispatchEvent(
-				new CustomEvent("reset-progress", { bubbles: true, composed: true }),
+				new CustomEvent(UIEvents.RESET_PROGRESS, {
+					bubbles: true,
+					composed: true,
+				}),
 			);
 		}
 	}

@@ -35,6 +35,7 @@ import "../reward-element/reward-element.js";
 import "../viewport-elements/game-controls/game-controls.js";
 import "../viewport-elements/game-exit-zone/game-exit-zone.js";
 import "../viewport-elements/game-zone-indicator/game-zone-indicator.js";
+import { UIEvents } from "../../core/events.js";
 import { gameViewportStyles } from "./GameViewport.styles.js";
 
 /**
@@ -389,14 +390,14 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	 * Advances to the next dialog slide
 	 */
 	nextDialogSlide() {
-		this.dispatchEvent(new CustomEvent("next-slide"));
+		this.dispatchEvent(new CustomEvent(UIEvents.NEXT_SLIDE));
 	}
 
 	/**
 	 * Returns to the previous dialog slide
 	 */
 	prevDialogSlide() {
-		this.dispatchEvent(new CustomEvent("prev-slide"));
+		this.dispatchEvent(new CustomEvent(UIEvents.PREV_SLIDE));
 	}
 
 	/**
@@ -441,7 +442,7 @@ export class GameViewport extends SignalWatcher(LitElement) {
 			this.rewardAnimState = "";
 			this.isRewardCollected = true;
 			this.dispatchEvent(
-				new CustomEvent("reward-collected", {
+				new CustomEvent(UIEvents.REWARD_COLLECTED, {
 					bubbles: true,
 					composed: true,
 				}),

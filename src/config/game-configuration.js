@@ -8,6 +8,8 @@
  * - Easy testing (inject different configs)
  */
 
+import { StorageKeys } from "../core/constants.js";
+
 /**
  * @typedef {'development' | 'production' | 'test'} Environment
  */
@@ -107,7 +109,7 @@ export class GameConfiguration {
 			},
 
 			storage: {
-				progressKey: "legacys-end-progress",
+				progressKey: StorageKeys.PROGRESS,
 				version: "1.0.0",
 			},
 
