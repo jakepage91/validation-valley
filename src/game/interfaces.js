@@ -47,9 +47,11 @@
  * @property {{ get(): boolean }} isPaused
  * @property {{ get(): boolean }} showDialog
  * @property {{ get(): string }} currentDialogText
+ * @property {{ get(): string }} nextDialogText
  * @property {(paused: boolean) => void} setPaused
  * @property {(show: boolean) => void} setShowDialog
  * @property {(text: string) => void} setCurrentDialogText
+ * @property {(text: string) => void} setNextDialogText
  */
 
 export {};

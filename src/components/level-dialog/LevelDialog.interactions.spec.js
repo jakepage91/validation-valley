@@ -348,9 +348,11 @@ describe("QuestView Integration", () => {
 			setPaused: vi.fn(),
 			setShowDialog: vi.fn(),
 			setCurrentDialogText: vi.fn(),
+			setNextDialogText: vi.fn(),
 			isPaused: new Signal.State(false),
 			showDialog: new Signal.State(true),
 			currentDialogText: new Signal.State(""),
+			nextDialogText: new Signal.State(""),
 		};
 		wrapper.sessionService = {
 			currentQuest: new Signal.State({ id: "q1" }),
@@ -428,6 +430,7 @@ describe("QuestView Integration", () => {
 			isPaused: new Signal.State(false),
 			showDialog: new Signal.State(true), // Dialog open
 			setCurrentDialogText: vi.fn(),
+			setNextDialogText: vi.fn(),
 		};
 		wrapper.questState = { isQuestCompleted: new Signal.State(false) };
 		wrapper.heroState = {};
@@ -466,6 +469,7 @@ describe("QuestView Integration", () => {
 			isPaused: new Signal.State(false),
 			showDialog: new Signal.State(true), // Dialog Open
 			setCurrentDialogText: vi.fn(),
+			setNextDialogText: vi.fn(),
 			setShowDialog: vi.fn(),
 		};
 		wrapper.questState = { isQuestCompleted: new Signal.State(false) };

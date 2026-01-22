@@ -11,6 +11,7 @@ export class WorldStateService {
 		this.isPaused = new Signal.State(false);
 		this.showDialog = new Signal.State(false);
 		this.currentDialogText = new Signal.State("");
+		this.nextDialogText = new Signal.State("");
 	}
 
 	/**
@@ -32,5 +33,12 @@ export class WorldStateService {
 	 */
 	setCurrentDialogText(text) {
 		this.currentDialogText.set(text || "");
+	}
+
+	/**
+	 * @param {string} text
+	 */
+	setNextDialogText(text) {
+		this.nextDialogText.set(text || "");
 	}
 }

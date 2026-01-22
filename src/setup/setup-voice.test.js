@@ -6,7 +6,7 @@ import { setupVoice } from "./setup-voice.js";
 vi.mock("../controllers/voice-controller.js");
 
 describe("setupVoice", () => {
-	it("should initialize VoiceController with correct options including next/prev slide calling host methods", () => {
+	it("should initialize VoiceController with correct options", () => {
 		const host = {
 			addController: vi.fn(),
 			requestUpdate: vi.fn(),
@@ -17,14 +17,14 @@ describe("setupVoice", () => {
 			logger: {},
 			aiService: {},
 			voiceSynthesisService: {},
-			// commandBus removed
-
-			gameState: { getState: () => ({}) },
-			questController: {},
+			questController: { currentChapter: { title: "Test" } },
 			worldState: {
 				isPaused: { get: () => false },
 				setCurrentDialogText: vi.fn(),
+				setNextDialogText: vi.fn(),
 				showDialog: { get: () => false },
+				currentDialogText: { get: () => "Test dialog" },
+				nextDialogText: { get: () => "Next dialog" },
 			},
 			questState: {
 				isRewardCollected: { get: () => false },
@@ -38,6 +38,8 @@ describe("setupVoice", () => {
 			expect.objectContaining({
 				onNextSlide: expect.any(Function),
 				onPrevSlide: expect.any(Function),
+				onGetDialogText: expect.any(Function),
+				onGetNextDialogText: expect.any(Function),
 			}),
 		);
 

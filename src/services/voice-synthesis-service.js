@@ -1,79 +1,46 @@
 import { logger } from "./logger-service.js";
 
 /**
- * VoiceSynthesisService - Manages text-to-speech synthesis
- *
- * Handles voice selection, speech synthesis, and character voice profiles.
- * Provides a reusable service for voice output across the application.
+ * VoiceSynthesisService - Wrapper for Web Speech API
+ * Generic service for handling text-to-speech.
  */
 export class VoiceSynthesisService {
 	constructor() {
 		/** @type {SpeechSynthesis} */
 		this.synthesis = window.speechSynthesis;
-
 		/** @type {SpeechSynthesisVoice[]} */
 		this.voices = [];
-
 		/** @type {boolean} */
 		this.isSpeaking = false;
 
-		// Load voices when available
 		if (this.synthesis) {
-			this.voices = this.synthesis.getVoices();
-			this.synthesis.onvoiceschanged = () => {
-				this.voices = this.synthesis.getVoices();
-			};
+			this.#loadVoices();
+			if (this.synthesis.onvoiceschanged !== undefined) {
+				this.synthesis.onvoiceschanged = () => this.#loadVoices();
+			}
 		}
 	}
 
+	#loadVoices() {
+		this.voices = this.synthesis.getVoices();
+	}
+
 	/**
-	 * Get the best voice for a given language and role
-	 * @param {string} lang - Language code (e.g., 'en-US', 'es-ES')
-	 * @param {string} role - Character role ('hero' or 'npc')
+	 * Get the best available voice for a language from a preferred list
+	 * @param {string} lang - Language code (e.g., 'en-US')
+	 * @param {string[]} preferredNames - List of preferred voice names
 	 * @returns {SpeechSynthesisVoice|null}
 	 */
-	getBestVoice(lang, role = "hero") {
+	getBestVoice(lang, preferredNames = []) {
 		if (!this.voices.length) return null;
 
-		// Normalize lang (e.g., 'es' -> 'es-ES')
 		const searchLang = lang.startsWith("es") ? "es" : "en";
 
-		// Voice preferences by language and role
-		// NPCs can be male or female - we provide both options and let the system pick
-		const preferredVoices =
-			{
-				en:
-					role === "hero"
-						? ["Google US English", "Daniel", "Alex", "Fred", "Rishi"] // Male Hero
-						: [
-								// NPCs - mix of male and female voices
-								"Google UK English Female",
-								"Samantha",
-								"Victoria",
-								"Karen",
-								"Google US English",
-								"Daniel",
-								"Alex",
-							],
-				es:
-					role === "hero"
-						? ["Google español", "Jorge", "Diego", "Carlos", "Pablo"] // Male Hero
-						: [
-								// NPCs - mix of male and female voices
-								"Mónica",
-								"Paulina",
-								"Soledad",
-								"Angelica",
-								"Jorge",
-								"Diego",
-							],
-			}[searchLang] || [];
-
-		// Filter by language and look for premium versions
+		// Filter voices by language
 		const langVoices = this.voices
 			.filter((v) => v.lang.toLowerCase().startsWith(searchLang))
 			.sort((a, b) => {
-				// Prioritize voices that sound more natural (heuristics)
+				// Score "Natural" or "Enhanced" voices higher if available
 				const aScore =
 					(a.name.includes("Natural") ? 2 : 0) +
 					(a.name.includes("Enhanced") ? 1 : 0);
@@ -85,15 +52,13 @@ export class VoiceSynthesisService {
 
 		if (langVoices.length === 0) return null;
 
-		// Try to find a role-specific preferred voice
-		for (const name of preferredVoices) {
+		// 1. Try preferred names
+		for (const name of preferredNames) {
 			const found = langVoices.find((v) => v.name.includes(name));
 			if (found) return found;
 		}
 
-		// If no preferred, at least try to pick different ones for hero/npc if multiple available
-		if (role === "npc" && langVoices.length > 1) return langVoices[1];
-
+		// 2. Fallback to first available for that language
 		return langVoices[0];
 	}
 
@@ -102,85 +67,85 @@ export class VoiceSynthesisService {
 	 * @param {string} text - Text to speak
 	 * @param {Object} options - Speech options
 	 * @param {string} [options.lang] - Language code
-	 * @param {string} [options.role] - Character role ('hero' or 'npc')
+	 * @param {SpeechSynthesisVoice|null} [options.voice] - specific voice object
+	 * @param {number} [options.rate] - Speech rate
+	 * @param {number} [options.pitch] - Speech pitch
 	 * @param {boolean} [options.queue] - Whether to queue or interrupt current speech
 	 * @param {() => void} [options.onStart] - Callback when speech starts
 	 * @param {() => void} [options.onEnd] - Callback when speech ends
 	 * @param {(event: Event) => void} [options.onError] - Callback on error
+	 * @returns {Promise<void>} Resolves when speech ends or is interrupted
 	 */
 	speak(text, options = {}) {
-		// Validate text parameter
-		if (!text || typeof text !== "string") {
-			logger.warn("VoiceSynthesisService.speak: Invalid or empty text");
-			return;
-		}
-
-		if (!this.synthesis) {
-			logger.warn(
-				"VoiceSynthesisService.speak: Speech synthesis not available",
-			);
-			return;
-		}
-
-		const {
-			lang = "en-US",
-			role = "hero",
-			queue = false,
-			onStart,
-			onEnd,
-			onError,
-		} = options;
-
-		this.isSpeaking = true;
-
-		if (!queue) {
-			this.synthesis.cancel();
-		}
-
-		const utterance = new SpeechSynthesisUtterance(text);
-		utterance.lang = lang;
-
-		// Select best voice if available for this specific role
-		const voice = this.getBestVoice(lang, role);
-		if (voice) {
-			utterance.voice = voice;
-		}
-
-		// Character Voice Profiles
-		if (role === "hero") {
-			// Alarion (The Hero): Faster, energetic, slightly higher pitch for bravery
-			utterance.rate = 1.1;
-			// Add a tiny bit of random variation so it feels less robotic over time
-			utterance.pitch = 1.05 + (Math.random() * 0.1 - 0.05);
-		} else {
-			// NPCs (The Guides): Slower, wiser, deeper pitch
-			utterance.rate = 0.85;
-			utterance.pitch = 0.85 + (Math.random() * 0.06 - 0.03);
-		}
-
-		utterance.onstart = () => {
-			this.isSpeaking = true;
-			if (onStart) onStart();
-		};
-
-		utterance.onend = () => {
-			this.isSpeaking = false;
-			if (onEnd) onEnd();
-		};
-
-		utterance.onerror = (event) => {
-			// Ignore interruption errors as they are often intentional (flow control)
-			if (event.error === "interrupted" || event.error === "canceled") {
-				this.isSpeaking = false;
-				logger.debug("Speech synthesis interrupted (intentional).");
+		return new Promise((resolve) => {
+			// Validate text parameter
+			if (!text || typeof text !== "string") {
+				logger.warn("VoiceSynthesisService.speak: Invalid or empty text");
+				resolve();
 				return;
 			}
-			logger.error("Speech synthesis error:", event);
-			this.isSpeaking = false;
-			if (onError) onError(event);
-		};
 
-		this.synthesis.speak(utterance);
+			if (!this.synthesis) {
+				logger.warn(
+					"VoiceSynthesisService.speak: Speech synthesis not available",
+				);
+				resolve();
+				return;
+			}
+
+			const {
+				lang = "en-US",
+				voice = null,
+				rate = 1.0,
+				pitch = 1.0,
+				queue = false,
+				onStart,
+				onEnd,
+				onError,
+			} = options;
+
+			this.isSpeaking = true;
+
+			if (!queue) {
+				this.synthesis.cancel();
+			}
+
+			const utterance = new SpeechSynthesisUtterance(text);
+			utterance.lang = lang;
+			utterance.rate = rate;
+			utterance.pitch = pitch;
+
+			if (voice) {
+				utterance.voice = voice;
+			}
+
+			utterance.onstart = () => {
+				this.isSpeaking = true;
+				if (onStart) onStart();
+			};
+
+			utterance.onend = () => {
+				this.isSpeaking = false;
+				if (onEnd) onEnd();
+				resolve();
+			};
+
+			utterance.onerror = (event) => {
+				// Ignore interruption errors as they are often intentional (flow control)
+				if (event.error === "interrupted" || event.error === "canceled") {
+					this.isSpeaking = false;
+					logger.debug("Speech synthesis interrupted (intentional).");
+					resolve(); // Resolve on interruption too so flow continues
+					return;
+				}
+				logger.error("Speech synthesis error:", event);
+				this.isSpeaking = false;
+				if (onError) onError(event);
+				resolve(); // Resolve even on error to prevent hanging await
+			};
+
+			this.synthesis.speak(utterance);
+		});
 	}
 
 	/**
@@ -203,3 +168,4 @@ export class VoiceSynthesisService {
 }
 
 // Export singleton instance
+export const voiceSynthesisService = new VoiceSynthesisService();

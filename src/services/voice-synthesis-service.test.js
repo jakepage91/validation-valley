@@ -10,12 +10,6 @@ describe("VoiceSynthesisService", () => {
 	let SpeechSynthesisUtteranceMock;
 
 	beforeEach(() => {
-		// Silence expected warnings/errors for these tests
-		vi.spyOn(console, "warn").mockImplementation(() => {});
-		vi.spyOn(console, "error").mockImplementation(() => {});
-		vi.spyOn(console, "info").mockImplementation(() => {});
-		vi.spyOn(console, "debug").mockImplementation(() => {});
-
 		// Mock speechSynthesis
 		speechSynthesisMock = {
 			speak: vi.fn(),
@@ -57,127 +51,65 @@ describe("VoiceSynthesisService", () => {
 	describe("getBestVoice", () => {
 		it("should return null if no voices available", () => {
 			service.voices = [];
-			const voice = service.getBestVoice("en-US", "hero");
+			const voice = service.getBestVoice("en-US", ["Alex"]);
 			expect(voice).toBeNull();
 		});
 
-		it("should return English voice for hero", () => {
-			const voice = service.getBestVoice("en-US", "hero");
+		it("should return voice by preferred name", () => {
+			const voice = service.getBestVoice("en-US", ["Samantha"]);
 			expect(voice).toBeDefined();
-			expect(voice?.lang).toBe("en-US");
-			expect(voice?.name).toContain("Google US English");
+			expect(voice?.name).toBe("Samantha");
 		});
 
-		it("should return Spanish voice for hero", () => {
-			const voice = service.getBestVoice("es-ES", "hero");
+		it("should return fallback voice if preferred name not found", () => {
+			const voice = service.getBestVoice("en-US", ["Alex"]);
+			expect(voice).toBeDefined();
+			expect(voice?.name).toBe("Google US English"); // First in list
+		});
+
+		it("should return Spanish voice when requested", () => {
+			const voice = service.getBestVoice("es-ES", ["Mónica"]);
 			expect(voice).toBeDefined();
 			expect(voice?.lang).toBe("es-ES");
-			expect(voice?.name).toContain("español");
-		});
-
-		it("should return different voice for NPC", () => {
-			const voice = service.getBestVoice("en-US", "npc");
-			expect(voice).toBeDefined();
-			expect(voice?.lang).toBe("en-US");
-			// NPCs can get either male or female voices
-			expect(["Google US English", "Samantha"]).toContain(voice?.name);
-		});
-
-		it("should handle language normalization", () => {
-			const voice = service.getBestVoice("es", "hero");
-			expect(voice).toBeDefined();
-			expect(voice?.lang).toBe("es-ES");
+			expect(voice?.name).toBe("Mónica");
 		});
 	});
 
 	describe("speak", () => {
-		it("should not speak if text is empty", () => {
-			service.speak("", { lang: "en-US" });
-			expect(speechSynthesisMock.speak).not.toHaveBeenCalled();
-		});
-
-		it("should not speak if text is not a string", () => {
-			service.speak(/** @type {any} */ (null), { lang: "en-US" });
-			expect(speechSynthesisMock.speak).not.toHaveBeenCalled();
-		});
-
-		it("should create utterance and speak", () => {
-			service.speak("Hello world", { lang: "en-US", role: "hero" });
-
-			expect(SpeechSynthesisUtteranceMock).toHaveBeenCalledWith("Hello world");
-			expect(speechSynthesisMock.speak).toHaveBeenCalled();
-		});
-
-		it("should set hero voice profile", () => {
-			service.speak("Hello", { lang: "en-US", role: "hero" });
-
-			/** @type {any} */
-			const utterance = SpeechSynthesisUtteranceMock.mock.results[0].value;
-			expect(utterance.rate).toBe(1.1);
-			expect(utterance.pitch).toBeGreaterThan(1.0);
-			expect(utterance.pitch).toBeLessThan(1.15);
-		});
-
-		it("should set NPC voice profile", () => {
-			service.speak("Greetings", { lang: "en-US", role: "npc" });
-
-			const utterance = SpeechSynthesisUtteranceMock.mock.results[0].value;
-			expect(utterance.rate).toBe(0.85);
-			expect(utterance.pitch).toBeGreaterThan(0.8);
-			expect(utterance.pitch).toBeLessThan(0.9);
-		});
-
-		it("should cancel previous speech if not queuing", () => {
-			service.speak("Test", { lang: "en-US", queue: false });
-
-			expect(speechSynthesisMock.cancel).toHaveBeenCalled();
-		});
-
-		it("should not cancel if queuing", () => {
-			service.speak("Test", { lang: "en-US", queue: true });
-
-			expect(speechSynthesisMock.cancel).not.toHaveBeenCalled();
-		});
-
-		it("should call onStart callback", () => {
-			const onStart = vi.fn();
-			service.speak("Test", { lang: "en-US", onStart });
-
-			const utterance = SpeechSynthesisUtteranceMock.mock.results[0].value;
-			utterance.onstart();
-
-			expect(onStart).toHaveBeenCalled();
-			expect(service.isSpeaking).toBe(true);
-		});
-
-		it("should call onEnd callback", () => {
-			const onEnd = vi.fn();
-			service.speak("Test", { lang: "en-US", onEnd });
+		it("should create utterance with provided options", async () => {
+			const voice = { name: "Samantha", lang: "en-US" };
+			const promise = service.speak("Hello", {
+				lang: "en-US",
+				rate: 1.2,
+				pitch: 0.9,
+				voice: /** @type {any} */ (voice),
+			});
 
 			const utterance = SpeechSynthesisUtteranceMock.mock.results[0].value;
 			utterance.onend();
+			await promise;
 
-			expect(onEnd).toHaveBeenCalled();
-			expect(service.isSpeaking).toBe(false);
-		});
-
-		it("should call onError callback", () => {
-			const onError = vi.fn();
-			service.speak("Test", { lang: "en-US", onError });
-
-			const utterance = SpeechSynthesisUtteranceMock.mock.results[0].value;
-			const errorEvent = { error: "test-error" };
-			utterance.onerror(errorEvent);
-
-			expect(onError).toHaveBeenCalledWith(errorEvent);
-			expect(service.isSpeaking).toBe(false);
-		});
-
-		it("should use default language if not provided", () => {
-			service.speak("Test", { role: "hero" });
-
-			const utterance = SpeechSynthesisUtteranceMock.mock.results[0].value;
+			expect(SpeechSynthesisUtteranceMock).toHaveBeenCalledWith("Hello");
 			expect(utterance.lang).toBe("en-US");
+			expect(utterance.rate).toBe(1.2);
+			expect(utterance.pitch).toBe(0.9);
+			expect(utterance.voice).toBe(voice);
+			expect(speechSynthesisMock.speak).toHaveBeenCalled();
+		});
+
+		it("should cancel previous speech if not queuing", () => {
+			service.speak("Test", { queue: false });
+			expect(speechSynthesisMock.cancel).toHaveBeenCalled();
+		});
+
+		it("should resolve promise when speech ends", async () => {
+			const promise = service.speak("Test");
+			const utterance = SpeechSynthesisUtteranceMock.mock.results[0].value;
+
+			utterance.onend();
+			await promise;
+
+			expect(service.isSpeaking).toBe(false);
 		});
 	});
 
@@ -188,52 +120,6 @@ describe("VoiceSynthesisService", () => {
 
 			expect(speechSynthesisMock.cancel).toHaveBeenCalled();
 			expect(service.isSpeaking).toBe(false);
-		});
-
-		it("should handle missing synthesis gracefully", () => {
-			service.synthesis = /** @type {any} */ (null);
-			expect(() => service.cancel()).not.toThrow();
-		});
-	});
-
-	describe("getSpeakingStatus", () => {
-		it("should return current speaking status", () => {
-			expect(service.getSpeakingStatus()).toBe(false);
-
-			service.isSpeaking = true;
-			expect(service.getSpeakingStatus()).toBe(true);
-		});
-	});
-	describe("Edge Cases", () => {
-		it("should fallback to second available voice for NPC if possible", () => {
-			// Setup multiple voices matching search but NOT in preferred list
-			service.voices = /** @type {any} */ ([
-				{ name: "Unknown Voice 1", lang: "en-US" },
-				{ name: "Unknown Voice 2", lang: "en-US" },
-			]);
-
-			const voice = service.getBestVoice("en-US", "npc");
-
-			// According to logic: if (role === "npc" && langVoices.length > 1) return langVoices[1];
-			expect(voice?.name).toBe("Unknown Voice 2");
-		});
-
-		it("should handle speech synthesis unavailability gracefully", () => {
-			service.synthesis = /** @type {any} */ (null);
-			const _consoleSpy = vi
-				.spyOn(console, "warn")
-				.mockImplementation(() => {}); // Mock logger if it uses console, actually it uses logger-service mock but we can spy on logger behavior if we imported logger spy?
-			// Wait, logger is imported from "./logger-service.js".
-			// But the test doesn't mock logger explicitly?
-			// Ah, the file says `import { logger } from "./logger-service.js";` but tests don't mock it?
-			// Checking top of file... lines 1-3. No mock for logger-service. logic uses `vi.spyOn`.
-			// The implementation uses `logger.warn` or `logger.error`.
-			// If logger-service is real, it might log to console.
-
-			service.speak("Test", { lang: "en-US" });
-
-			// Should return early and not crash
-			expect(speechSynthesisMock.speak).not.toHaveBeenCalled();
 		});
 	});
 });

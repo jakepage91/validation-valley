@@ -1,4 +1,3 @@
-// Commands removed
 import { gameConfig } from "../config/game-configuration.js";
 import { VoiceController } from "../controllers/voice-controller.js";
 
@@ -10,29 +9,41 @@ import { VoiceController } from "../controllers/voice-controller.js";
  * @property {ShadowRoot} shadowRoot
  * @property {() => void} [handleLevelComplete]
  * @property {(x: number, y: number) => void} [moveTo]
+ * @property {() => void} [nextDialogSlide]
+ * @property {() => void} [prevDialogSlide]
  */
 
 /**
  * @typedef {LitElement & VoiceHost} VoiceElement
- * @typedef {import('../core/game-context.js').IGameContext} IGameContext
  */
 
 /**
+ * Helper to wait for dialog text to change (or a timeout)
+ * @param {import('../game/services/world-state-service.js').WorldStateService} worldState
+ * @param {string|null} oldText
+ * @returns {Promise<void>}
+ */
+function waitForDialogChange(worldState, oldText) {
+	return new Promise((resolve) => {
+		const timeout = setTimeout(resolve, 1000);
+		const check = () => {
+			if (worldState.currentDialogText.get() !== oldText) {
+				clearTimeout(timeout);
+				resolve();
+			} else {
+				requestAnimationFrame(check);
+			}
+		};
+		requestAnimationFrame(check);
+	});
+}
+
+/**
  * Setup VoiceController
- * @param {VoiceElement} host
- * @param {Object} dependencies
- * @param {import('../services/logger-service.js').LoggerService} dependencies.logger
- * @param {import('../services/localization-service.js').LocalizationService} dependencies.localizationService
- * @param {import('../services/ai-service.js').AIService} [dependencies.aiService]
- * @param {import('../services/voice-synthesis-service.js').VoiceSynthesisService} [dependencies.voiceSynthesisService]
- * @param {import('../game/services/world-state-service.js').WorldStateService} dependencies.worldState
- * @param {import('../game/services/quest-state-service.js').QuestStateService} dependencies.questState
- * @param {import('../controllers/quest-controller.js').QuestController} dependencies.questController
- * @param {import('../services/quest-loader-service.js').QuestLoaderService} [dependencies.questLoader]
  */
 export function setupVoice(
-	host,
-	{
+	/** @type {VoiceElement} */ host,
+	/** @type {any} */ {
 		logger,
 		localizationService,
 		aiService,
@@ -47,18 +58,18 @@ export function setupVoice(
 		new VoiceController(host, {
 			logger,
 			localizationService,
-			// @ts-expect-error - aiService is optional but expected
 			aiService,
-			// @ts-expect-error
 			voiceSynthesisService,
 			onMove: (dx, dy) => {
 				if (typeof (/** @type {any} */ (host).handleMove) === "function") {
 					/** @type {any} */ (host).handleMove(dx, dy);
 				}
 			},
-			onInteract: () => {
+			onInteract: async () => {
 				if (/** @type {any} */ (host).interaction) {
+					const currentText = worldState.currentDialogText.get();
 					/** @type {any} */ (host).interaction.handleInteract();
+					await waitForDialogChange(worldState, currentText);
 				}
 			},
 			onPause: () => {
@@ -66,18 +77,25 @@ export function setupVoice(
 					worldState.setPaused(!worldState.isPaused.get());
 				}
 			},
-			onNextSlide: () => {
-				if (typeof (/** @type {any} */ (host).nextDialogSlide) === "function") {
-					/** @type {any} */ (host).nextDialogSlide();
+			onNextSlide: async () => {
+				if (typeof host.nextDialogSlide === "function") {
+					const currentText = worldState.currentDialogText.get();
+					host.nextDialogSlide();
+					await waitForDialogChange(worldState, currentText);
 				}
 			},
-			onPrevSlide: () => {
-				if (typeof (/** @type {any} */ (host).prevDialogSlide) === "function") {
-					/** @type {any} */ (host).prevDialogSlide();
+			onPrevSlide: async () => {
+				if (typeof host.prevDialogSlide === "function") {
+					const currentText = worldState.currentDialogText.get();
+					host.prevDialogSlide();
+					await waitForDialogChange(worldState, currentText);
 				}
 			},
 			onGetDialogText: () => {
 				return worldState.currentDialogText.get() || "";
+			},
+			onGetNextDialogText: () => {
+				return worldState.nextDialogText?.get() || "";
 			},
 			onGetContext: () => {
 				const chapter = questController.currentChapter;
@@ -85,7 +103,7 @@ export function setupVoice(
 					isDialogOpen: worldState.showDialog.get(),
 					isRewardCollected: questState.isRewardCollected.get(),
 					npcName: chapter?.npc?.name || null,
-					exitZoneName: chapter?.exitZone ? "exit" : null, // Could be more specific if exitZone had a name
+					exitZoneName: chapter?.exitZone ? "exit" : null,
 					chapterTitle: chapter?.title || null,
 				};
 			},
@@ -94,7 +112,6 @@ export function setupVoice(
 				const npcPos = currentChapter?.npc?.position;
 				if (!npcPos) return;
 
-				// Use host.moveTo as it's the component's internal helper for interpolation
 				const interactionDistance =
 					(gameConfig?.gameplay?.interactionDistance || 10) - 2;
 
@@ -107,23 +124,20 @@ export function setupVoice(
 				const exitZone = currentChapter?.exitZone;
 				if (!exitZone) return;
 
-				logger.info(`🚪 Moving to exit at (${exitZone.x}, ${exitZone.y})`);
 				if (host.moveTo) {
 					host.moveTo(exitZone.x, exitZone.y);
 				}
 			},
 			onCompleteLevel: () => {
-				// The host (GameView) handles the level completion logic (dialog closing, event emission)
 				if (typeof host.handleLevelComplete === "function") {
 					host.handleLevelComplete();
 				}
 			},
 			onDebugAction: (action, value) => {
-				// Original logic was using app.gameService
 				if (questLoader && /** @type {any} */ (questLoader)[action]) {
 					/** @type {any} */ (questLoader)[action](value);
 				}
 			},
-			isEnabled: () => true, // Voice should generally be enabled if setup
+			isEnabled: () => true,
 		});
 }

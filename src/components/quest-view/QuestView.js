@@ -41,10 +41,11 @@ export class QuestView extends SignalWatcher(LitElement) {
 	static styles = questViewStyles;
 
 	/**
-	 * @param {CustomEvent<{text: string}>} e
+	 * @param {CustomEvent<{text: string, nextText: string}>} e
 	 */
 	#handleSlideChanged(e) {
 		this.worldState?.setCurrentDialogText(e.detail.text);
+		this.worldState?.setNextDialogText(e.detail.nextText);
 	}
 
 	render() {
