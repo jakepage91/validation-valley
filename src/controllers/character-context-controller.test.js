@@ -1,5 +1,6 @@
 import { Signal } from "@lit-labs/signals";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { HotSwitchStates, ThemeModes } from "../core/constants.js";
 import { CharacterContextController } from "./character-context-controller.js";
 
 describe("CharacterContextController", () => {
@@ -28,7 +29,7 @@ describe("CharacterContextController", () => {
 		characterProvider = { setValue: vi.fn() };
 
 		heroState = {
-			hotSwitchState: new Signal.State("legacy"),
+			hotSwitchState: new Signal.State(HotSwitchStates.LEGACY),
 		};
 
 		questState = {
@@ -47,7 +48,7 @@ describe("CharacterContextController", () => {
 		// Mock ThemeService with a signal-like object
 		mockThemeService = {
 			themeMode: {
-				get: vi.fn().mockReturnValue("light"),
+				get: vi.fn().mockReturnValue(ThemeModes.LIGHT),
 			},
 		};
 
@@ -135,8 +136,8 @@ describe("CharacterContextController", () => {
 		});
 
 		it("should update power context based on hot switch state", () => {
-			heroState.hotSwitchState.set("new");
-			mockThemeService.themeMode.get.mockReturnValue("dark");
+			heroState.hotSwitchState.set(HotSwitchStates.NEW);
+			mockThemeService.themeMode.get.mockReturnValue(ThemeModes.DARK);
 
 			controller.hostUpdate();
 

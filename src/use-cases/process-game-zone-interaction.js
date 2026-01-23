@@ -1,3 +1,5 @@
+import { ZoneTypes } from "../core/constants.js";
+
 /**
  * ProcessGameZoneInteractionUseCase
  *
@@ -6,7 +8,7 @@
 export class ProcessGameZoneInteractionUseCase {
 	/**
 	 * @typedef {Object} ZoneInteractionResult
-	 * @property {'THEME_CHANGE' | 'CONTEXT_CHANGE' | 'NONE'} type
+	 * @property {import('../core/constants.js').ZoneType} type
 	 * @property {any} payload
 	 */
 
@@ -36,7 +38,7 @@ export class ProcessGameZoneInteractionUseCase {
 				y <= zone.y + zone.height
 			) {
 				results.push({
-					type: /** @type {any} */ (zone.type),
+					type: zone.type || ZoneTypes.NONE,
 					payload: zone.payload,
 				});
 			}

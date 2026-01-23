@@ -15,6 +15,7 @@ import { questLoaderContext } from "../../contexts/quest-loader-context.js";
 import { sessionContext } from "../../contexts/session-context.js";
 import { themeContext } from "../../contexts/theme-context.js";
 import { voiceContext } from "../../contexts/voice-context.js";
+import { ThemeModes } from "../../core/constants.js";
 import { GameBootstrapper } from "../../core/game-bootstrapper.js";
 import { heroStateContext } from "../../game/contexts/hero-context.js";
 import { questStateContext } from "../../game/contexts/quest-context.js";
@@ -208,7 +209,11 @@ export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
 		);
 		document.documentElement.classList.toggle(
 			"sl-theme-light",
-			theme === "light",
+			theme === ThemeModes.LIGHT,
+		);
+		document.documentElement.classList.toggle(
+			"sl-theme-system",
+			theme === ThemeModes.SYSTEM,
 		);
 	}
 

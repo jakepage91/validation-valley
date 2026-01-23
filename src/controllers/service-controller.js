@@ -3,6 +3,7 @@
  */
 
 import { Task, TaskStatus } from "@lit/task";
+import { HotSwitchStates } from "../core/constants.js";
 import { ServiceType } from "../services/user-api-client.js";
 
 /** @typedef {import("../services/user-api-client.js").IUserApiClient} IUserApiClient */
@@ -101,9 +102,10 @@ export class ServiceController {
 
 		// If service type is NEW (dynamic), check hotSwitchState
 		if (serviceType === ServiceType.NEW) {
-			if (hotSwitchState === "legacy")
+			if (hotSwitchState === HotSwitchStates.LEGACY)
 				return this.options.services?.legacy || null;
-			if (hotSwitchState === "new") return this.options.services?.new || null;
+			if (hotSwitchState === HotSwitchStates.NEW)
+				return this.options.services?.new || null;
 			return null; // Neutral zone - no service active
 		}
 

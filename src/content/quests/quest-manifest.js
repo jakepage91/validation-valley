@@ -1,9 +1,8 @@
 import { msg } from "@lit/localize";
-import { Difficulty } from "./quest-types.js";
+import { Difficulty, QuestStatus } from "./quest-types.js";
 
 /**
  * @typedef {import("./quest-types.js").Quest} Quest
- * @typedef {import("./quest-types.js").Difficulty} DifficultyType
  */
 
 /** @returns {Partial<Quest>} */
@@ -16,7 +15,7 @@ export const getAuraOfSovereigntyMetadata = () => ({
 	),
 	difficulty: Difficulty.BEGINNER,
 	icon: "shield",
-	status: "available",
+	status: QuestStatus.AVAILABLE,
 	prerequisites: [],
 });
 
@@ -30,7 +29,7 @@ export const getTokenOfAgnosticismMetadata = () => ({
 	),
 	difficulty: Difficulty.BEGINNER,
 	icon: "palette",
-	status: "coming_soon",
+	status: QuestStatus.COMING_SOON,
 	prerequisites: ["the-aura-of-sovereignty"],
 });
 
@@ -44,7 +43,7 @@ export const getOrbOfInquiryMetadata = () => ({
 	),
 	difficulty: Difficulty.INTERMEDIATE,
 	icon: "syringe",
-	status: "available",
+	status: QuestStatus.AVAILABLE,
 	prerequisites: [],
 });
 
@@ -58,7 +57,7 @@ export const getStateManagementRaidMetadata = () => ({
 	),
 	difficulty: Difficulty.INTERMEDIATE,
 	icon: "hexagon-nodes",
-	status: "coming_soon",
+	status: QuestStatus.COMING_SOON,
 	prerequisites: ["the-orb-of-inquiry"],
 });
 
@@ -72,7 +71,7 @@ export const getGateOfIdentityMetadata = () => ({
 	),
 	difficulty: Difficulty.INTERMEDIATE,
 	icon: "radio",
-	status: "coming_soon",
+	status: QuestStatus.COMING_SOON,
 	prerequisites: ["the-flowing-heartstone"],
 });
 
@@ -86,7 +85,7 @@ export const getMirrorOfVeracityMetadata = () => ({
 	),
 	difficulty: Difficulty.ADVANCED,
 	icon: "list-check",
-	status: "coming_soon",
+	status: QuestStatus.COMING_SOON,
 	prerequisites: ["the-watchers-bastion"],
 });
 
@@ -100,7 +99,7 @@ export const getScryingPoolOfChaosMetadata = () => ({
 	),
 	difficulty: Difficulty.ADVANCED,
 	icon: "flask-vial",
-	status: "coming_soon",
+	status: QuestStatus.COMING_SOON,
 	prerequisites: ["the-mirror-of-veracity"],
 });
 
@@ -114,7 +113,7 @@ export const getScrollOfTonguesMetadata = () => ({
 	),
 	difficulty: Difficulty.ADVANCED,
 	icon: "language",
-	status: "coming_soon",
+	status: QuestStatus.COMING_SOON,
 	prerequisites: ["the-crimson-altar"],
 });
 
@@ -128,7 +127,7 @@ export const getUnseenHarmonyMetadata = () => ({
 	),
 	difficulty: Difficulty.EXPERT,
 	icon: "eye-low-vision",
-	status: "coming_soon",
+	status: QuestStatus.COMING_SOON,
 	prerequisites: ["the-scroll-of-tongues"],
 });
 
@@ -142,7 +141,7 @@ export const getOracleOfSiliconMetadata = () => ({
 	),
 	difficulty: Difficulty.EXPERT,
 	icon: "microchip",
-	status: "coming_soon",
+	status: QuestStatus.COMING_SOON,
 	prerequisites: ["the-unseen-harmony"],
 });
 

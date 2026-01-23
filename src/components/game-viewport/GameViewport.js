@@ -35,6 +35,7 @@ import "../reward-element/reward-element.js";
 import "../viewport-elements/game-controls/game-controls.js";
 import "../viewport-elements/game-exit-zone/game-exit-zone.js";
 import "../viewport-elements/game-zone-indicator/game-zone-indicator.js";
+import { ZoneTypes } from "../../core/constants.js";
 import { UIEvents } from "../../core/events.js";
 import { gameViewportStyles } from "./GameViewport.styles.js";
 
@@ -265,7 +266,7 @@ export class GameViewport extends SignalWatcher(LitElement) {
 	 */
 	#setupKeyboard() {
 		this.keyboard = new KeyboardController(this, {
-			interaction: this.interaction,
+			interaction: this.interaction || undefined,
 			worldState: this.worldState,
 			speed: 2.5,
 		});
@@ -491,12 +492,12 @@ export class GameViewport extends SignalWatcher(LitElement) {
 				></game-controls>
 				
 				<game-zone-indicator 
-					.type="${"THEME_CHANGE"}"
+					.type="${ZoneTypes.THEME_CHANGE}"
 					.zones="${config.zones || []}"
 				></game-zone-indicator>
 
 				<game-zone-indicator 
-					.type="${"CONTEXT_CHANGE"}"
+					.type="${ZoneTypes.CONTEXT_CHANGE}"
 					.zones="${config.zones || []}"
 				></game-zone-indicator>
 

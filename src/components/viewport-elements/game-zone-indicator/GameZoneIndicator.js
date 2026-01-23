@@ -4,6 +4,11 @@ import { html, LitElement } from "lit";
 import { styleMap } from "lit/directives/style-map.js";
 import { questControllerContext } from "../../../contexts/quest-controller-context.js";
 import { themeContext } from "../../../contexts/theme-context.js";
+import {
+	HotSwitchStates,
+	ThemeModes,
+	ZoneTypes,
+} from "../../../core/constants.js";
 import { heroStateContext } from "../../../game/contexts/hero-context.js";
 import { gameZoneIndicatorStyles } from "./GameZoneIndicator.styles.js";
 
@@ -62,7 +67,7 @@ export class GameZoneIndicator extends SignalWatcher(LitElement) {
 	 * @param {Zone} zone
 	 */
 	renderThemeZone(zone) {
-		const isDark = zone.payload === "dark";
+		const isDark = zone.payload === ThemeModes.DARK;
 		const label = isDark ? "Dark Theme" : "Light Theme";
 		const className = isDark ? "zone-theme-dark" : "zone-theme-light";
 
@@ -79,7 +84,7 @@ export class GameZoneIndicator extends SignalWatcher(LitElement) {
 	renderContextZone(zone) {
 		if (zone.payload === null) return "";
 
-		const isLegacy = zone.payload === "legacy";
+		const isLegacy = zone.payload === HotSwitchStates.LEGACY;
 		const baseClass = isLegacy ? "zone-context-legacy" : "zone-context-new";
 		const title = isLegacy ? "Legacy" : "New API V2";
 		const sub = isLegacy ? "LegacyUserService" : "NewUserService";
@@ -92,9 +97,9 @@ export class GameZoneIndicator extends SignalWatcher(LitElement) {
 
 		// Check active state
 		const currentState =
-			this.type === "THEME_CHANGE"
+			this.type === ZoneTypes.THEME_CHANGE
 				? this.themeService?.themeMode.get()
-				: this.type === "CONTEXT_CHANGE"
+				: this.type === ZoneTypes.CONTEXT_CHANGE
 					? this.heroState?.hotSwitchState.get()
 					: "";
 
@@ -127,8 +132,10 @@ export class GameZoneIndicator extends SignalWatcher(LitElement) {
 
 		return html`
 			${relevantZones.map((zone) => {
-				if (this.type === "THEME_CHANGE") return this.renderThemeZone(zone);
-				if (this.type === "CONTEXT_CHANGE") return this.renderContextZone(zone);
+				if (this.type === ZoneTypes.THEME_CHANGE)
+					return this.renderThemeZone(zone);
+				if (this.type === ZoneTypes.CONTEXT_CHANGE)
+					return this.renderContextZone(zone);
 				return "";
 			})}
 		`;

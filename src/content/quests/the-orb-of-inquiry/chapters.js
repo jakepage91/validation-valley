@@ -1,4 +1,6 @@
-import { msg } from "@lit/localize";
+import { msg, str } from "@lit/localize";
+import { HotSwitchStates, ZoneTypes } from "../../../core/constants.js";
+import { ServiceBrand, ServiceBrandMap } from "../quest-types.js";
 
 /**
  * The Orb of Inquiry Quest - Chapter Data
@@ -350,7 +352,7 @@ export class ProductProviderMock extends LitElement {
 			],
 		},
 		stats: { maintainability: 90, portability: 90 },
-		serviceType: "Mock Service",
+		serviceType: ServiceBrand.MOCK,
 		startPos: { x: 50, y: 10 },
 		exitZone: {
 			x: 50,
@@ -386,23 +388,23 @@ export class ProductProviderMock extends LitElement {
 				y: 40,
 				width: 50,
 				height: 60,
-				type: "CONTEXT_CHANGE",
-				payload: "legacy",
+				type: ZoneTypes.CONTEXT_CHANGE,
+				payload: HotSwitchStates.LEGACY,
 			},
 			{
 				x: 0,
 				y: 40,
 				width: 50,
 				height: 60,
-				type: "CONTEXT_CHANGE",
-				payload: "new",
+				type: ZoneTypes.CONTEXT_CHANGE,
+				payload: HotSwitchStates.NEW,
 			},
 			{
 				x: 0,
 				y: 0,
 				width: 100,
 				height: 40,
-				type: "CONTEXT_CHANGE",
+				type: ZoneTypes.CONTEXT_CHANGE,
 				payload: null,
 			},
 		],
@@ -455,7 +457,10 @@ export class ProductProviderMock extends LitElement {
 			image: "/assets/liberated-battlefield/npc.png",
 			position: { x: 50, y: 70 },
 			requirements: {
-				hotSwitchState: { value: "new", message: msg("REQ: NEW API") },
+				hotSwitchState: {
+					value: HotSwitchStates.NEW,
+					message: msg(str`REQ: ${ServiceBrandMap[HotSwitchStates.NEW]}`),
+				},
 			},
 		},
 		reward: {

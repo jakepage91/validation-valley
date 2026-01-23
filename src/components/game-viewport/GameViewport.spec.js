@@ -9,6 +9,11 @@ import { questLoaderContext } from "../../contexts/quest-loader-context.js";
 import { sessionContext } from "../../contexts/session-context.js";
 import { themeContext } from "../../contexts/theme-context.js";
 import { voiceContext } from "../../contexts/voice-context.js";
+import {
+	HotSwitchStates,
+	ThemeModes,
+	ZoneTypes,
+} from "../../core/constants.js";
 import { heroStateContext } from "../../game/contexts/hero-context.js";
 import { questStateContext } from "../../game/contexts/quest-context.js";
 import { worldStateContext } from "../../game/contexts/world-context.js";
@@ -182,15 +187,15 @@ describe("GameViewport", () => {
 		const isEvolving = new Signal.State(false);
 		const hotSwitchState = new Signal.State(
 			/** @type {import('../../game/interfaces.js').HotSwitchState} */ (
-				"legacy"
+				HotSwitchStates.LEGACY
 			),
 		);
 
 		return {
 			pos,
 			imageSrc,
-			isEvolving,
-			hotSwitchState,
+			isEvolving: { get: vi.fn(() => isEvolving.get()) },
+			hotSwitchState: { get: vi.fn(() => hotSwitchState.get()) },
 			setPos: vi.fn((p) => pos.set(p)),
 			setImageSrc: vi.fn((s) => imageSrc.set(s)),
 			setIsEvolving: vi.fn((e) => isEvolving.set(e)),
@@ -213,15 +218,15 @@ describe("GameViewport", () => {
 		);
 
 		return {
-			hasCollectedItem,
-			isRewardCollected,
-			isQuestCompleted,
-			lockedMessage,
-			currentChapterNumber,
-			totalChapters,
-			levelTitle,
-			questTitle,
-			currentChapterId,
+			hasCollectedItem: { get: vi.fn(() => hasCollectedItem.get()) },
+			isRewardCollected: { get: vi.fn(() => isRewardCollected.get()) },
+			isQuestCompleted: { get: vi.fn(() => isQuestCompleted.get()) },
+			lockedMessage: { get: vi.fn(() => lockedMessage.get()) },
+			currentChapterNumber: { get: vi.fn(() => currentChapterNumber.get()) },
+			totalChapters: { get: vi.fn(() => totalChapters.get()) },
+			levelTitle: { get: vi.fn(() => levelTitle.get()) },
+			questTitle: { get: vi.fn(() => questTitle.get()) },
+			currentChapterId: { get: vi.fn(() => currentChapterId.get()) },
 			setHasCollectedItem: vi.fn((v) => hasCollectedItem.set(v)),
 			setIsRewardCollected: vi.fn((v) => isRewardCollected.set(v)),
 			setIsQuestCompleted: vi.fn((v) => isQuestCompleted.set(v)),
@@ -283,7 +288,7 @@ describe("GameViewport", () => {
 			currentQuest: new Signal.State(null),
 		});
 		wrapper.themeService = /** @type {any} */ ({
-			themeMode: new Signal.State("light"),
+			themeMode: new Signal.State(ThemeModes.LIGHT),
 		});
 		wrapper.aiService = /** @type {any} */ ({
 			isEnabled: new Signal.State(false),
@@ -356,7 +361,8 @@ describe("GameViewport", () => {
 		/** @type {import('../../services/interfaces.js').Chapter['zones']} */
 		const zones = [
 			/** @type {any} */ ({
-				type: "THEME_CHANGE",
+				type: ZoneTypes.CONTEXT_CHANGE,
+				payload: HotSwitchStates.LEGACY,
 				x: 10,
 				y: 10,
 				width: 100,
@@ -380,7 +386,7 @@ describe("GameViewport", () => {
 			element.shadowRoot?.querySelectorAll("game-zone-indicator") || [],
 		);
 		const themeIndicator = indicators.find(
-			(el) => /** @type {any} */ (el).type === "THEME_CHANGE",
+			(el) => /** @type {any} */ (el).type === ZoneTypes.THEME_CHANGE,
 		);
 		expect(themeIndicator).toBeTruthy();
 		expect(/** @type {any} */ (themeIndicator).zones).toEqual(zones);

@@ -18,7 +18,7 @@ export class ContinueQuestUseCase {
 	/**
 	 * Execute the use case
 	 * @param {string} questId - ID of the quest to continue
-	 * @returns {Promise<{success: boolean, quest: any, error?: Error}>}
+	 * @returns {Promise<import('../services/interfaces.js').QuestResult>}
 	 */
 	async execute(questId) {
 		try {

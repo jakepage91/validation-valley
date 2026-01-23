@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import "./game-zone-indicator.js";
+import { HotSwitchStates, ThemeModes } from "../../../core/constants.js";
 import { GameZoneIndicator } from "./GameZoneIndicator.js";
 
 describe("GameZoneIndicator", () => {
@@ -36,7 +37,7 @@ describe("GameZoneIndicator", () => {
 				y: 10,
 				width: 50,
 				height: 50,
-				payload: "dark",
+				payload: ThemeModes.DARK,
 			},
 			{
 				type: "CONTEXT_CHANGE",
@@ -44,7 +45,7 @@ describe("GameZoneIndicator", () => {
 				y: 10,
 				width: 50,
 				height: 50,
-				payload: "legacy",
+				payload: HotSwitchStates.LEGACY,
 			},
 		];
 
@@ -80,7 +81,7 @@ describe("GameZoneIndicator", () => {
 				y: 20,
 				width: 50,
 				height: 50,
-				payload: "light",
+				payload: ThemeModes.LIGHT,
 			},
 		];
 

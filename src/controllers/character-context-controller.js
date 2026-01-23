@@ -1,3 +1,4 @@
+import { HotSwitchStates, ThemeModes } from "../core/constants.js";
 /**
  * @typedef {import("lit").ReactiveController} ReactiveController
  * @typedef {import("lit").ReactiveControllerHost} ReactiveControllerHost
@@ -68,9 +69,11 @@ export class CharacterContextController {
 
 		const isRewardCollected = questState.isRewardCollected?.get() || false;
 		const hasCollectedItem = questState.hasCollectedItem?.get() || false;
-		const hotSwitchState = heroState.hotSwitchState?.get() || "legacy";
+		const hotSwitchState =
+			heroState.hotSwitchState?.get() || HotSwitchStates.LEGACY;
 
-		const themeMode = this.options.themeService?.themeMode?.get() || "light";
+		const themeMode =
+			this.options.themeService?.themeMode?.get() || ThemeModes.LIGHT;
 
 		const suit = {
 			image: chapterData?.hero
@@ -88,8 +91,8 @@ export class CharacterContextController {
 		};
 
 		const power = {
-			effect: hotSwitchState === "new" ? "stable" : "glitch",
-			intensity: themeMode === "dark" ? "high" : "low",
+			effect: hotSwitchState === HotSwitchStates.NEW ? "stable" : "glitch",
+			intensity: themeMode === ThemeModes.DARK ? "high" : "low",
 		};
 
 		const mastery = {

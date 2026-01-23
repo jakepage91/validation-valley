@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { HotSwitchStates, ThemeModes } from "../../core/constants.js";
 import { UIEvents } from "../../core/events.js";
 import { logger } from "../../services/logger-service.js";
 import { QuestView } from "../quest-view/QuestView.js";
@@ -225,13 +226,13 @@ function getMockApp(overrides = {}) {
 			showDialog: { get: vi.fn(() => true) },
 			heroPos: { get: vi.fn(() => ({ x: 0, y: 0 })) },
 			isEvolving: { get: vi.fn(() => false) },
-			hotSwitchState: { get: vi.fn(() => "new") },
+			hotSwitchState: { get: vi.fn(() => HotSwitchStates.NEW) },
 			hasCollectedItem: { get: vi.fn(() => false) },
 			isRewardCollected: { get: vi.fn(() => false) },
 			lockedMessage: { get: vi.fn(() => null) },
 			getState: vi.fn(() => ({
-				themeMode: "light",
-				hotSwitchState: "new",
+				themeMode: ThemeModes.LIGHT,
+				hotSwitchState: HotSwitchStates.NEW,
 				hasCollectedItem: false,
 				heroPos: { x: 0, y: 0 },
 				isPaused: false,
@@ -335,9 +336,10 @@ describe("QuestView Integration", () => {
 			setPos: vi.fn(),
 			setIsEvolving: vi.fn(),
 			setHotSwitchState: vi.fn(),
-			pos: new Signal.State({ x: 0, y: 0 }),
-			hotSwitchState: new Signal.State(null),
-			isEvolving: new Signal.State(false),
+			pos: { get: vi.fn(() => ({ x: 0, y: 0 })) },
+			hotSwitchState: { get: vi.fn(() => HotSwitchStates.NEW) },
+			isEvolving: { get: vi.fn(() => false) },
+			imageSrc: { get: vi.fn(() => "") },
 		};
 		wrapper.questState = {
 			resetQuestState: vi.fn(),
@@ -346,20 +348,30 @@ describe("QuestView Integration", () => {
 			setIsRewardCollected: vi.fn(),
 			setIsQuestCompleted: vi.fn(),
 			setLockedMessage: vi.fn(),
-			hasCollectedItem: new Signal.State(false),
-			isRewardCollected: new Signal.State(false),
-			isQuestCompleted: new Signal.State(false),
-			lockedMessage: new Signal.State(null),
+			setCurrentChapterNumber: vi.fn(),
+			setTotalChapters: vi.fn(),
+			setLevelTitle: vi.fn(),
+			setQuestTitle: vi.fn(),
+			setCurrentChapterId: vi.fn(),
+			hasCollectedItem: { get: vi.fn(() => false) },
+			isRewardCollected: { get: vi.fn(() => false) },
+			isQuestCompleted: { get: vi.fn(() => false) },
+			lockedMessage: { get: vi.fn(() => null) },
+			currentChapterNumber: { get: vi.fn(() => 1) },
+			totalChapters: { get: vi.fn(() => 10) },
+			levelTitle: { get: vi.fn(() => "Test Level") },
+			questTitle: { get: vi.fn(() => "Test Quest") },
+			currentChapterId: { get: vi.fn(() => "ch1") },
 		};
 		wrapper.worldState = {
 			setPaused: vi.fn(),
 			setShowDialog: vi.fn(),
 			setCurrentDialogText: vi.fn(),
 			setNextDialogText: vi.fn(),
-			isPaused: new Signal.State(false),
-			showDialog: new Signal.State(true),
-			currentDialogText: new Signal.State(""),
-			nextDialogText: new Signal.State(""),
+			isPaused: { get: vi.fn(() => false) },
+			showDialog: { get: vi.fn(() => true) },
+			currentDialogText: { get: vi.fn(() => "") },
+			nextDialogText: { get: vi.fn(() => "") },
 		};
 		wrapper.sessionService = {
 			currentQuest: new Signal.State({ id: "q1" }),

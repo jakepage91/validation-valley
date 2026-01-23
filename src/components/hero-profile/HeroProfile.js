@@ -1,5 +1,4 @@
 import "@awesome.me/webawesome/dist/components/tag/tag.js";
-
 import { consume } from "@lit/context";
 import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
@@ -7,6 +6,7 @@ import { ifDefined } from "lit/directives/if-defined.js";
 import { characterContext } from "../../contexts/character-context.js";
 import { profileContext } from "../../contexts/profile-context.js";
 import { themeContext } from "../../contexts/theme-context.js";
+import { ThemeModes } from "../../core/constants.js";
 import { heroStateContext } from "../../game/contexts/hero-context.js";
 import {
 	processImagePath,
@@ -75,7 +75,7 @@ export class HeroProfile extends SignalWatcher(LitElement) {
 		// Reactive class update based on signal
 		if (this.themeService) {
 			const mode = this.themeService.themeMode.get();
-			if (mode === "dark") {
+			if (mode === ThemeModes.DARK) {
 				this.classList.add("wa-dark");
 			} else {
 				this.classList.remove("wa-dark");

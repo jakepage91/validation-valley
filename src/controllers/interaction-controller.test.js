@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { HotSwitchStates } from "../core/constants.js";
 import { InteractionController } from "./interaction-controller.js";
 
 describe("InteractionController", () => {
@@ -134,11 +135,16 @@ describe("InteractionController", () => {
 			it("should dispatch show-locked-message event if API is LEGACY", () => {
 				getState.mockReturnValue({
 					heroPos: { x: 0, y: 0 },
-					hotSwitchState: "legacy",
+					gameState: {
+						hotSwitchState: HotSwitchStates.LEGACY,
+					},
 					chapterData: {
 						npc: {
 							requirements: {
-								hotSwitchState: { value: "new", message: "REQ: NEW API" },
+								hotSwitchState: {
+									value: HotSwitchStates.NEW,
+									message: "REQ: NEW API",
+								},
 							},
 						},
 					}, // Important flag
@@ -168,11 +174,16 @@ describe("InteractionController", () => {
 			it("should dispatch request-dialog event if API is NEW", () => {
 				getState.mockReturnValue({
 					heroPos: { x: 0, y: 0 },
-					hotSwitchState: "new",
+					gameState: {
+						hotSwitchState: HotSwitchStates.NEW,
+					},
 					chapterData: {
 						npc: {
 							requirements: {
-								hotSwitchState: { value: "new", message: "REQ: NEW API" },
+								hotSwitchState: {
+									value: HotSwitchStates.NEW,
+									message: "REQ: NEW API",
+								},
 							},
 						},
 					},

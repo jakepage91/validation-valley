@@ -1,3 +1,4 @@
+import { HotSwitchStates } from "../core/constants.js";
 import { CompleteQuestUseCase } from "../use-cases/complete-quest.js";
 import { ContinueQuestUseCase } from "../use-cases/continue-quest.js";
 import { InteractWithNpcUseCase } from "../use-cases/interact-with-npc.js";
@@ -72,7 +73,7 @@ export class QuestLoaderService {
 	/**
 	 * Start a new quest
 	 * @param {string} questId
-	 * @returns {Promise<{success: boolean, quest: any, error?: Error}>}
+	 * @returns {Promise<import('./interfaces.js').QuestResult>}
 	 */
 	async startQuest(questId) {
 		this.#setLoadingState(true);
@@ -80,15 +81,19 @@ export class QuestLoaderService {
 
 		const result = await this._startQuestUseCase.execute(questId);
 
-		if (result.success) {
+		if (result.success && result.quest) {
 			this.sessionService.setCurrentQuest(result.quest);
 			this.sessionService.setIsInHub(false);
 			this.questState.setQuestTitle(result.quest.name);
 			this.logger.info(`🎮 Started quest: ${result.quest.name}`);
 
 			if (this.router) {
-				const chapterId = result.quest.chapterIds[0];
-				this.router.navigate(`/quest/${questId}/chapter/${chapterId}`);
+				const chapterId = result.quest.chapterIds
+					? result.quest.chapterIds[0]
+					: "";
+				if (chapterId) {
+					this.router.navigate(`/quest/${questId}/chapter/${chapterId}`);
+				}
 
 				// Sync hero state for the first chapter
 				if (this.questController.currentChapter) {
@@ -109,7 +114,7 @@ export class QuestLoaderService {
 	/**
 	 * Continue quest from last checkpoint
 	 * @param {string} questId
-	 * @returns {Promise<{success: boolean, quest: any, error?: Error}>}
+	 * @returns {Promise<import('./interfaces.js').QuestResult>}
 	 */
 	async continueQuest(questId) {
 		this.#setLoadingState(true);
@@ -117,7 +122,7 @@ export class QuestLoaderService {
 
 		const result = await this._continueQuestUseCase.execute(questId);
 
-		if (result.success) {
+		if (result.success && result.quest) {
 			const quest = result.quest;
 			this.sessionService.setCurrentQuest(quest);
 			this.sessionService.setIsInHub(false);
@@ -325,9 +330,9 @@ export class QuestLoaderService {
 		if (serviceType === null) return null;
 
 		const mapping = {
-			[ServiceType.LEGACY]: "legacy",
-			[ServiceType.NEW]: "new",
-			[ServiceType.MOCK]: "mock",
+			[ServiceType.LEGACY]: HotSwitchStates.LEGACY,
+			[ServiceType.NEW]: HotSwitchStates.NEW,
+			[ServiceType.MOCK]: HotSwitchStates.MOCK,
 		};
 
 		return (

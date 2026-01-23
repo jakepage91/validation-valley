@@ -1,8 +1,6 @@
 import { msg } from "@lit/localize";
 import { Difficulty } from "../content/quests/quest-types.js";
 
-/** @typedef {import('../content/quests/quest-types.js').DifficultyType} DifficultyType */
-
 /**
  * @typedef {import('../content/quests/quest-types.js').Quest} Quest
  */
@@ -20,7 +18,7 @@ export function getQuestVariant(quest) {
 
 /**
  * Gets the variant for a difficulty badge
- * @param {DifficultyType} [difficulty=Difficulty.BEGINNER] - The difficulty level
+ * @param {Difficulty} [difficulty=Difficulty.BEGINNER] - The difficulty level
  * @returns {"success" | "warning" | "danger" | "neutral"} The variant name
  */
 export function getDifficultyVariant(difficulty = Difficulty.BEGINNER) {
@@ -40,7 +38,7 @@ export function getDifficultyVariant(difficulty = Difficulty.BEGINNER) {
 
 /**
  * Gets the localized label for a difficulty level
- * @param {DifficultyType} [difficulty=Difficulty.BEGINNER] - The difficulty level
+ * @param {Difficulty} [difficulty=Difficulty.BEGINNER] - The difficulty level
  * @returns {string} The localized label
  */
 export function getDifficultyLabel(difficulty = Difficulty.BEGINNER) {

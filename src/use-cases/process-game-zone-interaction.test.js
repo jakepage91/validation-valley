@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { HotSwitchStates, ThemeModes, ZoneTypes } from "../core/constants.js";
 import { ProcessGameZoneInteractionUseCase } from "./process-game-zone-interaction.js";
 
 describe("ProcessGameZoneInteractionUseCase", () => {
@@ -13,8 +14,8 @@ describe("ProcessGameZoneInteractionUseCase", () => {
 					y: 0,
 					width: 100,
 					height: DARK_HEIGHT,
-					type: "THEME_CHANGE",
-					payload: "dark",
+					type: ZoneTypes.THEME_CHANGE,
+					payload: ThemeModes.DARK,
 					requiresItem: true,
 				},
 				{
@@ -22,8 +23,8 @@ describe("ProcessGameZoneInteractionUseCase", () => {
 					y: DARK_HEIGHT,
 					width: 100,
 					height: 100 - DARK_HEIGHT,
-					type: "THEME_CHANGE",
-					payload: "light",
+					type: ZoneTypes.THEME_CHANGE,
+					payload: ThemeModes.LIGHT,
 					requiresItem: true,
 				},
 			],
@@ -37,7 +38,10 @@ describe("ProcessGameZoneInteractionUseCase", () => {
 				chapter,
 				hasCollectedItem: true,
 			});
-			expect(results).toContainEqual({ type: "THEME_CHANGE", payload: "dark" });
+			expect(results).toContainEqual({
+				type: ZoneTypes.THEME_CHANGE,
+				payload: ThemeModes.DARK,
+			});
 		});
 
 		it("should return light theme when in light zone", () => {
@@ -49,8 +53,8 @@ describe("ProcessGameZoneInteractionUseCase", () => {
 				hasCollectedItem: true,
 			});
 			expect(results).toContainEqual({
-				type: "THEME_CHANGE",
-				payload: "light",
+				type: ZoneTypes.THEME_CHANGE,
+				payload: ThemeModes.LIGHT,
 			});
 		});
 
@@ -73,23 +77,23 @@ describe("ProcessGameZoneInteractionUseCase", () => {
 					y: 40,
 					width: 50,
 					height: 60,
-					type: "CONTEXT_CHANGE",
-					payload: "legacy",
+					type: ZoneTypes.CONTEXT_CHANGE,
+					payload: HotSwitchStates.LEGACY,
 				},
 				{
 					x: 0,
 					y: 40,
 					width: 50,
 					height: 60,
-					type: "CONTEXT_CHANGE",
-					payload: "new",
+					type: ZoneTypes.CONTEXT_CHANGE,
+					payload: HotSwitchStates.NEW,
 				},
 				{
 					x: 0,
 					y: 0,
 					width: 100,
 					height: 40,
-					type: "CONTEXT_CHANGE",
+					type: ZoneTypes.CONTEXT_CHANGE,
 					payload: null,
 				},
 			],
@@ -103,8 +107,8 @@ describe("ProcessGameZoneInteractionUseCase", () => {
 				hasCollectedItem: false,
 			});
 			expect(results).toContainEqual({
-				type: "CONTEXT_CHANGE",
-				payload: "legacy",
+				type: ZoneTypes.CONTEXT_CHANGE,
+				payload: HotSwitchStates.LEGACY,
 			});
 		});
 
@@ -116,8 +120,8 @@ describe("ProcessGameZoneInteractionUseCase", () => {
 				hasCollectedItem: false,
 			});
 			expect(results).toContainEqual({
-				type: "CONTEXT_CHANGE",
-				payload: "new",
+				type: ZoneTypes.CONTEXT_CHANGE,
+				payload: HotSwitchStates.NEW,
 			});
 		});
 
@@ -129,7 +133,7 @@ describe("ProcessGameZoneInteractionUseCase", () => {
 				hasCollectedItem: false,
 			});
 			expect(results).toContainEqual({
-				type: "CONTEXT_CHANGE",
+				type: ZoneTypes.CONTEXT_CHANGE,
 				payload: null,
 			});
 		});

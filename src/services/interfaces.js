@@ -17,7 +17,7 @@
 /** @typedef {import('../config/game-configuration.js').ViewportConfig} ViewportConfig */
 /** @typedef {import('../config/game-configuration.js').GameConfig} GameConfig */
 /** @typedef {import('../config/game-configuration.js').FeaturesConfig} FeaturesConfig */
-/** @typedef {import('../content/quests/quest-types.js').DifficultyType} DifficultyType */
+/** @typedef {import('../content/quests/quest-types.js').Difficulty} Difficulty */
 /** @typedef {import('../content/quests/quest-types.js').QuestStatus} QuestStatus */
 /** @typedef {import('../content/quests/quest-types.js').ZoneType} ZoneType */
 /** @typedef {import('../content/quests/quest-types.js').ServiceBrand} ServiceBrand */
@@ -151,9 +151,20 @@
  * @property {SpeechSynthesis | undefined} [synthesis]
  * @property {SpeechSynthesisVoice[] | undefined} [voices]
  * @property {boolean} [isSpeaking]
- * @property {(text: string, options?: { lang?: string, voice?: SpeechSynthesisVoice | null | undefined, rate?: number, pitch?: number, queue?: boolean, onStart?: () => void, onEnd?: () => void, onError?: (e: any) => void }) => Promise<void>} speak
+ * @property {(text: string, options?: { lang?: string, voice?: SpeechSynthesisVoice | null | undefined, rate?: number, pitch?: number, queue?: boolean, onStart?: () => void, onEnd?: () => void, onError?: (e: unknown) => void }) => Promise<void>} speak
  * @property {() => void} cancel
  * @property {(lang: string, preferredNames?: string[]) => SpeechSynthesisVoice|null} getBestVoice
+ */
+
+/**
+ * @typedef {import('../content/quests/quest-types.js').Quest | null} QuestOrNull
+ */
+
+/**
+ * @typedef {Object} QuestResult
+ * @property {boolean} success
+ * @property {QuestOrNull} quest
+ * @property {Error} [error]
  */
 
 /**
@@ -162,22 +173,31 @@
  * @property {import('../game/interfaces.js').IQuestStateService | undefined} [questState]
  * @property {import('./session-service.js').SessionService | undefined} [sessionService]
  * @property {IProgressService | undefined} [progressService]
- * @property {(questId: string) => Promise<{success: boolean, quest: any, error?: Error}>} startQuest
- * @property {(questId: string) => Promise<{success: boolean, quest: any, error?: Error}>} continueQuest
+ * @property {(questId: string) => Promise<QuestResult>} startQuest
+ * @property {(questId: string) => Promise<QuestResult>} continueQuest
  * @property {(questId: string, chapterId: string) => Promise<void>} loadChapter
  * @property {() => Promise<void>} advanceChapter
  * @property {() => void} completeChapter
  * @property {() => void} completeQuest
  * @property {(replace?: boolean) => Promise<{success: boolean, error?: Error}>} returnToHub
- * @property {any} [interactWithNpcUseCase]
+ * @property {import('../use-cases/interact-with-npc.js').InteractWithNpcUseCase} [interactWithNpcUseCase]
+ */
+
+/**
+ * @typedef {Object} IInteractionController
+ * @property {() => void} handleInteract
+ */
+
+/**
+ * @typedef {Record<string, JsonValue> | Error | undefined} LogMetadata
  */
 
 /**
  * @typedef {Object} ILoggerService
- * @property {(message: string, meta?: any) => void} debug
- * @property {(message: string, meta?: any) => void} info
- * @property {(message: string, meta?: any) => void} warn
- * @property {(message: string, error?: any) => void} error
+ * @property {(message: string, meta?: LogMetadata) => void} debug
+ * @property {(message: string, meta?: LogMetadata) => void} info
+ * @property {(message: string, meta?: LogMetadata) => void} warn
+ * @property {(message: string, error?: unknown) => void} error
  */
 
 // Export type definitions for use in other files

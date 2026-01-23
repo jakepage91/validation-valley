@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { HotSwitchStates } from "../core/constants.js";
 import { InteractWithNpcUseCase } from "./interact-with-npc.js";
 
 describe("InteractWithNpcUseCase", () => {
@@ -8,7 +9,7 @@ describe("InteractWithNpcUseCase", () => {
 		const result = useCase.execute({
 			isClose: false,
 			chapterData: /** @type {any} */ ({}),
-			gameState: { hotSwitchState: "new" },
+			gameState: { hotSwitchState: HotSwitchStates.NEW },
 			hasCollectedItem: false,
 		});
 
@@ -20,7 +21,7 @@ describe("InteractWithNpcUseCase", () => {
 		const result = useCase.execute({
 			isClose: true,
 			chapterData: /** @type {any} */ ({ npc: {} }),
-			gameState: { hotSwitchState: "legacy" },
+			gameState: { hotSwitchState: HotSwitchStates.LEGACY },
 			hasCollectedItem: false,
 		});
 
@@ -32,7 +33,7 @@ describe("InteractWithNpcUseCase", () => {
 		const result = useCase.execute({
 			isClose: true,
 			chapterData: /** @type {any} */ ({ npc: {} }),
-			gameState: { hotSwitchState: "new" },
+			gameState: { hotSwitchState: HotSwitchStates.NEW },
 			hasCollectedItem: true,
 		});
 
@@ -46,11 +47,14 @@ describe("InteractWithNpcUseCase", () => {
 			chapterData: /** @type {any} */ ({
 				npc: {
 					requirements: {
-						hotSwitchState: { value: "new", message: "REQ: NEW API" },
+						hotSwitchState: {
+							value: HotSwitchStates.NEW,
+							message: "REQ: NEW API",
+						},
 					},
 				},
 			}),
-			gameState: { hotSwitchState: "new" },
+			gameState: { hotSwitchState: HotSwitchStates.NEW },
 			hasCollectedItem: false,
 		});
 
@@ -64,11 +68,14 @@ describe("InteractWithNpcUseCase", () => {
 			chapterData: /** @type {any} */ ({
 				npc: {
 					requirements: {
-						hotSwitchState: { value: "new", message: "REQ: NEW API" },
+						hotSwitchState: {
+							value: HotSwitchStates.NEW,
+							message: "REQ: NEW API",
+						},
 					},
 				},
 			}),
-			gameState: { hotSwitchState: "legacy" },
+			gameState: { hotSwitchState: HotSwitchStates.LEGACY },
 			hasCollectedItem: false,
 		});
 
@@ -86,7 +93,7 @@ describe("InteractWithNpcUseCase", () => {
 					},
 				},
 			}),
-			gameState: { hotSwitchState: "new", level: "other-level" },
+			gameState: { hotSwitchState: HotSwitchStates.NEW, level: "other-level" },
 			hasCollectedItem: false,
 		});
 
@@ -101,12 +108,15 @@ describe("InteractWithNpcUseCase", () => {
 			chapterData: /** @type {any} */ ({
 				npc: {
 					requirements: {
-						hotSwitchState: { value: "new", message: "REQ: NEW API" },
+						hotSwitchState: {
+							value: HotSwitchStates.NEW,
+							message: "REQ: NEW API",
+						},
 						hasKey: { value: true, message: "Need Key" },
 					},
 				},
 			}),
-			gameState: { hotSwitchState: "new", hasKey: false },
+			gameState: { hotSwitchState: HotSwitchStates.NEW, hasKey: false },
 			hasCollectedItem: false,
 		});
 

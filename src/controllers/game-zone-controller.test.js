@@ -1,5 +1,6 @@
 import { Signal } from "@lit-labs/signals";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { HotSwitchStates, ZoneTypes } from "../core/constants.js";
 import { GameZoneController } from "./game-zone-controller.js";
 
 describe("GameZoneController", () => {
@@ -47,7 +48,7 @@ describe("GameZoneController", () => {
 			themeService: mockThemeService,
 			heroState: {
 				pos: heroPos,
-				hotSwitchState: new Signal.State("legacy"),
+				hotSwitchState: new Signal.State(HotSwitchStates.LEGACY),
 				setHotSwitchState: vi.fn(),
 			},
 			questState: {
@@ -99,7 +100,7 @@ describe("GameZoneController", () => {
 				y: 25,
 				width: 100,
 				height: 75,
-				type: "THEME_CHANGE",
+				type: ZoneTypes.THEME_CHANGE,
 				payload: "light",
 				requiresItem: true,
 			},
@@ -108,7 +109,7 @@ describe("GameZoneController", () => {
 				y: 0,
 				width: 100,
 				height: 25,
-				type: "THEME_CHANGE",
+				type: ZoneTypes.THEME_CHANGE,
 				payload: "dark",
 				requiresItem: true,
 			},
@@ -121,7 +122,7 @@ describe("GameZoneController", () => {
 			const mockUseCase = {
 				execute: vi.fn().mockReturnValue([
 					{
-						type: "THEME_CHANGE",
+						type: ZoneTypes.THEME_CHANGE,
 						payload: "dark",
 					},
 				]),
@@ -146,7 +147,7 @@ describe("GameZoneController", () => {
 			const mockUseCase = {
 				execute: vi.fn().mockReturnValue([
 					{
-						type: "THEME_CHANGE",
+						type: ZoneTypes.THEME_CHANGE,
 						payload: "light",
 					},
 				]),
@@ -188,8 +189,8 @@ describe("GameZoneController", () => {
 
 		it("should prioritize the last matching zone when zones overlap", () => {
 			const processSpy = vi.fn().mockReturnValue([
-				{ type: "CONTEXT_CHANGE", payload: "legacy" },
-				{ type: "CONTEXT_CHANGE", payload: "new" },
+				{ type: ZoneTypes.CONTEXT_CHANGE, payload: HotSwitchStates.LEGACY },
+				{ type: ZoneTypes.CONTEXT_CHANGE, payload: HotSwitchStates.NEW },
 			]);
 
 			controller = new GameZoneController(host, context, {
@@ -204,7 +205,7 @@ describe("GameZoneController", () => {
 			heroPos.set({ x: 50, y: 50 });
 			controller.hostUpdate();
 
-			expect(spy).toHaveBeenCalledWith("new");
+			expect(spy).toHaveBeenCalledWith(HotSwitchStates.NEW);
 			expect(spy).toHaveBeenCalledTimes(1);
 		});
 	});

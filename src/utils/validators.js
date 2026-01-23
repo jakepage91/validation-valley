@@ -5,13 +5,18 @@
  * data integrity and prevent invalid states.
  */
 
+import {
+	GameConstants,
+	HotSwitchStates,
+	ThemeModes,
+} from "../core/constants.js";
 import { Result } from "./result.js";
 
 /**
  * @typedef {Object} ValidationError
  * @property {string} field - The field that failed validation
  * @property {string} message - The error message
- * @property {any} value - The invalid value
+ * @property {unknown} value - The invalid value
  */
 
 /**
@@ -21,13 +26,36 @@ import { Result } from "./result.js";
  */
 
 /**
+ * Helper to create a ValidationResult
+ * @param {ValidationError[]} errors
+ * @returns {ValidationResult}
+ */
+const createValidationResult = (errors) => ({
+	isValid: errors.length === 0,
+	errors,
+});
+
+/**
+ * Helper to convert a ValidationResult to a Result
+ * @param {ValidationResult} validation
+ * @param {any} value
+ * @returns {Result}
+ */
+const toResult = (validation, value) => {
+	if (validation.isValid) {
+		return Result.Ok(value);
+	}
+	return Result.Err(validation.errors);
+};
+
+/**
  * Position Validator - Validates hero/NPC positions
  */
 export const PositionValidator = {
 	/**
 	 * Validate a position coordinate
-	 * @param {number} x - X coordinate (0-100)
-	 * @param {number} y - Y coordinate (0-100)
+	 * @param {number} x - X coordinate
+	 * @param {number} y - Y coordinate
 	 * @returns {ValidationResult}
 	 */
 	validate(x, y) {
@@ -39,10 +67,10 @@ export const PositionValidator = {
 				message: "X must be a number",
 				value: x,
 			});
-		} else if (x < 0 || x > 100) {
+		} else if (x < GameConstants.MIN_POS || x > GameConstants.MAX_POS) {
 			errors.push({
 				field: "x",
-				message: "X must be between 0 and 100",
+				message: `X must be between ${GameConstants.MIN_POS} and ${GameConstants.MAX_POS}`,
 				value: x,
 			});
 		}
@@ -53,18 +81,15 @@ export const PositionValidator = {
 				message: "Y must be a number",
 				value: y,
 			});
-		} else if (y < 0 || y > 100) {
+		} else if (y < GameConstants.MIN_POS || y > GameConstants.MAX_POS) {
 			errors.push({
 				field: "y",
-				message: "Y must be between 0 and 100",
+				message: `Y must be between ${GameConstants.MIN_POS} and ${GameConstants.MAX_POS}`,
 				value: y,
 			});
 		}
 
-		return {
-			isValid: errors.length === 0,
-			errors,
-		};
+		return createValidationResult(errors);
 	},
 
 	/**
@@ -74,11 +99,7 @@ export const PositionValidator = {
 	 * @returns {Result}
 	 */
 	validateResult(x, y) {
-		const validation = this.validate(x, y);
-		if (validation.isValid) {
-			return Result.Ok({ x, y });
-		}
-		return Result.Err(validation.errors);
+		return toResult(this.validate(x, y), { x, y });
 	},
 };
 
@@ -86,11 +107,15 @@ export const PositionValidator = {
  * Theme Mode Validator
  */
 export const ThemeModeValidator = {
-	VALID_MODES: ["light", "dark"],
+	VALID_MODES: Object.values(ThemeModes),
+
+	/**
+	 * @typedef {import('../core/constants.js').ThemeMode} ThemeMode
+	 */
 
 	/**
 	 * Validate theme mode
-	 * @param {string} mode
+	 * @param {unknown} mode
 	 * @returns {ValidationResult}
 	 */
 	validate(mode) {
@@ -110,23 +135,16 @@ export const ThemeModeValidator = {
 			});
 		}
 
-		return {
-			isValid: errors.length === 0,
-			errors,
-		};
+		return createValidationResult(errors);
 	},
 
 	/**
 	 * Validate theme mode and return Result
-	 * @param {string} mode
+	 * @param {ThemeMode} mode
 	 * @returns {Result}
 	 */
 	validateResult(mode) {
-		const validation = this.validate(mode);
-		if (validation.isValid) {
-			return Result.Ok(mode);
-		}
-		return Result.Err(validation.errors);
+		return toResult(this.validate(mode), mode);
 	},
 };
 
@@ -134,11 +152,15 @@ export const ThemeModeValidator = {
  * Hot Switch State Validator
  */
 export const HotSwitchStateValidator = {
-	VALID_STATES: ["legacy", "new", "mock", null],
+	VALID_STATES: [...Object.values(HotSwitchStates), null],
+
+	/**
+	 * @typedef {import('../game/interfaces.js').HotSwitchState} HotSwitchState
+	 */
 
 	/**
 	 * Validate hot switch state
-	 * @param {string | null} state
+	 * @param {unknown} state
 	 * @returns {ValidationResult}
 	 */
 	validate(state) {
@@ -158,23 +180,16 @@ export const HotSwitchStateValidator = {
 			});
 		}
 
-		return {
-			isValid: errors.length === 0,
-			errors,
-		};
+		return createValidationResult(errors);
 	},
 
 	/**
 	 * Validate hot switch state and return Result
-	 * @param {string | null} state
+	 * @param {HotSwitchState} state
 	 * @returns {Result}
 	 */
 	validateResult(state) {
-		const validation = this.validate(state);
-		if (validation.isValid) {
-			return Result.Ok(state);
-		}
-		return Result.Err(validation.errors);
+		return toResult(this.validate(state), state);
 	},
 };
 
@@ -211,10 +226,7 @@ export const QuestIdValidator = {
 			});
 		}
 
-		return {
-			isValid: errors.length === 0,
-			errors,
-		};
+		return createValidationResult(errors);
 	},
 
 	/**
@@ -223,11 +235,7 @@ export const QuestIdValidator = {
 	 * @returns {Result}
 	 */
 	validateResult(questId) {
-		const validation = this.validate(questId);
-		if (validation.isValid) {
-			return Result.Ok(questId);
-		}
-		return Result.Err(validation.errors);
+		return toResult(this.validate(questId), questId);
 	},
 };
 
@@ -242,16 +250,13 @@ export const CompositeValidator = {
 	 */
 	combine(...validations) {
 		const allErrors = validations.flatMap((v) => v.errors);
-		return {
-			isValid: allErrors.length === 0,
-			errors: allErrors,
-		};
+		return createValidationResult(allErrors);
 	},
 
 	/**
 	 * Validate an object against a schema
 	 * @param {Record<string, any>} obj - Object to validate
-	 * @param {Object<string, (value: any) => ValidationResult>} schema - Validation schema
+	 * @param {Record<string, (value: unknown) => ValidationResult>} schema - Validation schema
 	 * @returns {ValidationResult}
 	 */
 	validateObject(obj, schema) {
@@ -265,9 +270,6 @@ export const CompositeValidator = {
 			}
 		}
 
-		return {
-			isValid: errors.length === 0,
-			errors,
-		};
+		return createValidationResult(errors);
 	},
 };

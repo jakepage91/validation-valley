@@ -1,3 +1,4 @@
+import { ZoneTypes } from "../core/constants.js";
 /**
  * @typedef {import("lit").ReactiveControllerHost} ReactiveControllerHost
  * @typedef {import("lit").ReactiveController} ReactiveController
@@ -25,7 +26,7 @@ export class GameZoneController {
 	 * @param {import('../game/interfaces.js').IQuestStateService} dependencies.questState
 	 * @param {import('../services/interfaces.js').IQuestController} dependencies.questController
 	 * @param {import('../services/interfaces.js').IThemeService} dependencies.themeService
-	 * @param {{ processGameZoneInteraction: any }} useCases
+	 * @param {{ processGameZoneInteraction: import('../use-cases/process-game-zone-interaction.js').ProcessGameZoneInteractionUseCase }} useCases
 	 */
 	constructor(
 		host,
@@ -90,17 +91,17 @@ export class GameZoneController {
 		});
 
 		// Handle THEME_CHANGE (Last one wins if multiple)
-		const themeChange = results.findLast(
-			(/** @type {any} */ r) => r.type === "THEME_CHANGE",
-		);
+		const themeChange = [...results]
+			.reverse()
+			.find((/** @type {any} */ r) => r.type === ZoneTypes.THEME_CHANGE);
 		if (themeChange && this.themeService) {
 			this.themeService.setTheme(themeChange.payload);
 		}
 
 		// Handle CONTEXT_CHANGE (Last one wins if multiple)
-		const contextChange = results.findLast(
-			(/** @type {any} */ r) => r.type === "CONTEXT_CHANGE",
-		);
+		const contextChange = [...results]
+			.reverse()
+			.find((/** @type {any} */ r) => r.type === ZoneTypes.CONTEXT_CHANGE);
 		if (contextChange) {
 			const currentContext = this.heroState.hotSwitchState.get();
 			if (currentContext !== contextChange.payload) {

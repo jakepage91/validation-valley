@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+	GameConstants,
+	HotSwitchStates,
+	ThemeModes,
+} from "../core/constants.js";
+import {
 	CompositeValidator,
 	HotSwitchStateValidator,
 	PositionValidator,
@@ -21,8 +26,8 @@ describe("PositionValidator", () => {
 		expect(result.errors[0]?.field).toBe("x");
 	});
 
-	it("should reject x > 100", () => {
-		const result = PositionValidator.validate(101, 50);
+	it("should reject x > MAX_POS", () => {
+		const result = PositionValidator.validate(GameConstants.MAX_POS + 1, 50);
 		expect(result.isValid).toBe(false);
 		expect(result.errors[0]?.field).toBe("x");
 	});
@@ -59,12 +64,12 @@ describe("PositionValidator", () => {
 
 describe("ThemeModeValidator", () => {
 	it("should validate 'light' theme", () => {
-		const result = ThemeModeValidator.validate("light");
+		const result = ThemeModeValidator.validate(ThemeModes.LIGHT);
 		expect(result.isValid).toBe(true);
 	});
 
 	it("should validate 'dark' theme", () => {
-		const result = ThemeModeValidator.validate("dark");
+		const result = ThemeModeValidator.validate(ThemeModes.DARK);
 		expect(result.isValid).toBe(true);
 	});
 
@@ -80,25 +85,25 @@ describe("ThemeModeValidator", () => {
 	});
 
 	it("should return Result for valid theme", () => {
-		const result = ThemeModeValidator.validateResult("dark");
+		const result = ThemeModeValidator.validateResult(ThemeModes.DARK);
 		expect(result.isOk()).toBe(true);
-		expect(result.value).toBe("dark");
+		expect(result.value).toBe(ThemeModes.DARK);
 	});
 });
 
 describe("HotSwitchStateValidator", () => {
 	it("should validate 'legacy' state", () => {
-		const result = HotSwitchStateValidator.validate("legacy");
+		const result = HotSwitchStateValidator.validate(HotSwitchStates.LEGACY);
 		expect(result.isValid).toBe(true);
 	});
 
 	it("should validate 'new' state", () => {
-		const result = HotSwitchStateValidator.validate("new");
+		const result = HotSwitchStateValidator.validate(HotSwitchStates.NEW);
 		expect(result.isValid).toBe(true);
 	});
 
 	it("should validate 'mock' state", () => {
-		const result = HotSwitchStateValidator.validate("mock");
+		const result = HotSwitchStateValidator.validate(HotSwitchStates.MOCK);
 		expect(result.isValid).toBe(true);
 	});
 
@@ -118,9 +123,9 @@ describe("HotSwitchStateValidator", () => {
 	});
 
 	it("should return Result for valid state", () => {
-		const result = HotSwitchStateValidator.validateResult("new");
+		const result = HotSwitchStateValidator.validateResult(HotSwitchStates.NEW);
 		expect(result.isOk()).toBe(true);
-		expect(result.value).toBe("new");
+		expect(result.value).toBe(HotSwitchStates.NEW);
 	});
 });
 
@@ -185,7 +190,7 @@ describe("CompositeValidator", () => {
 	});
 
 	it("should validate object against schema", () => {
-		const obj = { x: 50, y: 75, theme: "dark" };
+		const obj = { x: 50, y: 75, theme: ThemeModes.DARK };
 		const schema = {
 			x: /** @param {any} v */ (v) => PositionValidator.validate(v, 0),
 			y: /** @param {any} v */ (v) => PositionValidator.validate(0, v),

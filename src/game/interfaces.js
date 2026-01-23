@@ -3,7 +3,7 @@
  */
 
 /**
- * @typedef {"legacy" | "mock" | "new" | null} HotSwitchState
+ * @typedef {import('../core/constants.js').HotSwitchState} HotSwitchState
  */
 
 /**

@@ -5,37 +5,51 @@
  */
 
 /**
- * @typedef {"hub" | "quest"} QuestCategory
+ * @typedef {import("../../core/constants.js").ZoneType} ZoneType
  */
 
 /**
- * @typedef {"beginner" | "intermediate" | "advanced" | "expert"} DifficultyType
+ * Quest Status
+ * @readonly
+ * @enum {string}
  */
-
-/**
- * @typedef {"available" | "coming_soon" | "locked"} QuestStatus
- */
-
-/**
- * @typedef {"THEME_CHANGE" | "CONTEXT_CHANGE" | "NONE"} ZoneType
- */
-
-/**
- * @typedef {"Legacy API" | "Mock Service" | "New V2 API"} ServiceBrand
- */
-
-/** @type {{ HUB: "hub", QUEST: "quest" }} */
-export const QuestType = {
-	HUB: "hub",
-	QUEST: "quest",
+export const QuestStatus = {
+	AVAILABLE: "available",
+	COMING_SOON: "coming_soon",
+	LOCKED: "locked",
 };
 
-/** @type {{ BEGINNER: "beginner", INTERMEDIATE: "intermediate", ADVANCED: "advanced", EXPERT: "expert" }} */
+/**
+ * Difficulty Levels
+ * @readonly
+ * @enum {string}
+ */
 export const Difficulty = {
 	BEGINNER: "beginner",
 	INTERMEDIATE: "intermediate",
 	ADVANCED: "advanced",
 	EXPERT: "expert",
+};
+
+/**
+ * Service Brands
+ * @readonly
+ * @enum {string}
+ */
+export const ServiceBrand = {
+	LEGACY: "Legacy API",
+	MOCK: "Mock Service",
+	NEW: "New V2 API",
+};
+
+/**
+ * Maps HotSwitchStates to their corresponding ServiceBrand display names.
+ * @type {Record<string, ServiceBrand>}
+ */
+export const ServiceBrandMap = {
+	legacy: ServiceBrand.LEGACY,
+	new: ServiceBrand.NEW,
+	mock: ServiceBrand.MOCK,
 };
 
 /**
@@ -133,7 +147,7 @@ export const Difficulty = {
  * @property {string} [subtitle]
  * @property {string} description
  * @property {string} icon
- * @property {DifficultyType} difficulty
+ * @property {Difficulty} difficulty
  * @property {string} [estimatedTime]
  * @property {string} [color]
  * @property {string} [legacyProblem]

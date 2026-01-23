@@ -1,9 +1,9 @@
 import { Signal } from "@lit-labs/signals";
-import { StorageKeys } from "../core/constants.js";
+import { StorageKeys, ThemeModes } from "../core/constants.js";
 import { ThemeModeValidator } from "../utils/validators.js";
 
 /**
- * @typedef {'light' | 'dark' | 'system'} ThemeMode
+ * @typedef {import('../core/constants.js').ThemeMode} ThemeMode
  */
 
 /**
@@ -20,7 +20,7 @@ export class ThemeService {
 		this.storage = storage;
 		this.storageKey = StorageKeys.THEME;
 
-		/** @type {Signal.State<ThemeMode>} */
+		/** @type {Signal.State<import('../core/constants.js').ThemeMode>} */
 		this.themeMode = new Signal.State(this.#loadStoredTheme());
 
 		// Apply initial theme
@@ -50,7 +50,8 @@ export class ThemeService {
 	 */
 	toggleTheme() {
 		const current = this.themeMode.get();
-		const next = current === "dark" ? "light" : "dark";
+		const next =
+			current === ThemeModes.DARK ? ThemeModes.LIGHT : ThemeModes.DARK;
 		this.setTheme(next);
 	}
 
@@ -66,7 +67,7 @@ export class ThemeService {
 		) {
 			return /** @type {ThemeMode} */ (stored);
 		}
-		return "system";
+		return ThemeModes.SYSTEM;
 	}
 
 	/**
@@ -78,10 +79,10 @@ export class ThemeService {
 		root.classList.remove("wa-dark", "wa-light");
 
 		let effectiveMode = mode;
-		if (mode === "system") {
+		if (mode === ThemeModes.SYSTEM) {
 			effectiveMode = window.matchMedia("(prefers-color-scheme: dark)").matches
-				? "dark"
-				: "light";
+				? ThemeModes.DARK
+				: ThemeModes.LIGHT;
 		}
 
 		root.classList.add(`wa-${effectiveMode}`);

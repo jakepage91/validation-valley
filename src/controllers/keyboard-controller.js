@@ -20,12 +20,12 @@
 export class KeyboardController {
 	/**
 	 * @param {import('lit').ReactiveControllerHost} host
-	 * @param {Partial<KeyboardOptions & import('../core/game-context.js').IGameContext & {interaction: any}>} [options]
+	 * @param {Partial<KeyboardOptions & import('../core/game-context.js').IGameContext & {interaction: import('../services/interfaces.js').IInteractionController | undefined}>} [options]
 	 */
 	constructor(host, options = {}) {
 		/** @type {import('lit').ReactiveControllerHost} */
 		this.host = host;
-		/** @type {KeyboardOptions & {interaction: any, worldState: import('../game/interfaces.js').IWorldStateService|undefined}} */
+		/** @type {KeyboardOptions & {interaction: import('../services/interfaces.js').IInteractionController | undefined, worldState: import('../game/interfaces.js').IWorldStateService|undefined}} */
 		this.options = {
 			speed: 2.5,
 			interaction: undefined,
@@ -67,7 +67,9 @@ export class KeyboardController {
 			// throw new Error("DEBUG: KeyDownSpace REACHED");
 			e.preventDefault();
 			const effectiveInteraction =
-				/** @type {any} */ (this.host).interaction || interaction;
+				/** @type {import('lit').ReactiveControllerHost & { interaction?: import('../services/interfaces.js').IInteractionController }} */ (
+					this.host
+				).interaction || interaction;
 
 			if (effectiveInteraction) {
 				effectiveInteraction.handleInteract();

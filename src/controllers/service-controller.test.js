@@ -1,5 +1,6 @@
 import { TaskStatus } from "@lit/task";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { HotSwitchStates } from "../core/constants.js";
 import { ServiceType } from "../services/user-api-client.js";
 import { ServiceController } from "./service-controller.js";
 
@@ -91,12 +92,18 @@ describe("ServiceController", () => {
 		});
 
 		it("should return legacy service for 'new' type with 'legacy' hotSwitch", () => {
-			const service = controller.getActiveService(ServiceType.NEW, "legacy");
+			const service = controller.getActiveService(
+				ServiceType.NEW,
+				HotSwitchStates.LEGACY,
+			);
 			expect(service).toBe(legacyService);
 		});
 
 		it("should return new service for 'new' type with 'new' hotSwitch", () => {
-			const service = controller.getActiveService(ServiceType.NEW, "new");
+			const service = controller.getActiveService(
+				ServiceType.NEW,
+				HotSwitchStates.NEW,
+			);
 			expect(service).toBe(newService);
 		});
 
