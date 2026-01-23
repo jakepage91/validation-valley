@@ -1,0 +1,79 @@
+name: Analyze Bundle History
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: 'Specific commit to analyze (optional)'
+        required: false
+        type: string
+      range:
+        description: 'Commit range to analyze (e.g., abc123..def456)'
+        required: false
+        type: string
+      limit:
+        description: 'Limit number of commits to analyze'
+        required: false
+        type: number
+        default: 50
+      force:
+        description: 'Force re-analysis of existing commits'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build command arguments
+        id: args
+        run: |
+          ARGS=""
+          if [ -n "${{ inputs.commit }}" ]; then
+            ARGS="--commit ${{ inputs.commit }}"
+          elif [ -n "${{ inputs.range }}" ]; then
+            ARGS="--range ${{ inputs.range }}"
+          elif [ -n "${{ inputs.limit }}" ]; then
+            ARGS="--limit ${{ inputs.limit }}"
+          fi
+          
+          if [ "${{ inputs.force }}" = "true" ]; then
+            ARGS="$ARGS --force"
+          fi
+          
+          echo "args=$ARGS" >> $GITHUB_OUTPUT
+      
+      - name: Run bundle history analysis
+        run: node scripts/analyze-history.js ${{ steps.args.outputs.args }}
+      
+      - name: Upload bundle history
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-history
+          path: bundle-history.jsonl
+          retention-days: 30
+      
+      - name: Display summary
+        run: |
+          echo "## Bundle History Analysis Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Total commits analyzed: $(wc -l < bundle-history.jsonl)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Download the artifact from the workflow run page." >> $GITHUB_STEP_SUMMARY
