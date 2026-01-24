@@ -9,7 +9,6 @@ export const getScrollOfTonguesQuest = () => ({
 		"Hardcoded strings, date/number format issues across regions, lack of localization.",
 	),
 	shortcuts: /** @type {string[]} */ ([]),
-	estimatedTime: msg("25-35 min"),
 	concepts: [
 		msg("i18n Context"),
 		msg("Locale Management"),

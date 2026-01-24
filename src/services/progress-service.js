@@ -215,7 +215,7 @@ export class ProgressService {
 
 			// Process rewards (achievements)
 			if (quest?.reward?.badge) {
-				this.unlockAchievement(quest.reward.badge);
+				this.unlockAchievement(/** @type {any} */ (quest.reward.badge));
 			}
 
 			this.unlockNewQuests();
@@ -259,13 +259,14 @@ export class ProgressService {
 
 	/**
 	 * Unlock an achievement.
-	 * @param {string} achievementId
+	 * @param {string | import('lit').TemplateResult} achievementId
 	 */
 	unlockAchievement(achievementId) {
-		if (!this.progress.achievements.includes(achievementId)) {
-			this.progress.achievements.push(achievementId);
+		const id = achievementId.toString();
+		if (!this.progress.achievements.includes(id)) {
+			this.progress.achievements.push(id);
 			this.saveProgress();
-			this.logger?.info(`🏆 Achievement unlocked: ${achievementId}`);
+			this.logger?.info(`🏆 Achievement unlocked: ${id}`);
 		}
 	}
 

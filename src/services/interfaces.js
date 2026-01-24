@@ -55,7 +55,7 @@
  * @property {(chapterId: string) => void} completeChapter - Mark chapter complete
  * @property {(questId: string) => void} completeQuest - Mark quest complete
  * @property {(questId: string) => void} unlockQuest - Unlock a quest
- * @property {(achievementId: string) => void} unlockAchievement - Unlock achievement
+ * @property {(achievementId: string | import('lit').TemplateResult) => void} unlockAchievement - Unlock achievement
  * @property {(questId: string) => number} getQuestProgress - Get quest completion %
  * @property {() => number} getOverallProgress - Get overall completion %
  * @property {(questId: string) => boolean} isQuestCompleted - Check if quest done

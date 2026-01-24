@@ -9,7 +9,6 @@ export const getScryingPoolOfChaosQuest = () => ({
 		"Unhandled errors crash the app, silent failures, lack of visibility into issues.",
 	),
 	shortcuts: /** @type {string[]} */ ([]),
-	estimatedTime: msg("35-45 min"),
 	concepts: [
 		msg("Centralized Error Handling"),
 		msg("Logging"),

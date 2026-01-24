@@ -15,7 +15,6 @@ export const getChromaticLoomQuest = () => ({
 		"Hardcoded styles, inability to adapt to Dark Mode or different branding requirements.",
 	),
 	shortcuts: /** @type {string[]} */ ([]),
-	estimatedTime: msg("20-30 min"),
 	concepts: [
 		msg("Design Tokens"),
 		msg("CSS Custom Properties"),

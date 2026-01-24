@@ -9,7 +9,6 @@ export const getGateOfIdentityQuest = () => ({
 		"Scattered authentication logic, repetitive `isLoggedIn()` checks, and vulnerable redirection flows.",
 	),
 	shortcuts: /** @type {string[]} */ ([]),
-	estimatedTime: msg("30-40 min"),
 	levels: msg("4-5 levels"),
 	concepts: [
 		msg("Auth Guards"),

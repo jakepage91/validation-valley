@@ -26,8 +26,8 @@
  * @property {{ get(): string|null }} lockedMessage
  * @property {{ get(): number }} currentChapterNumber
  * @property {{ get(): number }} totalChapters
- * @property {{ get(): string }} levelTitle
- * @property {{ get(): string }} questTitle
+ * @property {{ get(): string | import('lit').TemplateResult }} levelTitle
+ * @property {{ get(): string | import('lit').TemplateResult }} questTitle
  * @property {{ get(): string|null }} currentChapterId
  * @property {(collected: boolean) => void} setHasCollectedItem
  * @property {(collected: boolean) => void} setIsRewardCollected
@@ -35,8 +35,8 @@
  * @property {(message: string|null) => void} setLockedMessage
  * @property {(n: number) => void} setCurrentChapterNumber
  * @property {(n: number) => void} setTotalChapters
- * @property {(title: string) => void} setLevelTitle
- * @property {(title: string) => void} setQuestTitle
+ * @property {(title: string | import('lit').TemplateResult) => void} setLevelTitle
+ * @property {(title: string | import('lit').TemplateResult) => void} setQuestTitle
  * @property {(id: string|null) => void} setCurrentChapterId
  * @property {() => void} resetChapterState
  * @property {() => void} resetQuestState

@@ -14,7 +14,6 @@ export const getAuraOfSovereigntyQuest = () => ({
 		"Component styles bleed into global scope, and global styles break components. Lack of isolation.",
 	),
 	shortcuts: /** @type {string[]} */ ([]),
-	estimatedTime: msg("5-10 min"),
 	levels: msg("2-3 short levels"),
 	concepts: [msg("Web Components"), msg("Shadow DOM"), msg("Isolation")],
 

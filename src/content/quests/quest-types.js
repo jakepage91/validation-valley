@@ -141,24 +141,29 @@ export const ServiceBrandMap = {
  */
 
 /**
- * @typedef {Object} QuestData
+ * @typedef {Object} QuestMetadata
  * @property {string} id
- * @property {string} name
- * @property {string} [subtitle]
- * @property {string} description
+ * @property {import('lit').TemplateResult | string} name
+ * @property {import('lit').TemplateResult | string} [subtitle]
+ * @property {import('lit').TemplateResult | string} description
  * @property {string} icon
  * @property {Difficulty} difficulty
- * @property {string} [estimatedTime]
- * @property {string} [color]
- * @property {string} [legacyProblem]
- * @property {string} [levels]
- * @property {string[]} [prerequisites]
- * @property {string[]} [shortcuts]
- * @property {string[]} [concepts]
- * @property {string[]} [chapterIds]
- * @property {Record<string, Chapter>} [chapters]
+ * @property {import('lit').TemplateResult | string} [estimatedTime]
  * @property {QuestStatus} [status]
- * @property {{ badge: string; ability: string; description?: string; }} [reward]
+ * @property {string[]} [prerequisites]
+ */
+
+/**
+ * @typedef {QuestMetadata & {
+ *  color?: string,
+ *  legacyProblem?: import('lit').TemplateResult | string,
+ *  levels?: import('lit').TemplateResult | string,
+ *  shortcuts?: string[],
+ *  concepts?: (import('lit').TemplateResult | string)[],
+ *  chapterIds?: string[],
+ *  chapters?: Record<string, Chapter>,
+ *  reward?: { badge: import('lit').TemplateResult | string; ability: import('lit').TemplateResult | string; description?: import('lit').TemplateResult | string; }
+ * }} QuestData
  */
 
 /**

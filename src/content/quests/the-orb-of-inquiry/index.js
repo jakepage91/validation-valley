@@ -9,7 +9,6 @@ export const getOrbOfInquiryQuest = () => ({
 		"Tight coupling to concrete implementations, making testing and flexibility impossible.",
 	),
 	shortcuts: /** @type {string[]} */ ([]),
-	estimatedTime: msg("20-25 min"),
 	concepts: [
 		"DIP",
 		"IoC",

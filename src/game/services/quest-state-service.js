@@ -14,8 +14,12 @@ export class QuestStateService {
 		this.lockedMessage = new Signal.State(/** @type {string|null} */ (null));
 		this.currentChapterNumber = new Signal.State(1);
 		this.totalChapters = new Signal.State(1);
-		this.levelTitle = new Signal.State("");
-		this.questTitle = new Signal.State("");
+		this.levelTitle = new Signal.State(
+			/** @type {string | import('lit').TemplateResult} */ (""),
+		);
+		this.questTitle = new Signal.State(
+			/** @type {string | import('lit').TemplateResult} */ (""),
+		);
 		this.currentChapterId = new Signal.State(/** @type {string|null} */ (null));
 	}
 
@@ -57,14 +61,14 @@ export class QuestStateService {
 		this.totalChapters.set(n);
 	}
 
-	/** @param {string} title */
+	/** @param {string | import('lit').TemplateResult} title */
 	setLevelTitle(title) {
-		this.levelTitle.set(title ?? "");
+		this.levelTitle.set(title);
 	}
 
-	/** @param {string} title */
+	/** @param {string | import('lit').TemplateResult} title */
 	setQuestTitle(title) {
-		this.questTitle.set(title ?? "");
+		this.questTitle.set(title);
 	}
 
 	/** @param {string|null} id */

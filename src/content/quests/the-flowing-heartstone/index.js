@@ -9,7 +9,6 @@ export const getStateManagementRaidQuest = () => ({
 		"Prop drilling, unpredictable global state mutation, and excessive re-renders due to poor reactivity.",
 	),
 	shortcuts: /** @type {string[]} */ ([]),
-	estimatedTime: msg("30-40 min"),
 	concepts: [
 		msg("Reactive Patterns"),
 		msg("Signals"),

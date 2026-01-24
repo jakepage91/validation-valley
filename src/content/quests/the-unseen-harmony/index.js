@@ -15,7 +15,6 @@ export const getUnseenHarmonyQuest = () => ({
 		"Inaccessible application, keyboard traps, lack of screen reader support.",
 	),
 	shortcuts: [],
-	estimatedTime: msg("25-35 min"),
 	concepts: [
 		msg("ARIA Live Regions"),
 		msg("Focus Management"),

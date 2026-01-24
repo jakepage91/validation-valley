@@ -39,6 +39,7 @@ describe("QuestCard Component", () => {
 		expect(el.shadowRoot?.textContent).toContain("Test Quest");
 		expect(el.shadowRoot?.textContent).toContain("Test Description");
 		expect(el.shadowRoot?.textContent).toContain("Beginner");
+		expect(el.shadowRoot?.textContent).toContain("30 min");
 	});
 
 	it("shows Start button for new quest", async () => {
