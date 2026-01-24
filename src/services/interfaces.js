@@ -59,7 +59,6 @@
  * @property {(questId: string) => number} getQuestProgress - Get quest completion %
  * @property {() => number} getOverallProgress - Get overall completion %
  * @property {(questId: string) => boolean} isQuestCompleted - Check if quest done
- * @property {(questId: string) => boolean} isQuestCompleted - Check if quest done
  * @property {(questId: string) => boolean} isQuestAvailable - Check if quest available
  * @property {(chapterId: string) => boolean} isChapterCompleted - Check if chapter done
  */

@@ -30,9 +30,14 @@ import "../../pixel.css";
 
 /**
  * @element legacys-end-app
+ * @extends {LitElement}
  */
 
-export class LegacysEndApp extends SignalWatcher(ContextMixin(LitElement)) {
+export class LegacysEndApp extends SignalWatcher(
+	/** @type {new (...args: unknown[]) => import('lit').ReactiveElement} */ (
+		ContextMixin(LitElement)
+	),
+) {
 	// Services
 	// Services
 	/** @type {import('../../services/progress-service.js').ProgressService} */

@@ -17,8 +17,13 @@ import { questViewStyles } from "./quest-view.css.js";
  * QuestView - Page wrapper for the game
  *
  * @element quest-view
+ * @extends {LitElement}
  */
-export class QuestView extends SignalWatcher(LitElement) {
+export class QuestView extends SignalWatcher(
+	/** @type {new (...args: unknown[]) => import('lit').ReactiveElement} */ (
+		LitElement
+	),
+) {
 	/** @type {import('../../game/interfaces.js').IHeroStateService} */
 	@consume({ context: heroStateContext, subscribe: true })
 	accessor heroState =

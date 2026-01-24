@@ -3,7 +3,7 @@
 	"compilerOptions": {
 		"target": "ES2022",
 		"module": "ESNext",
-		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"lib": ["ES2022", "DOM", "DOM.Iterable", "ESNext.Disposable"],
 		"allowJs": true,
 		"checkJs": true,
 		"noEmit": true,
@@ -12,6 +12,7 @@
 		"useDefineForClassFields": true,
 		"verbatimModuleSyntax": true,
 		"skipLibCheck": false,
+		"types": ["vite/client"],
 		"plugins": [
 			{
 				"name": "ts-lit-plugin",

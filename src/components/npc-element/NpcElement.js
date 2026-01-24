@@ -15,20 +15,25 @@ import { npcElementStyles } from "./NpcElement.styles.js";
 
 /**
  * @element npc-element
- * @property {string} name
- * @property {string} image
- * @property {string} icon
- * @property {number} x
- * @property {number} y
- * @property {boolean} isClose
- * @property {string} action
- * @property {boolean} hasCollectedItem
- * @property {boolean} isRewardCollected
+ * @property {string} name - Name of the NPC
+ * @property {string} image - Image path for the NPC
+ * @property {string} icon - Icon name for the NPC
+ * @property {number} x - X position percentage
+ * @property {number} y - Y position percentage
+ * @property {boolean} isClose - Whether hero is close to NPC
+ * @property {string} action - Current action message
+ * @property {boolean} hasCollectedItem - Override for collected state
+ * @property {boolean} isRewardCollected - Override for reward collected state
  * @attribute name
  * @attribute icon
  * @attribute action
+ * @extends {LitElement}
  */
-export class NpcElement extends SignalWatcher(LitElement) {
+export class NpcElement extends SignalWatcher(
+	/** @type {new (...args: unknown[]) => import('lit').ReactiveElement} */ (
+		LitElement
+	),
+) {
 	/** @type {import('../../game/interfaces.js').IQuestStateService} */
 	@consume({ context: questStateContext, subscribe: true })
 	accessor questState =

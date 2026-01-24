@@ -41,8 +41,13 @@ import { gameViewportStyles } from "./GameViewport.styles.js";
 
 /**
  * @element game-viewport
+ * @extends {LitElement}
  */
-export class GameViewport extends SignalWatcher(LitElement) {
+export class GameViewport extends SignalWatcher(
+	/** @type {new (...args: unknown[]) => import('lit').ReactiveElement} */ (
+		LitElement
+	),
+) {
 	/** @type {import('../../game/interfaces.js').IHeroStateService} */
 	@consume({ context: heroStateContext, subscribe: true })
 	accessor heroState =

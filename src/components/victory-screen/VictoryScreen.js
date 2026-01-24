@@ -19,8 +19,13 @@ import { victoryScreenStyles } from "./VictoryScreen.styles.js";
  * @element victory-screen
  * @property {Quest} quest
  * @property {Function} onReturn
+ * @extends {LitElement}
  */
-export class VictoryScreen extends SignalWatcher(LitElement) {
+export class VictoryScreen extends SignalWatcher(
+	/** @type {new (...args: unknown[]) => import('lit').ReactiveElement} */ (
+		LitElement
+	),
+) {
 	/** @type {import('../../services/session-service.js').SessionService} */
 	@consume({ context: sessionContext, subscribe: true })
 	accessor sessionService =

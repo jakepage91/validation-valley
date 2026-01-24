@@ -24,7 +24,7 @@ describe("NpcElement", () => {
 
 	it("renders with basic properties", async () => {
 		render(
-			html`<npc-element name="Guide" icon="user" .x=${50} .y=${50}></npc-element>`,
+			html`<npc-element .name=${"Guide"} .icon=${"user"} .x=${50} .y=${50}></npc-element>`,
 			container,
 		);
 		const element = /** @type {NpcElement} */ (
@@ -40,11 +40,11 @@ describe("NpcElement", () => {
 	it("displays tooltip when close but not collected", async () => {
 		render(
 			html`<npc-element 
-                name="Guide" 
-                icon="user" 
+                .name=${"Guide"} 
+                .icon=${"user"} 
                 .isClose=${true} 
                 .hasCollectedItem=${false} 
-                action="SPEAK">
+                .action=${"SPEAK"}>
             </npc-element>`,
 			container,
 		);

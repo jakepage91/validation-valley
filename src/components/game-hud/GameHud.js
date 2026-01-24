@@ -5,12 +5,14 @@ import { questStateContext } from "../../game/contexts/quest-context.js";
 import { gameHudStyles } from "./GameHud.styles.js";
 
 /**
- * GameHud Component
- * Displays current level info and progress.
- *
  * @element game-hud
+ * @extends {LitElement}
  */
-export class GameHud extends SignalWatcher(LitElement) {
+export class GameHud extends SignalWatcher(
+	/** @type {new (...args: unknown[]) => import('lit').ReactiveElement} */ (
+		LitElement
+	),
+) {
 	@consume({ context: questStateContext, subscribe: true })
 	accessor questState =
 		/** @type {import('../../game/interfaces.js').IQuestStateService} */ (

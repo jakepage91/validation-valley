@@ -20,6 +20,16 @@ import { DialogueGenerationService } from "../services/dialogue-generation-servi
  * @property {function(string): Promise<string>} prompt
  * @property {function(): void} destroy
  *
+ * @typedef {Object} SpeechRecognitionResult
+ * @property {string} transcript
+ *
+ * @typedef {Object} SpeechRecognitionResultList
+ * @property {number} length
+ * @property {Object.<number, {0: SpeechRecognitionResult}>} [results]
+ *
+ * @typedef {Object} SpeechRecognitionEvent
+ * @property {SpeechRecognitionResultList} results
+ *
  * @typedef {Object} SpeechRecognitionErrorEvent
  * @property {string} error
  * @property {string} message
@@ -122,7 +132,9 @@ export class VoiceController {
 		this.lastUserCommand = null;
 
 		const SpeechRecognition =
-			window.SpeechRecognition || window.webkitSpeechRecognition;
+			window.SpeechRecognition ||
+			// @ts-expect-error - webkitSpeechRecognition is a vendor prefix
+			window.webkitSpeechRecognition;
 
 		if (SpeechRecognition) {
 			this.recognition = new SpeechRecognition();
@@ -139,7 +151,9 @@ export class VoiceController {
 				this.host.requestUpdate();
 			};
 
-			this.recognition.onresult = (event) => this.handleResult(event);
+			this.recognition.onresult = (
+				/** @type {SpeechRecognitionEvent} */ event,
+			) => this.handleResult(event);
 
 			this.recognition.onend = () => {
 				this.isListening = false;
@@ -161,7 +175,9 @@ export class VoiceController {
 				}
 			};
 
-			this.recognition.onerror = (event) => {
+			this.recognition.onerror = (
+				/** @type {SpeechRecognitionErrorEvent} */ event,
+			) => {
 				const errorEvent = /** @type {SpeechRecognitionErrorEvent} */ (event);
 				this.logger.error(`❌ Voice recognition error: ${errorEvent.error}`);
 				if (errorEvent.error === "not-allowed") {

@@ -38,7 +38,7 @@
 		"@lit/localize": "^0.12.2",
 		"@lit/task": "^1.0.3",
 		"@speed-highlight/core": "^1.2.12",
-		"lit": "^3.3.1",
+		"lit": "^3.3.2",
 		"syntax-highlight-element": "^1.2.0"
 	},
 	"devDependencies": {

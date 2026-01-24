@@ -12,12 +12,13 @@ import { pauseMenuStyles } from "./PauseMenu.styles.js";
 
 /**
  * @element pause-menu
- * @property {boolean} open
- * @event resume - Dispatched when resuming the game
- * @event restart - Dispatched when restarting the quest
- * @event quit - Dispatched when returning to hub
+ * @extends {LitElement}
  */
-export class PauseMenu extends SignalWatcher(LitElement) {
+export class PauseMenu extends SignalWatcher(
+	/** @type {new (...args: unknown[]) => import('lit').ReactiveElement} */ (
+		LitElement
+	),
+) {
 	/** @type {import('../../game/interfaces.js').IWorldStateService} */
 	@consume({ context: worldStateContext, subscribe: true })
 	accessor worldState =

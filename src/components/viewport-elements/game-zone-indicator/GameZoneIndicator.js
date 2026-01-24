@@ -21,8 +21,11 @@ import { gameZoneIndicatorStyles } from "./GameZoneIndicator.styles.js";
  * @summary Displays generic zones (Theme, Context) based on configuration.
  * @property {Zone[]} zones - The list of zones to render.
  * @property {String} type - The type of zones to filter and render (e.g. 'THEME_CHANGE', 'CONTEXT_CHANGE').
+ * @extends {LitElement}
  */
-export class GameZoneIndicator extends SignalWatcher(LitElement) {
+export class GameZoneIndicator extends SignalWatcher(
+	/** @type {any} */ (LitElement),
+) {
 	/** @type {import('../../../services/interfaces.js').IQuestController} */
 	@consume({ context: questControllerContext, subscribe: true })
 	accessor questController =

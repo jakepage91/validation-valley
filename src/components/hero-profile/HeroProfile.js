@@ -27,16 +27,14 @@ import { heroProfileStyles } from "./HeroProfile.styles.js";
  */
 
 /**
- * Main hero profile component.
- * Displays the hero's image, gear, weapon, and nameplate.
- * Connects to profile, theme, and character contexts.
- *
  * @element hero-profile
- * @property {string} imageSrc - Base image source for the hero.
- * @property {string} tooltipText - Optional tooltip text.
- * @property {string} hotSwitchState - State for API injection visualization (legacy, mock, new).
+ * @extends {LitElement}
  */
-export class HeroProfile extends SignalWatcher(LitElement) {
+export class HeroProfile extends SignalWatcher(
+	/** @type {new (...args: unknown[]) => import('lit').ReactiveElement} */ (
+		LitElement
+	),
+) {
 	/** @type {import('../../game/interfaces.js').IHeroStateService} */
 	@consume({ context: heroStateContext, subscribe: true })
 	accessor heroState =

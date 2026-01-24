@@ -8,17 +8,21 @@ import { gameExitZoneStyles } from "./GameExitZone.styles.js";
 import "@awesome.me/webawesome/dist/components/tag/tag.js";
 
 /**
+ * @template T
+ * @typedef {new (...args: any[]) => T} Constructor
+ */
+
+/**
  * @element game-exit-zone
  * @summary Displays the exit zone when available.
  * @property {Object} zoneConfig - The config object for the exit zone {x, y, width, height, label}.
  * @property {Boolean} active - Whether the exit zone is active (e.g. item collected).
  * @attribute active
+ * @extends {LitElement}
  */
-/**
- * @typedef {import('../../../content/quests/quest-types.js').Zone} Zone
- */
-
-export class GameExitZone extends SignalWatcher(LitElement) {
+export class GameExitZone extends SignalWatcher(
+	/** @type {Constructor<import('lit').LitElement>} */ (LitElement),
+) {
 	/** @type {import('../../../services/interfaces.js').IQuestController} */
 	@consume({ context: questControllerContext, subscribe: true })
 	accessor questController =
