@@ -25,6 +25,8 @@ export const UIEvents = {
 	REWARD_COLLECTED: "reward-collected",
 	NEXT_SLIDE: "next-slide",
 	PREV_SLIDE: "prev-slide",
+	MOVE: "move",
+	INTERACT: "interact",
 	TOGGLE_VOICE: "toggle-voice",
 	SLIDE_CHANGED: "slide-changed",
 	COMPLETE: "complete", // Generic completion (dialogs, etc)

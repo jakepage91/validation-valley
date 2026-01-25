@@ -14,7 +14,6 @@ import { sessionContext } from "../../contexts/session-context.js";
 import { themeContext } from "../../contexts/theme-context.js";
 import { voiceContext } from "../../contexts/voice-context.js";
 import { KeyboardController } from "../../controllers/keyboard-controller.js";
-import { TouchController } from "../../controllers/touch-controller.js";
 import { heroStateContext } from "../../game/contexts/hero-context.js";
 import { questStateContext } from "../../game/contexts/quest-context.js";
 import { worldStateContext } from "../../game/contexts/world-context.js";
@@ -151,8 +150,6 @@ export class GameViewport extends SignalWatcher(
 		this.keyboard = null;
 		/** @type {import('../../controllers/voice-controller.js').VoiceController | null} */
 		this.voice = null;
-		/** @type {import('../../controllers/touch-controller.js').TouchController | null} */
-		this.touch = new TouchController(this);
 		/** @type {import('../../controllers/game-controller.js').GameController | null} */
 		this.gameController = null;
 	}
@@ -512,7 +509,8 @@ export class GameViewport extends SignalWatcher(
 			</div>
 			<game-controls 
 				.isVoiceActive="${this.voice?.enabled || false}"
-				.touch="${this.touch}"
+				@move="${(/** @type {CustomEvent} */ e) => this.handleMove(e.detail.dx, e.detail.dy)}"
+				@interact="${() => this.handleInteract()}"
 				@toggle-voice="${this.#handleToggleVoice}"
 			></game-controls>
 		`;

@@ -1,6 +1,7 @@
 import { msg, updateWhenLocaleChanges } from "@lit/localize";
 import { Signal, SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement, nothing } from "lit";
+import { TouchController } from "../../../controllers/touch-controller.js";
 import { UIEvents } from "../../../core/events.js";
 import { gameControlsStyles } from "./GameControls.styles.js";
 import "@awesome.me/webawesome/dist/components/button/button.js";
@@ -19,7 +20,6 @@ export class GameControls extends SignalWatcher(LitElement) {
 	/** @override */
 	static properties = {
 		isVoiceActive: { type: Boolean },
-		touch: { type: Object },
 	};
 
 	#hasTouch = window.matchMedia("(pointer: coarse)").matches;
@@ -30,8 +30,36 @@ export class GameControls extends SignalWatcher(LitElement) {
 		super();
 		updateWhenLocaleChanges(this);
 		this.isVoiceActive = false;
-		/** @type {import('../../../controllers/touch-controller.js').TouchController | null} */
-		this.touch = null;
+
+		/** @type {TouchController} */
+		this.touch = new TouchController(this);
+	}
+
+	/**
+	 * Handles move input from TouchController
+	 * @param {number} dx
+	 * @param {number} dy
+	 */
+	handleMove(dx, dy) {
+		this.dispatchEvent(
+			new CustomEvent(UIEvents.MOVE, {
+				detail: { dx, dy },
+				bubbles: true,
+				composed: true,
+			}),
+		);
+	}
+
+	/**
+	 * Handles interact input from TouchController
+	 */
+	handleInteract() {
+		this.dispatchEvent(
+			new CustomEvent(UIEvents.INTERACT, {
+				bubbles: true,
+				composed: true,
+			}),
+		);
 	}
 
 	/** @override */
@@ -40,7 +68,7 @@ export class GameControls extends SignalWatcher(LitElement) {
 
 		return html`
 			<div class="controls-container">
-				${mode === "touch" ? this.touch?.render() : nothing}
+				${mode === "touch" ? this.touch.render() : nothing}
 				
 				<div class="instructions-wrapper">
 					<wa-details class="controls-details" open>
