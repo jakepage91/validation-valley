@@ -176,6 +176,9 @@ export class QuestLoaderService {
 				await this.questController.loadQuest(questId);
 			}
 
+			this.sessionService.setCurrentQuest(this.questController.currentQuest);
+			this.sessionService.setIsInHub(false);
+
 			// Try to jump to requested chapter
 			const success = this.questController.jumpToChapter(chapterId);
 			if (!success) {
@@ -184,9 +187,6 @@ export class QuestLoaderService {
 				);
 				await this.questController.continueQuest(questId);
 			}
-
-			this.sessionService.setCurrentQuest(this.questController.currentQuest);
-			this.sessionService.setIsInHub(false);
 
 			// Sync hero state for the loaded chapter
 			if (this.questController.currentChapter) {
@@ -292,8 +292,8 @@ export class QuestLoaderService {
 	}
 
 	/**
-	 * Syncs hero state with chapter configuration
-	 * @param {import('../content/quests/quest-types.js').Chapter} chapter
+	 * Syncs hero state and URL with chapter configuration
+	 * @param {import('../content/quests/quest-types.js').Chapter & { questId?: string }} chapter
 	 */
 	_syncHeroState(chapter) {
 		if (chapter?.startPos) {
@@ -320,7 +320,15 @@ export class QuestLoaderService {
 			this.questState.setIsRewardCollected(false);
 		}
 
-		// URL update is handled by the caller or router reaction if needed
+		// Sync URL
+		if (this.router) {
+			const currentQuest = this.sessionService.currentQuest.get();
+			const questId = currentQuest?.id || chapter.questId;
+			if (questId && chapter.id) {
+				const url = `/quest/${questId}/chapter/${chapter.id}`;
+				this.router.navigate(url);
+			}
+		}
 		// Logging is handled by the caller
 	}
 
