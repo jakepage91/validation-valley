@@ -4,11 +4,11 @@ import axe from "axe-core";
 import { html, LitElement } from "lit";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import "./victory-screen.js";
-import { questLoaderContext } from "../../contexts/quest-loader-context.js";
+import { questControllerContext } from "../../contexts/quest-controller-context.js";
 import { sessionContext } from "../../contexts/session-context.js";
 
 /** @typedef {import("../../services/interfaces.js").ISessionService} ISessionService */
-/** @typedef {import("../../services/interfaces.js").IQuestLoaderService} IQuestLoaderService */
+/** @typedef {import("../../services/interfaces.js").IQuestController} IQuestController */
 /** @typedef {import("../../services/quest-registry-service.js").Quest} Quest */
 /** @typedef {import("./VictoryScreen.js").VictoryScreen} VictoryScreen */
 
@@ -16,21 +16,21 @@ class TestContextWrapper extends LitElement {
 	/** @override */
 	static properties = {
 		sessionService: { type: Object },
-		questLoader: { type: Object },
+		questController: { type: Object },
 	};
 
 	constructor() {
 		super();
 		/** @type {ISessionService | undefined} */
 		this.sessionService = undefined;
-		/** @type {IQuestLoaderService | undefined} */
-		this.questLoader = undefined;
+		/** @type {IQuestController | undefined} */
+		this.questController = undefined;
 
 		this.sessionProvider = new ContextProvider(this, {
 			context: sessionContext,
 		});
-		this.qlProvider = new ContextProvider(this, {
-			context: questLoaderContext,
+		this.qcProvider = new ContextProvider(this, {
+			context: questControllerContext,
 		});
 	}
 
@@ -52,9 +52,12 @@ class TestContextWrapper extends LitElement {
 				/** @type {ISessionService} */ (this.sessionService),
 			);
 		}
-		if (changedProperties.has("questLoader") && this.questLoader != null) {
-			this.qlProvider?.setValue(
-				/** @type {IQuestLoaderService} */ (this.questLoader),
+		if (
+			changedProperties.has("questController") &&
+			this.questController != null
+		) {
+			this.qcProvider?.setValue(
+				/** @type {IQuestController} */ (this.questController),
 			);
 		}
 	}
@@ -101,9 +104,11 @@ describe("VictoryScreen", () => {
 				),
 			})
 		);
-		wrapper.questLoader = /** @type {IQuestLoaderService} */ ({
-			returnToHub: () => Promise.resolve({ success: true }),
-		});
+		wrapper.questController = /** @type {IQuestController} */ (
+			/** @type {unknown} */ ({
+				returnToHub: () => Promise.resolve({ success: true }),
+			})
+		);
 
 		const element = /** @type {VictoryScreen} */ (
 			document.createElement("victory-screen")
@@ -134,12 +139,14 @@ describe("VictoryScreen", () => {
 				),
 			})
 		);
-		wrapper.questLoader = /** @type {IQuestLoaderService} */ ({
-			returnToHub: () => {
-				returnCalled = true;
-				return Promise.resolve({ success: true });
-			},
-		});
+		wrapper.questController = /** @type {IQuestController} */ (
+			/** @type {unknown} */ ({
+				returnToHub: () => {
+					returnCalled = true;
+					return Promise.resolve({ success: true });
+				},
+			})
+		);
 
 		const element = /** @type {VictoryScreen} */ (
 			document.createElement("victory-screen")
@@ -179,9 +186,11 @@ describe("VictoryScreen", () => {
 				),
 			})
 		);
-		wrapper.questLoader = /** @type {IQuestLoaderService} */ ({
-			returnToHub: () => Promise.resolve({ success: true }),
-		});
+		wrapper.questController = /** @type {IQuestController} */ (
+			/** @type {unknown} */ ({
+				returnToHub: () => Promise.resolve({ success: true }),
+			})
+		);
 
 		const element = /** @type {VictoryScreen} */ (
 			document.createElement("victory-screen")

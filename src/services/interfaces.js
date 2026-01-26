@@ -72,32 +72,34 @@
  */
 
 /**
+ * @typedef {Chapter & { questId: string, index: number, total: number, isQuestComplete: boolean }} EnrichedChapter
+ */
+
+/**
  * @typedef {Object} IQuestController
- * @property {import('lit').ReactiveControllerHost} [host]
- * @property {any} [options]
- * @property {import('./interfaces.js').ILoggerService | null} [logger]
- * @property {import('./quest-registry-service.js').QuestRegistryService | null} [registry]
- * @property {import('./preloader-service.js').PreloaderService | null} [preloaderService]
  * @property {Quest|null} currentQuest - Currently active quest
  * @property {Chapter|null} currentChapter - Currently active chapter
  * @property {number} currentChapterIndex - Index of current chapter
- * @property {(questId: string) => Promise<boolean>} startQuest - Start a new quest
+ * @property {(questId: string) => Promise<QuestResult>} startQuest - Start a new quest
  * @property {(questId: string) => Promise<boolean>} loadQuest - Load quest without reset
  * @property {() => Promise<void>} resumeQuest - Resume from saved state
- * @property {(questId: string) => Promise<void>} continueQuest - Continue from last chapter
+ * @property {(questId: string) => Promise<QuestResult>} continueQuest - Continue from last chapter
+ * @property {(questId: string, chapterId: string) => Promise<void>} loadChapter - Load specific chapter
  * @property {(chapterId: string) => boolean} jumpToChapter - Jump to specific chapter
- * @property {() => Chapter|null} getCurrentChapterData - Get current chapter data
- * @property {() => Chapter|null} getNextChapterData - Get next chapter data
+ * @property {() => EnrichedChapter|null} getCurrentChapterData - Get current chapter data
  * @property {() => void} completeChapter - Complete current chapter
+ * @property {() => Promise<void>} advanceChapter - Advance to next chapter
+ * @property {() => boolean} isLastChapter - Check if at last chapter
  * @property {() => boolean} hasNextChapter - Check if next chapter exists
  * @property {() => void} nextChapter - Move to next chapter
  * @property {() => void} completeQuest - Complete current quest
- * @property {(replace?: boolean) => Promise<{success: boolean}>} returnToHub - Return to quest hub
+ * @property {(replace?: boolean) => Promise<{success: boolean, error?: Error}>} returnToHub - Return to quest hub
  * @property {() => Quest[]} getAvailableQuests - Get available quests
+ * @property {() => Quest[]} getComingSoonQuests - Get coming soon quests
  * @property {(questId: string) => number} getQuestProgress - Get quest progress %
  * @property {(questId: string) => boolean} isQuestCompleted - Check completion
- * @property {() => number} getOverallProgress - Get overall progress %
  * @property {() => void} resetProgress - Reset all progress
+ * @property {() => void} handleRewardCollected - Handle reward collection event
  */
 
 /**
@@ -174,22 +176,6 @@
  * @property {boolean} success
  * @property {QuestOrNull} quest
  * @property {Error} [error]
- */
-
-/**
- * @typedef {Object} IQuestLoaderService
- * @property {import('./logger-service.js').LoggerService | null} [logger]
- * @property {import('../game/interfaces.js').IQuestStateService | null} [questState]
- * @property {import('./session-service.js').SessionService | null} [sessionService]
- * @property {IProgressService | null} [progressService]
- * @property {(questId: string) => Promise<QuestResult>} startQuest
- * @property {(questId: string) => Promise<QuestResult>} continueQuest
- * @property {(questId: string, chapterId: string) => Promise<void>} loadChapter
- * @property {() => Promise<void>} advanceChapter
- * @property {() => void} completeChapter
- * @property {() => void} completeQuest
- * @property {(replace?: boolean) => Promise<{success: boolean, error?: Error}>} returnToHub
- * @property {import('../use-cases/interact-with-npc.js').InteractWithNpcUseCase} [interactWithNpcUseCase]
  */
 
 /**

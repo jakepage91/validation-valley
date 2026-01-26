@@ -7,17 +7,17 @@ import { gameConfig } from "../../config/game-configuration.js";
 import { dialogStateContext } from "../../contexts/dialog-context.js";
 import { localizationContext } from "../../contexts/localization-context.js";
 import { questControllerContext } from "../../contexts/quest-controller-context.js";
-import { questLoaderContext } from "../../contexts/quest-loader-context.js";
 import { sessionContext } from "../../contexts/session-context.js";
 import { themeContext } from "../../contexts/theme-context.js";
+import { CollisionController } from "../../controllers/collision-controller.js";
+import { GameController } from "../../controllers/game-controller.js";
+import { GameZoneController } from "../../controllers/game-zone-controller.js";
+import { InteractionController } from "../../controllers/interaction-controller.js";
 import { heroStateContext } from "../../game/contexts/hero-context.js";
 import { questStateContext } from "../../game/contexts/quest-context.js";
 import { worldStateContext } from "../../game/contexts/world-context.js";
-import { setupCharacterContexts } from "../../setup/setup-character-contexts.js";
-import { setupCollision } from "../../setup/setup-collision.js";
-import { setupGameController } from "../../setup/setup-game.js";
-import { setupInteraction } from "../../setup/setup-interaction.js";
-import { setupZones } from "../../setup/setup-zones.js";
+import { InteractWithNpcUseCase } from "../../use-cases/interact-with-npc.js";
+import { ProcessGameZoneInteractionUseCase } from "../../use-cases/process-game-zone-interaction.js";
 import {
 	extractAssetPath,
 	processImagePath,
@@ -79,13 +79,6 @@ export class GameViewport extends SignalWatcher(
 	@consume({ context: questControllerContext, subscribe: true })
 	accessor questController =
 		/** @type {import('../../services/interfaces.js').IQuestController} */ (
-			/** @type {unknown} */ (null)
-		);
-
-	/** @type {import('../../services/interfaces.js').IQuestLoaderService} */
-	@consume({ context: questLoaderContext, subscribe: true })
-	accessor questLoader =
-		/** @type {import('../../services/interfaces.js').IQuestLoaderService} */ (
 			/** @type {unknown} */ (null)
 		);
 
@@ -186,8 +179,6 @@ export class GameViewport extends SignalWatcher(
 	 */
 	#setupControllers() {
 		this.#setupGameMechanics();
-		this.#setupInputHandlers();
-		this.#setupGameFlow();
 		this.requestUpdate();
 	}
 
@@ -195,48 +186,17 @@ export class GameViewport extends SignalWatcher(
 	 * Setup fundamental game mechanics controllers
 	 */
 	#setupGameMechanics() {
-		setupZones(this, {
-			heroState: this.heroState,
-			questState: this.questState,
-			questController: this.questController,
-			themeService: this.themeService,
+		this.zones = new GameZoneController(this, {
+			processGameZoneInteraction: new ProcessGameZoneInteractionUseCase(),
 		});
-		setupCollision(this, {
-			heroState: this.heroState,
-			questState: this.questState,
-			questController: this.questController,
-		});
-		setupCharacterContexts(this, {
-			heroState: this.heroState,
-			questState: this.questState,
-			questController: this.questController,
-			themeService: this.themeService,
-		});
-		setupInteraction(this, {
-			worldState: this.worldState,
-			questState: this.questState,
-			heroState: this.heroState,
-			questController: this.questController,
-			questLoader: this.questLoader,
-		});
-	}
 
-	#setupInputHandlers() {
-		// All input handlers are now in GameControls
-	}
+		this.collision = new CollisionController(this);
 
-	/**
-	 * Setup high-level game flow controllers
-	 */
-	#setupGameFlow() {
-		setupGameController(this, {
-			logger: this.questController?.options?.logger,
-			heroState: this.heroState,
-			questState: this.questState,
-			worldState: this.worldState,
-			questController: this.questController,
-			questLoader: this.questLoader,
+		this.interaction = new InteractionController(this, {
+			interactWithNpcUseCase: new InteractWithNpcUseCase(),
 		});
+
+		this.gameController = new GameController(this);
 	}
 
 	/**
@@ -333,7 +293,7 @@ export class GameViewport extends SignalWatcher(
 	 */
 	triggerLevelTransition() {
 		this.stopAutoMove();
-		this.questLoader?.advanceChapter();
+		this.questController?.advanceChapter();
 	}
 
 	/**

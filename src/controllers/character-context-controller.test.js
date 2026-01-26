@@ -3,6 +3,27 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { HotSwitchStates, ThemeModes } from "../core/constants.js";
 import { CharacterContextController } from "./character-context-controller.js";
 
+// Mock @lit/context to handle dependency injection in tests
+const contextMocks = new Map();
+vi.mock("@lit/context", () => {
+	class MockContextConsumer {
+		/**
+		 * @param {any} host
+		 * @param {any} options
+		 */
+		constructor(host, options) {
+			this.host = host;
+			this.options = options;
+			// Store callback to trigger it manually
+			contextMocks.set(options.context, options.callback);
+		}
+	}
+	return {
+		ContextConsumer: MockContextConsumer,
+		createContext: vi.fn((key) => key),
+	};
+});
+
 describe("CharacterContextController", () => {
 	/** @type {any} */
 	let host;
@@ -10,16 +31,21 @@ describe("CharacterContextController", () => {
 	let controller;
 	/** @type {any} */
 	let characterProvider;
+
+	// Mock context states
 	/** @type {any} */
-	let heroState;
+	let mockHeroState;
 	/** @type {any} */
-	let questState;
+	let mockQuestState;
 	/** @type {any} */
 	let mockQuestController;
 	/** @type {any} */
 	let mockThemeService;
 
 	beforeEach(() => {
+		vi.clearAllMocks();
+		contextMocks.clear();
+
 		host = {
 			addController: vi.fn(),
 			removeController: vi.fn(),
@@ -28,11 +54,11 @@ describe("CharacterContextController", () => {
 		};
 		characterProvider = { setValue: vi.fn() };
 
-		heroState = {
+		mockHeroState = {
 			hotSwitchState: new Signal.State(HotSwitchStates.LEGACY),
 		};
 
-		questState = {
+		mockQuestState = {
 			hasCollectedItem: new Signal.State(false),
 			isRewardCollected: new Signal.State(false),
 		};
@@ -45,23 +71,27 @@ describe("CharacterContextController", () => {
 			},
 		};
 
-		// Mock ThemeService with a signal-like object
 		mockThemeService = {
 			themeMode: {
 				get: vi.fn().mockReturnValue(ThemeModes.LIGHT),
 			},
 		};
-
-		controller = new CharacterContextController(/** @type {any} */ (host), {
-			heroState,
-			questState,
-			questController: mockQuestController,
-			characterProvider,
-			themeService: mockThemeService,
-		});
 	});
 
+	const initController = (options = {}) => {
+		controller = new CharacterContextController(host, options);
+
+		// Manual injection via the stored callbacks from the mock ContextConsumer
+		const callbacks = Array.from(contextMocks.values());
+		// heroState, questState, questController, themeService
+		if (callbacks[0]) callbacks[0](mockHeroState);
+		if (callbacks[1]) callbacks[1](mockQuestState);
+		if (callbacks[2]) callbacks[2](mockQuestController);
+		if (callbacks[3]) callbacks[3](mockThemeService);
+	};
+
 	it("should initialize and add controller to host", () => {
+		initController();
 		expect(host.addController).toHaveBeenCalledWith(controller);
 	});
 
@@ -75,6 +105,7 @@ describe("CharacterContextController", () => {
 				},
 			};
 
+			initController({ characterProvider });
 			controller.hostUpdate();
 
 			expect(characterProvider.setValue).toHaveBeenCalledWith(
@@ -92,8 +123,9 @@ describe("CharacterContextController", () => {
 					reward: "/assets/level_1/hero-reward.png",
 				},
 			};
-			questState.isRewardCollected.set(true);
+			mockQuestState.isRewardCollected.set(true);
 
+			initController({ characterProvider });
 			controller.hostUpdate();
 
 			expect(characterProvider.setValue).toHaveBeenCalledWith(
@@ -108,8 +140,9 @@ describe("CharacterContextController", () => {
 				id: "level_2",
 				reward: { image: "/assets/level_2/reward.png" },
 			};
-			questState.hasCollectedItem.set(true);
+			mockQuestState.hasCollectedItem.set(true);
 
+			initController({ characterProvider });
 			controller.hostUpdate();
 
 			expect(characterProvider.setValue).toHaveBeenCalledWith(
@@ -124,8 +157,9 @@ describe("CharacterContextController", () => {
 				id: "level_2",
 				reward: { image: "/assets/level_2/reward.png" },
 			};
-			questState.hasCollectedItem.set(false);
+			mockQuestState.hasCollectedItem.set(false);
 
+			initController({ characterProvider });
 			controller.hostUpdate();
 
 			expect(characterProvider.setValue).toHaveBeenCalledWith(
@@ -136,9 +170,10 @@ describe("CharacterContextController", () => {
 		});
 
 		it("should update power context based on hot switch state", () => {
-			heroState.hotSwitchState.set(HotSwitchStates.NEW);
+			mockHeroState.hotSwitchState.set(HotSwitchStates.NEW);
 			mockThemeService.themeMode.get.mockReturnValue(ThemeModes.DARK);
 
+			initController({ characterProvider });
 			controller.hostUpdate();
 
 			expect(characterProvider.setValue).toHaveBeenCalledWith(
@@ -152,13 +187,7 @@ describe("CharacterContextController", () => {
 		});
 
 		it("should not crash if characterProvider is missing", () => {
-			controller = new CharacterContextController(/** @type {any} */ (host), {
-				heroState,
-				questState,
-				questController: mockQuestController,
-				themeService: mockThemeService,
-			});
-
+			initController();
 			expect(() => controller.hostUpdate()).not.toThrow();
 		});
 	});

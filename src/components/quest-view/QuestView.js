@@ -1,7 +1,6 @@
 import { consume } from "@lit/context";
 import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
-import { questLoaderContext } from "../../contexts/quest-loader-context.js";
 import { sessionContext } from "../../contexts/session-context.js";
 import { heroStateContext } from "../../game/contexts/hero-context.js";
 import { questStateContext } from "../../game/contexts/quest-context.js";
@@ -42,13 +41,6 @@ export class QuestView extends SignalWatcher(
 	@consume({ context: worldStateContext, subscribe: true })
 	accessor worldState =
 		/** @type {import('../../game/interfaces.js').IWorldStateService} */ (
-			/** @type {unknown} */ (null)
-		);
-
-	/** @type {import('../../services/interfaces.js').IQuestLoaderService} */
-	@consume({ context: questLoaderContext, subscribe: true })
-	accessor questLoader =
-		/** @type {import('../../services/interfaces.js').IQuestLoaderService} */ (
 			/** @type {unknown} */ (null)
 		);
 

@@ -1,11 +1,33 @@
 import { TaskStatus } from "@lit/task";
+import { Signal } from "@lit-labs/signals";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { HotSwitchStates } from "../core/constants.js";
 import { ServiceType } from "../services/user-api-client.js";
 import { ServiceController } from "./service-controller.js";
 
+// Mock @lit/context to handle dependency injection in tests
+const contextMocks = new Map();
+vi.mock("@lit/context", () => {
+	class MockContextConsumer {
+		/**
+		 * @param {any} host
+		 * @param {any} options
+		 */
+		constructor(host, options) {
+			this.host = host;
+			this.options = options;
+			// Store callback to trigger it manually
+			contextMocks.set(options.context, options.callback);
+		}
+	}
+	return {
+		ContextConsumer: MockContextConsumer,
+		createContext: vi.fn((key) => key),
+	};
+});
+
 describe("ServiceController", () => {
-	/** @type {import("lit").ReactiveControllerHost} */
+	/** @type {any} */
 	let host;
 	/** @type {ServiceController} */
 	let controller;
@@ -20,13 +42,17 @@ describe("ServiceController", () => {
 	/** @type {any} */
 	let profileProvider;
 
+	// Mock context states
+	/** @type {any} */
+	let mockHeroState;
+	/** @type {any} */
+	let mockQuestController;
+	/** @type {any} */
+	let mockApiClients;
+
 	beforeEach(() => {
-		host = {
-			addController: vi.fn(),
-			removeController: vi.fn(),
-			requestUpdate: vi.fn(),
-			updateComplete: Promise.resolve(true),
-		};
+		vi.clearAllMocks();
+		contextMocks.clear();
 
 		// Mock services
 		legacyService = {
@@ -34,8 +60,6 @@ describe("ServiceController", () => {
 				id: 1,
 				name: "Legacy User",
 				role: "developer",
-				hp: 50,
-				avatarColor: "#ef4444",
 			}),
 			getServiceName: vi.fn().mockReturnValue("legacy"),
 		};
@@ -45,8 +69,6 @@ describe("ServiceController", () => {
 				id: 2,
 				name: "Mock User",
 				role: "tester",
-				hp: 75,
-				avatarColor: "#eab308",
 			}),
 			getServiceName: vi.fn().mockReturnValue("mock"),
 		};
@@ -56,8 +78,6 @@ describe("ServiceController", () => {
 				id: 3,
 				name: "New User",
 				role: "admin",
-				hp: 100,
-				avatarColor: "#22c55e",
 			}),
 			getServiceName: vi.fn().mockReturnValue("new"),
 		};
@@ -65,10 +85,42 @@ describe("ServiceController", () => {
 		profileProvider = {
 			setValue: vi.fn(),
 		};
+
+		mockHeroState = {
+			hotSwitchState: new Signal.State(HotSwitchStates.LEGACY),
+		};
+
+		mockQuestController = {
+			currentChapter: { serviceType: ServiceType.LEGACY },
+		};
+
+		mockApiClients = {
+			legacy: legacyService,
+			mock: mockService,
+			new: newService,
+		};
+
+		host = {
+			addController: vi.fn(),
+			removeController: vi.fn(),
+			requestUpdate: vi.fn(),
+			updateComplete: Promise.resolve(true),
+		};
 	});
 
+	const initController = (options = {}) => {
+		controller = new ServiceController(host, options);
+
+		// Manual injection via the stored callbacks from the mock ContextConsumer
+		const callbacks = Array.from(contextMocks.values());
+		// heroState, questController, apiClients
+		if (callbacks[0]) callbacks[0](mockHeroState);
+		if (callbacks[1]) callbacks[1](mockQuestController);
+		if (callbacks[2]) callbacks[2](mockApiClients);
+	};
+
 	it("should initialize correctly", () => {
-		controller = new ServiceController(host);
+		initController();
 		expect(host.addController).toHaveBeenCalledWith(controller);
 		expect(controller.userTask).toBeDefined();
 		expect(controller.userTask.status).toBe(TaskStatus.INITIAL);
@@ -76,9 +128,7 @@ describe("ServiceController", () => {
 
 	describe("getActiveService", () => {
 		beforeEach(() => {
-			controller = new ServiceController(host, {
-				services: { legacy: legacyService, mock: mockService, new: newService },
-			});
+			initController();
 		});
 
 		it("should return legacy service for 'legacy' type", () => {
@@ -113,19 +163,11 @@ describe("ServiceController", () => {
 		});
 	});
 
-	describe("Task Execution (loadUserData replacement)", () => {
-		beforeEach(() => {
-			controller = new ServiceController(host, {
-				services: { legacy: legacyService },
-				profileProvider,
-				getActiveService: () => legacyService,
-			});
-		});
-
+	describe("Task Execution", () => {
 		it("should fetch user data when service is active", async () => {
-			// Trigger task update logic manually or wait for task if it auto-runs
-			// @lit/task auto-runs when host updates or args change.
-			// Since we just created it, and activeService returns legacyService, it should run.
+			initController({ profileProvider });
+
+			// Trigger task update logic
 			await controller.userTask.run();
 
 			expect(legacyService.fetchUserData).toHaveBeenCalledWith(1);
@@ -134,20 +176,19 @@ describe("ServiceController", () => {
 				id: 1,
 				name: "Legacy User",
 				role: "developer",
-				hp: 50,
-				avatarColor: "#ef4444",
 			});
 		});
 
-		it("should update profile context and callback on success", async () => {
+		it("should update profile context on hostUpdate", async () => {
+			initController({ profileProvider });
 			await controller.userTask.run();
 
-			// Emulate host update which calls hostUpdate()
 			controller.hostUpdate();
 
 			expect(profileProvider.setValue).toHaveBeenCalledWith(
 				expect.objectContaining({
 					name: "Legacy User",
+					role: "developer",
 					loading: false,
 					error: null,
 					serviceName: "legacy",
@@ -157,6 +198,7 @@ describe("ServiceController", () => {
 
 		it("should handle errors", async () => {
 			legacyService.fetchUserData.mockRejectedValue(new Error("Network error"));
+			initController({ profileProvider });
 
 			try {
 				await controller.userTask.run();
@@ -178,21 +220,14 @@ describe("ServiceController", () => {
 
 	describe("updateProfileContext", () => {
 		it("should update profile context with pending state", async () => {
-			controller = new ServiceController(host, {
-				profileProvider,
-				getActiveService: () => legacyService,
-			});
+			initController({ profileProvider });
 
-			// We need to trick the task into pending state or just check initial
 			expect(controller.userTask.status).toBe(TaskStatus.INITIAL);
-
-			// Manually call private method wrapper if it was public...
-			// Since it's private called by hostUpdate, we call hostUpdate
 			controller.hostUpdate();
 
 			expect(profileProvider.setValue).toHaveBeenCalledWith(
 				expect.objectContaining({
-					loading: true, // INITIAL is considered loading in our logic
+					loading: true,
 					error: null,
 				}),
 			);

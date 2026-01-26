@@ -1,18 +1,27 @@
+import { ContextConsumer } from "@lit/context";
+import { loggerContext } from "../contexts/logger-context.js";
+import { questControllerContext } from "../contexts/quest-controller-context.js";
+import { heroStateContext } from "../game/contexts/hero-context.js";
+import { questStateContext } from "../game/contexts/quest-context.js";
+import { worldStateContext } from "../game/contexts/world-context.js";
+
 /**
  * @typedef {import("lit").ReactiveController} ReactiveController
  * @typedef {import("lit").ReactiveControllerHost} ReactiveControllerHost
+ * @typedef {import("lit").ReactiveElement} ReactiveElement
+ */
+
+/**
+ * @typedef {import('../services/interfaces.js').ILoggerService} ILoggerService
+ * @typedef {import('../game/interfaces.js').IHeroStateService} IHeroStateService
+ * @typedef {import('../game/interfaces.js').IQuestStateService} IQuestStateService
+ * @typedef {import('../game/interfaces.js').IWorldStateService} IWorldStateService
+ * @typedef {import('../services/interfaces.js').IQuestController} IQuestController
  */
 
 /**
  * @typedef {Object} GameControllerOptions
- * @property {boolean} [exposeToConsole=true] - Whether to expose game service to console as window.game
- * @property {import('../services/logger-service.js').LoggerService} [logger]
- * @property {import('../game/interfaces.js').IHeroStateService} [heroState]
- * @property {import('../game/interfaces.js').IQuestStateService} [questState]
- * @property {import('../game/interfaces.js').IWorldStateService} [worldState]
- * @property {import('../services/interfaces.js').IQuestController} [questController]
- * @property {import('../services/interfaces.js').IQuestLoaderService} [questLoader]
-
+ * @property {boolean} [exposeToConsole=true] - Whether to expose game controller to console as window.game
  */
 
 /**
@@ -25,17 +34,76 @@
  * @implements {ReactiveController}
  */
 export class GameController {
+	/** @type {ILoggerService | null} */
+	#logger = null;
+	/** @type {IHeroStateService | null} */
+	#heroState = null;
+	/** @type {IQuestStateService | null} */
+	#questState = null;
+	/** @type {IWorldStateService | null} */
+	#worldState = null;
+	/** @type {IQuestController | null} */
+	#questController = null;
+
 	/**
 	 * @param {ReactiveControllerHost} host
-	 * @param {GameControllerOptions} options
+	 * @param {GameControllerOptions} [options]
 	 */
-	constructor(host, options) {
+	constructor(host, options = {}) {
+		/** @type {ReactiveControllerHost} */
 		this.host = host;
-		this.options = options;
-		this.logger = options.logger;
+		this.options = {
+			exposeToConsole: true,
+			...options,
+		};
 		this.isEnabled = new URLSearchParams(window.location.search).has("debug");
 		/** @type {boolean} */
 		this.isTransitioning = false;
+
+		const hostElement = /** @type {ReactiveElement} */ (
+			/** @type {unknown} */ (this.host)
+		);
+
+		// Initialize Context Consumers
+		new ContextConsumer(hostElement, {
+			context: loggerContext,
+			subscribe: true,
+			callback: (service) => {
+				this.#logger = /** @type {ILoggerService} */ (service);
+			},
+		});
+
+		new ContextConsumer(hostElement, {
+			context: heroStateContext,
+			subscribe: true,
+			callback: (service) => {
+				this.#heroState = /** @type {IHeroStateService} */ (service);
+			},
+		});
+
+		new ContextConsumer(hostElement, {
+			context: questStateContext,
+			subscribe: true,
+			callback: (service) => {
+				this.#questState = /** @type {IQuestStateService} */ (service);
+			},
+		});
+
+		new ContextConsumer(hostElement, {
+			context: worldStateContext,
+			subscribe: true,
+			callback: (service) => {
+				this.#worldState = /** @type {IWorldStateService} */ (service);
+			},
+		});
+
+		new ContextConsumer(hostElement, {
+			context: questControllerContext,
+			subscribe: true,
+			callback: (service) => {
+				this.#questController = /** @type {IQuestController} */ (service);
+			},
+		});
 
 		host.addController(this);
 	}
@@ -44,16 +112,21 @@ export class GameController {
 		if (this.isEnabled) {
 			this.enableDebugMode();
 		}
+		if (this.options.exposeToConsole) {
+			// @ts-expect-error
+			window.game = this;
+		}
 	}
 
-	handleExitZoneReached = () => {
+	hostDisconnected() {}
+
+	handleExitZoneReached() {
 		// Prevent multiple triggers
 		if (this.isTransitioning) return;
 
-		const { questLoader } = this.options;
-		if (questLoader && this.options.heroState && this.options.questController) {
+		if (this.#heroState && this.#questController) {
 			this.isTransitioning = true;
-			questLoader.advanceChapter().finally(() => {
+			this.#questController.advanceChapter().finally(() => {
 				// Reset flag after a delay or let the next chapter load reset it naturally
 				// For now, we keep it true until the next chapter or reset happens externally
 				setTimeout(() => {
@@ -61,46 +134,37 @@ export class GameController {
 				}, 2000);
 			});
 		}
-	};
+	}
 
 	/**
 	 * Handle level completion event
 	 * Executes logic to advance chapter or complete quest
 	 */
 	handleLevelCompleted = () => {
-		const { worldState, questState, questController, questLoader } =
-			this.options;
-
 		// 1. Hide dialog if open (handled by UI state, but ensures clean slate)
-		worldState?.setShowDialog(false);
+		this.#worldState?.setShowDialog(false);
 
-		// 2. Check if we should advance to next chapter
-		const isRewardCollected = questState?.isRewardCollected.get();
-		const hasNext = questController?.hasNextChapter();
+		// 2. Mark item as collected (triggers reward animation in viewport)
+		this.#logger?.info("✅ Level Goal Reached (Item Collected)");
+		this.#questState?.setHasCollectedItem(true);
 
-		if (isRewardCollected && hasNext) {
-			this.logger?.info("📖 Advancing to next chapter");
-			// Stop auto-move if any? (Handled by AdvanceChapterCommand presumably or logic)
-
-			if (questLoader) {
-				questLoader.advanceChapter();
+		// 3. Advance to next chapter ONLY if there is NO exit zone
+		// If there is an exit zone, CollisionController will trigger advancement when reached.
+		const currentChapter = this.#questController?.currentChapter;
+		if (!currentChapter?.exitZone) {
+			this.#logger?.info("📖 No exit zone, advancing...");
+			if (this.#questController) {
+				this.#questController.advanceChapter();
 			}
-		} else {
-			// Just mark item as collected/level complete state
-			this.logger?.info("✅ Level Goal Reached (Item Collected)");
-			questState?.setHasCollectedItem(true);
 		}
 	};
 
 	enableDebugMode() {
-		this.logger?.info(`
+		this.#logger?.info(`
 		🎮 DEBUG MODE ENABLED
 		━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-		Type 'app.questLoader.help()' for available commands
+		Type 'app.questController.help()' for available commands
 		━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 				`);
-
-		// Show initial state (legacy)
-		// this.options.gameService.getState();
 	}
 }

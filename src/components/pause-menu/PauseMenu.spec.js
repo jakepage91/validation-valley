@@ -4,12 +4,12 @@ import axe from "axe-core";
 import { html, LitElement } from "lit";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "./pause-menu.js";
-import { questLoaderContext } from "../../contexts/quest-loader-context.js";
+import { questControllerContext } from "../../contexts/quest-controller-context.js";
 import { sessionContext } from "../../contexts/session-context.js";
 import { worldStateContext } from "../../game/contexts/world-context.js";
 
 /** @typedef {import("../../game/interfaces.js").IWorldStateService} IWorldStateService */
-/** @typedef {import("../../services/interfaces.js").IQuestLoaderService} IQuestLoaderService */
+/** @typedef {import("../../services/interfaces.js").IQuestController} IQuestController */
 /** @typedef {import("../../services/interfaces.js").ISessionService} ISessionService */
 /** @typedef {import("./PauseMenu.js").PauseMenu} PauseMenu */
 
@@ -17,7 +17,7 @@ class TestContextWrapper extends LitElement {
 	/** @override */
 	static properties = {
 		worldState: { type: Object },
-		questLoader: { type: Object },
+		questController: { type: Object },
 		sessionService: { type: Object },
 	};
 
@@ -25,16 +25,16 @@ class TestContextWrapper extends LitElement {
 		super();
 		/** @type {IWorldStateService | undefined} */
 		this.worldState = undefined;
-		/** @type {IQuestLoaderService | undefined} */
-		this.questLoader = undefined;
+		/** @type {IQuestController | undefined} */
+		this.questController = undefined;
 		/** @type {ISessionService | undefined} */
 		this.sessionService = undefined;
 
 		this.wsProvider = new ContextProvider(this, {
 			context: worldStateContext,
 		});
-		this.qlProvider = new ContextProvider(this, {
-			context: questLoaderContext,
+		this.qcProvider = new ContextProvider(this, {
+			context: questControllerContext,
 		});
 		this.sessionProvider = new ContextProvider(this, {
 			context: sessionContext,
@@ -58,10 +58,10 @@ class TestContextWrapper extends LitElement {
 				),
 			);
 		}
-		if (changedProperties.has("questLoader")) {
-			this.qlProvider.setValue(
-				/** @type {import("../../services/interfaces.js").IQuestLoaderService} */ (
-					this.questLoader ?? null
+		if (changedProperties.has("questController")) {
+			this.qcProvider.setValue(
+				/** @type {import("../../services/interfaces.js").IQuestController} */ (
+					this.questController ?? null
 				),
 			);
 		}
@@ -103,7 +103,7 @@ describe("PauseMenu", () => {
 				setPaused: vi.fn(),
 			})
 		);
-		wrapper.questLoader = /** @type {IQuestLoaderService} */ ({});
+		wrapper.questController = /** @type {IQuestController} */ ({});
 		wrapper.sessionService = /** @type {ISessionService} */ ({});
 
 		const element = /** @type {PauseMenu} */ (
@@ -130,7 +130,7 @@ describe("PauseMenu", () => {
 				setPaused: setPausedSpy,
 			})
 		);
-		wrapper.questLoader = /** @type {IQuestLoaderService} */ ({});
+		wrapper.questController = /** @type {IQuestController} */ ({});
 		wrapper.sessionService = /** @type {ISessionService} */ ({});
 
 		const element = /** @type {PauseMenu} */ (
@@ -163,7 +163,7 @@ describe("PauseMenu", () => {
 				setPaused: setPausedSpy,
 			})
 		);
-		wrapper.questLoader = /** @type {IQuestLoaderService} */ (
+		wrapper.questController = /** @type {IQuestController} */ (
 			/** @type {unknown} */ ({
 				returnToHub: returnToHubSpy,
 			})
@@ -198,7 +198,7 @@ describe("PauseMenu", () => {
 				setPaused: vi.fn(),
 			})
 		);
-		wrapper.questLoader = /** @type {IQuestLoaderService} */ ({});
+		wrapper.questController = /** @type {IQuestController} */ ({});
 		wrapper.sessionService = /** @type {ISessionService} */ ({});
 
 		const element = /** @type {PauseMenu} */ (

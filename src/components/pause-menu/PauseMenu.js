@@ -5,7 +5,7 @@ import { consume } from "@lit/context";
 import { msg, updateWhenLocaleChanges } from "@lit/localize";
 import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
-import { questLoaderContext } from "../../contexts/quest-loader-context.js";
+import { questControllerContext } from "../../contexts/quest-controller-context.js";
 import { sessionContext } from "../../contexts/session-context.js";
 import { worldStateContext } from "../../game/contexts/world-context.js";
 import { pauseMenuStyles } from "./PauseMenu.styles.js";
@@ -26,10 +26,10 @@ export class PauseMenu extends SignalWatcher(
 			/** @type {unknown} */ (null)
 		);
 
-	/** @type {import('../../services/interfaces.js').IQuestLoaderService} */
-	@consume({ context: questLoaderContext, subscribe: true })
-	accessor questLoader =
-		/** @type {import('../../services/interfaces.js').IQuestLoaderService} */ (
+	/** @type {import('../../services/interfaces.js').IQuestController} */
+	@consume({ context: questControllerContext, subscribe: true })
+	accessor questController =
+		/** @type {import('../../services/interfaces.js').IQuestController} */ (
 			/** @type {unknown} */ (null)
 		);
 
@@ -98,12 +98,12 @@ export class PauseMenu extends SignalWatcher(
 		const currentQuest = this.sessionService?.currentQuest.get();
 		this.worldState?.setPaused(false);
 		if (currentQuest) {
-			this.questLoader?.startQuest(currentQuest.id);
+			this.questController?.startQuest(currentQuest.id);
 		}
 	}
 
 	quit() {
 		this.worldState?.setPaused(false);
-		this.questLoader?.returnToHub();
+		this.questController?.returnToHub();
 	}
 }

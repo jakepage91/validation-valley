@@ -5,7 +5,7 @@ import { msg, updateWhenLocaleChanges } from "@lit/localize";
 import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
-import { questLoaderContext } from "../../contexts/quest-loader-context.js";
+import { questControllerContext } from "../../contexts/quest-controller-context.js";
 import { sessionContext } from "../../contexts/session-context.js";
 import { processImagePath } from "../../utils/process-assets.js";
 import { victoryScreenStyles } from "./VictoryScreen.styles.js";
@@ -33,10 +33,10 @@ export class VictoryScreen extends SignalWatcher(
 			/** @type {unknown} */ (null)
 		);
 
-	/** @type {import('../../services/interfaces.js').IQuestLoaderService} */
-	@consume({ context: questLoaderContext, subscribe: true })
-	accessor questLoader =
-		/** @type {import('../../services/interfaces.js').IQuestLoaderService} */ (
+	/** @type {import('../../services/interfaces.js').IQuestController} */
+	@consume({ context: questControllerContext, subscribe: true })
+	accessor questController =
+		/** @type {import('../../services/interfaces.js').IQuestController} */ (
 			/** @type {unknown} */ (null)
 		);
 
@@ -91,7 +91,7 @@ export class VictoryScreen extends SignalWatcher(
 					<br/>
 					${msg("Ability gained:")} <b>"${quest?.reward?.ability}"</b>
 				</small></p>
-				<wa-button class="ng-btn" @click="${() => this.questLoader?.returnToHub()}">
+				<wa-button class="ng-btn" @click="${() => this.questController?.returnToHub()}">
 					<wa-icon slot="start" name="house"></wa-icon>
 					${msg("RETURN TO HUB")}
 				</wa-button>

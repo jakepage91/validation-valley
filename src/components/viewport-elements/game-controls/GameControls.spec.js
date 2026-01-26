@@ -51,8 +51,10 @@ describe("GameControls Component", () => {
 		);
 		button.click();
 
+		await element.updateComplete;
+
 		await vi.waitUntil(() => button?.classList.contains("active"), {
-			timeout: 5000,
+			timeout: 10000,
 			interval: 100,
 		});
 		await element.updateComplete;

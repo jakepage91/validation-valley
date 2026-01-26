@@ -13,17 +13,20 @@ import { ROUTES } from "../constants/routes.js";
  */
 export function setupRoutes(router, context) {
 	router.addRoute(ROUTES.HUB, () => {
-		context.questLoader?.returnToHub();
+		context.questController?.returnToHub();
 	});
 
 	router.addRoute(ROUTES.QUEST(":id"), (/** @type {QuestParams} */ params) => {
-		context.questLoader?.startQuest(params.id || "");
+		context.questController?.startQuest(params.id || "");
 	});
 
 	router.addRoute(
 		ROUTES.CHAPTER(":id", ":chapterId"),
 		(/** @type {ChapterParams} */ params) => {
-			context.questLoader?.loadChapter(params.id || "", params.chapterId || "");
+			context.questController?.loadChapter(
+				params.id || "",
+				params.chapterId || "",
+			);
 		},
 	);
 }

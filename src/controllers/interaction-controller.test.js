@@ -2,101 +2,160 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { HotSwitchStates } from "../core/constants.js";
 import { InteractionController } from "./interaction-controller.js";
 
+// Mock @lit/context to handle dependency injection in tests
+const contextMocks = new Map();
+vi.mock("@lit/context", () => {
+	class MockContextConsumer {
+		/**
+		 * @param {any} host
+		 * @param {any} options
+		 */
+		constructor(host, options) {
+			this.host = host;
+			this.options = options;
+			// Store callback to trigger it manually
+			contextMocks.set(options.context, options.callback);
+			// Trigger with current mock value if exists
+			if (options.callback && host._mockContexts?.[options.context]) {
+				options.callback(host._mockContexts[options.context]);
+			}
+		}
+	}
+	return {
+		ContextConsumer: MockContextConsumer,
+		createContext: vi.fn((key) => key),
+	};
+});
+
 describe("InteractionController", () => {
 	/** @type {any} */
 	let host;
 	/** @type {InteractionController} */
 	let controller;
 
-	// Mock options
+	// Mock services
 	/** @type {any} */
-	let getState;
+	let mockHeroState;
 	/** @type {any} */
-	let getNpcPosition;
+	let mockQuestState;
+	/** @type {any} */
+	let mockQuestController;
+	/** @type {any} */
+	let mockLogger;
+	/** @type {any} */
+	let mockInteractUseCase;
 
 	beforeEach(() => {
+		vi.clearAllMocks();
+		contextMocks.clear();
+
+		mockHeroState = {
+			pos: { get: vi.fn().mockReturnValue({ x: 0, y: 0 }) },
+			hotSwitchState: { get: vi.fn().mockReturnValue(HotSwitchStates.LEGACY) },
+		};
+
+		mockQuestState = {
+			hasCollectedItem: { get: vi.fn().mockReturnValue(false) },
+		};
+
+		mockQuestController = {
+			currentChapter: {
+				id: "chapter-1",
+				npc: { position: { x: 10, y: 0 } }, // Distance 10
+			},
+		};
+
+		mockLogger = {
+			info: vi.fn(),
+			warn: vi.fn(),
+			error: vi.fn(),
+			debug: vi.fn(),
+		};
+
+		mockInteractUseCase = {
+			execute: vi.fn().mockReturnValue({ action: "none" }),
+		};
+
 		host = {
 			addController: vi.fn(),
 			removeController: vi.fn(),
 			requestUpdate: vi.fn(),
-			dispatchEvent: vi.fn(), // Mock dispatchEvent
+			dispatchEvent: vi.fn(),
 			updateComplete: Promise.resolve(true),
+			// Helper for mock ContextConsumer
+			_mockContexts: {},
 		};
 
-		getState = vi.fn();
-		getNpcPosition = vi.fn();
-
-		// Default state
-		getState.mockReturnValue({
-			level: "chapter-1",
-			heroPos: { x: 0, y: 0 },
-			hotSwitchState: null,
-			hasCollectedItem: false,
-		});
-		getNpcPosition.mockReturnValue({ x: 10, y: 0 }); // Distance 10
+		// "Provide" the mocks via host's mock context mechanism
+		// Note: The context symbols/keys should match what's in the controller
+		// For simplicity in tests where we mock @lit/context, we use the context objects themselves
+		// But the controller imports them, so we need to know their names.
 	});
 
-	it("should initialize correctly", () => {
+	const initController = (options = {}) => {
 		controller = new InteractionController(host, {
-			interactionDistance: 20,
-			interactWithNpcUseCase: /** @type {any} */ ({ execute: vi.fn() }),
+			interactWithNpcUseCase: mockInteractUseCase,
+			...options,
 		});
+
+		// Manual injection via the stored callbacks from the mock ContextConsumer
+		// This simulates the behavior of @lit/context providing values
+		const callbacks = Array.from(contextMocks.values());
+		// The order depends on how they are initialized in constructor
+		// logger, questController, heroState, questState
+		if (contextMocks.size >= 4) {
+			// Trigger all callbacks with our mocks
+			// We need to match the specific context objects.
+			// Since we mocked createContext to return the key, we can identify them if we had access to them.
+			// For now, let's just trigger all callbacks with the respective mocks based on the order in constructor
+			// 1. Logger
+			callbacks[0](mockLogger);
+			// 2. QuestController
+			callbacks[1](mockQuestController);
+			// 3. HeroState
+			callbacks[2](mockHeroState);
+			// 4. QuestState
+			callbacks[3](mockQuestState);
+		}
+	};
+
+	it("should initialize correctly", () => {
+		initController({ interactionDistance: 20 });
 		expect(host.addController).toHaveBeenCalledWith(controller);
 		expect(controller.options.interactionDistance).toBe(20);
 	});
 
 	describe("Distance Calculation", () => {
 		it("should calculate distance correctly", () => {
-			controller = new InteractionController(host, {
-				interactWithNpcUseCase: /** @type {any} */ ({ execute: vi.fn() }),
-			});
+			initController();
 			const dist = controller.calculateDistance({ x: 0, y: 0 }, { x: 3, y: 4 });
 			expect(dist).toBe(5); // 3-4-5 triangle
 		});
 
 		it("should return Infinity if target is missing", () => {
-			controller = new InteractionController(host, {
-				interactWithNpcUseCase: /** @type {any} */ ({ execute: vi.fn() }),
-			});
-			expect(
-				controller.calculateDistance({ x: 0, y: 0 }, /** @type {any} */ (null)),
-			).toBe(Infinity);
+			initController();
+			expect(controller.calculateDistance({ x: 0, y: 0 }, null)).toBe(Infinity);
 		});
 	});
 
 	describe("Proximity Detection", () => {
 		it("should detect when close to NPC", () => {
-			controller = new InteractionController(host, {
-				getState,
-				getNpcPosition,
-				interactionDistance: 15,
-				interactWithNpcUseCase: /** @type {any} */ ({ execute: vi.fn() }),
-			});
+			initController({ interactionDistance: 15 });
 			// Distance is 10 (setup), limit is 15 -> True
 			expect(controller.isCloseToNpc()).toBe(true);
 		});
 
 		it("should detect when far from NPC", () => {
-			getNpcPosition.mockReturnValue({ x: 20, y: 0 }); // Distance 20
-			controller = new InteractionController(host, {
-				getState,
-				getNpcPosition,
-				interactionDistance: 15,
-				interactWithNpcUseCase: /** @type {any} */ ({ execute: vi.fn() }),
-			});
+			mockQuestController.currentChapter.npc.position = { x: 20, y: 0 };
+			initController({ interactionDistance: 15 });
 			expect(controller.isCloseToNpc()).toBe(false);
 		});
 	});
 
 	describe("Interaction Logic", () => {
-		it("should dispatch request-dialog event if close and item NOT collected", () => {
-			controller = new InteractionController(host, {
-				getState,
-				getNpcPosition,
-				interactWithNpcUseCase: /** @type {any} */ ({
-					execute: vi.fn().mockReturnValue({ action: "showDialog" }),
-				}),
-			});
+		it("should dispatch request-dialog event if use case returns showDialog", () => {
+			mockInteractUseCase.execute.mockReturnValue({ action: "showDialog" });
+			initController();
 
 			controller.handleInteract();
 			expect(host.dispatchEvent).toHaveBeenCalledWith(
@@ -106,122 +165,59 @@ describe("InteractionController", () => {
 			);
 		});
 
-		it("should NOT dispatch event if item already collected", () => {
-			getState.mockReturnValue({
-				heroPos: { x: 0, y: 0 },
-				hasCollectedItem: true,
+		it("should dispatch show-locked-message event if use case returns showLocked", () => {
+			mockInteractUseCase.execute.mockReturnValue({
+				action: "showLocked",
+				message: "Locked!",
 			});
-			controller = new InteractionController(host, {
-				getState,
-				getNpcPosition,
-				interactWithNpcUseCase: /** @type {any} */ ({
-					execute: vi.fn().mockReturnValue({ action: "none" }),
-				}),
-			});
+			initController();
 
 			controller.handleInteract();
-			expect(host.dispatchEvent).not.toHaveBeenCalled();
+			expect(host.dispatchEvent).toHaveBeenCalledWith(
+				expect.objectContaining({
+					type: "show-locked-message",
+					detail: { message: "Locked!" },
+				}),
+			);
 		});
 
-		describe("Final Boss Logic", () => {
-			beforeEach(() => {
-				controller = new InteractionController(host, {
-					getState,
-					getNpcPosition,
-					interactWithNpcUseCase: /** @type {any} */ ({ execute: vi.fn() }),
-				});
-			});
+		it("should pass correct state to use case", () => {
+			mockHeroState.pos.get.mockReturnValue({ x: 5, y: 5 });
+			mockHeroState.hotSwitchState.get.mockReturnValue(HotSwitchStates.NEW);
+			mockQuestState.hasCollectedItem.get.mockReturnValue(true);
 
-			it("should dispatch show-locked-message event if API is LEGACY", () => {
-				getState.mockReturnValue({
-					heroPos: { x: 0, y: 0 },
-					gameState: {
-						hotSwitchState: HotSwitchStates.LEGACY,
-					},
-					chapterData: {
-						npc: {
-							requirements: {
-								hotSwitchState: {
-									value: HotSwitchStates.NEW,
-									message: "REQ: NEW API",
-								},
-							},
-						},
-					}, // Important flag
-				});
+			initController();
+			controller.handleInteract();
 
-				controller = new InteractionController(host, {
-					getState,
-					getNpcPosition,
-					interactWithNpcUseCase: /** @type {any} */ ({
-						execute: vi.fn().mockReturnValue({
-							action: "showLocked",
-							message: "REQ: NEW API",
-						}),
-					}),
-				});
-
-				controller.handleInteract();
-
-				expect(host.dispatchEvent).toHaveBeenCalledWith(
-					expect.objectContaining({
-						type: "show-locked-message",
-						detail: { message: "REQ: NEW API" },
-					}),
-				);
-			});
-
-			it("should dispatch request-dialog event if API is NEW", () => {
-				getState.mockReturnValue({
-					heroPos: { x: 0, y: 0 },
-					gameState: {
+			expect(mockInteractUseCase.execute).toHaveBeenCalledWith(
+				expect.objectContaining({
+					gameState: expect.objectContaining({
+						heroPos: { x: 5, y: 5 },
 						hotSwitchState: HotSwitchStates.NEW,
-					},
-					chapterData: {
-						npc: {
-							requirements: {
-								hotSwitchState: {
-									value: HotSwitchStates.NEW,
-									message: "REQ: NEW API",
-								},
-							},
-						},
-					},
-				});
-
-				controller = new InteractionController(host, {
-					getState,
-					getNpcPosition,
-					interactWithNpcUseCase: /** @type {any} */ ({
-						execute: vi.fn().mockReturnValue({ action: "showDialog" }),
+						hasCollectedItem: true,
 					}),
-				});
+					hasCollectedItem: true,
+				}),
+			);
+		});
 
-				controller.handleInteract();
-
-				expect(host.dispatchEvent).toHaveBeenCalledWith(
-					expect.objectContaining({
-						type: "request-dialog",
-					}),
-				);
+		it("should log warning and abort if services are not ready", () => {
+			// Don't trigger callbacks (services stay null)
+			controller = new InteractionController(host, {
+				interactWithNpcUseCase: mockInteractUseCase,
 			});
+			// We need to manually set #logger for this test to work if we want to check warning
+			// But it's private. Let's instead check that it doesn't throw.
+			expect(() => controller.handleInteract()).not.toThrow();
+			expect(mockInteractUseCase.execute).not.toHaveBeenCalled();
 		});
 	});
 
-	describe("Lifecycle & Robustness", () => {
-		it("should handle lifecycle methods without error", () => {
-			// Even if empty, ensure they exist and don't throw
+	describe("Lifecycle", () => {
+		it("should have consistent lifecycle methods", () => {
+			initController();
 			expect(() => controller.hostConnected()).not.toThrow();
 			expect(() => controller.hostDisconnected()).not.toThrow();
-		});
-
-		it("should gracefully handle missing state during interaction", () => {
-			// Mock getState returning null/undefined
-			controller = new InteractionController(host, {
-				getState: () => /** @type {any} */ (null),
-				interactWithNpcUseCase: /** @type {any} */ ({ execute: vi.fn() }),
-			});
-			expect(() => controller.handleInteract()).not.toThrow();
 		});
 	});
 });

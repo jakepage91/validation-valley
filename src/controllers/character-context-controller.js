@@ -1,27 +1,26 @@
+import { ContextConsumer } from "@lit/context";
+import { questControllerContext } from "../contexts/quest-controller-context.js";
+import { themeContext } from "../contexts/theme-context.js";
 import { HotSwitchStates, ThemeModes } from "../core/constants.js";
+import { heroStateContext } from "../game/contexts/hero-context.js";
+import { questStateContext } from "../game/contexts/quest-context.js";
+
 /**
  * @typedef {import("lit").ReactiveController} ReactiveController
  * @typedef {import("lit").ReactiveControllerHost} ReactiveControllerHost
+ * @typedef {import("lit").ReactiveElement} ReactiveElement
  */
 
 /**
- * @typedef {Object} CharacterContextState
- * @property {string} level
- * @property {import("../content/quests/quest-types.js").LevelConfig} [chapterData]
- * @property {string} [themeMode]
- * @property {string} [hotSwitchState]
- * @property {boolean} [hasCollectedItem]
- * @property {boolean} [isRewardCollected]
- * @property {import("../services/user-api-client.js").UserData} [userData]
+ * @typedef {import('../game/interfaces.js').IHeroStateService} IHeroStateService
+ * @typedef {import('../game/interfaces.js').IQuestStateService} IQuestStateService
+ * @typedef {import('../services/interfaces.js').IQuestController} IQuestController
+ * @typedef {import('../services/interfaces.js').IThemeService} IThemeService
  */
 
 /**
  * @typedef {Object} CharacterContextOptions
- * @property {import('@lit/context').ContextProvider<any>} [characterProvider] - Combined provider if used
- * @property {import('../game/interfaces.js').IHeroStateService} heroState
- * @property {import('../game/interfaces.js').IQuestStateService} questState
- * @property {import('../services/interfaces.js').IQuestController} questController
- * @property {import('../services/interfaces.js').IThemeService} themeService
+ * @property {import('@lit/context').ContextProvider<any, any> | null} [characterProvider] - Combined provider if used
  */
 
 /**
@@ -35,45 +34,91 @@ import { HotSwitchStates, ThemeModes } from "../core/constants.js";
  * @implements {ReactiveController}
  */
 export class CharacterContextController {
+	/** @type {IHeroStateService | null} */
+	#heroState = null;
+	/** @type {IQuestStateService | null} */
+	#questState = null;
+	/** @type {IQuestController | null} */
+	#questController = null;
+	/** @type {IThemeService | null} */
+	#themeService = null;
+
 	/**
 	 * @param {ReactiveControllerHost} host
-	 * @param {CharacterContextOptions} options
+	 * @param {CharacterContextOptions} [options]
 	 */
-	constructor(host, options) {
+	constructor(host, options = {}) {
+		/** @type {ReactiveControllerHost} */
 		this.host = host;
-		this.options = options;
+		this.options = {
+			characterProvider: null,
+			...options,
+		};
+
+		const hostElement = /** @type {ReactiveElement} */ (
+			/** @type {unknown} */ (this.host)
+		);
+
+		// Initialize Context Consumers
+		new ContextConsumer(hostElement, {
+			context: heroStateContext,
+			subscribe: true,
+			callback: (service) => {
+				this.#heroState = /** @type {IHeroStateService} */ (service);
+			},
+		});
+
+		new ContextConsumer(hostElement, {
+			context: questStateContext,
+			subscribe: true,
+			callback: (service) => {
+				this.#questState = /** @type {IQuestStateService} */ (service);
+			},
+		});
+
+		new ContextConsumer(hostElement, {
+			context: questControllerContext,
+			subscribe: true,
+			callback: (service) => {
+				this.#questController = /** @type {IQuestController} */ (service);
+			},
+		});
+
+		new ContextConsumer(hostElement, {
+			context: themeContext,
+			subscribe: true,
+			callback: (service) => {
+				this.#themeService = /** @type {IThemeService} */ (service);
+			},
+		});
 
 		host.addController(this);
 	}
 
-	/**
-	 * Called when the host is connected to the DOM
-	 */
-	hostConnected() {
-		// Initial setup if needed
-	}
+	hostConnected() {}
+
+	hostDisconnected() {}
 
 	/**
 	 * Called before the host updates
 	 * Update all character contexts based on current game state
 	 */
 	hostUpdate() {
-		const { heroState, questState, questController } = this.options;
-		if (!heroState || !questState || !questController) return;
+		if (!this.#heroState || !this.#questState || !this.#questController) return;
 
-		const currentChapter = questController.currentChapter;
+		const currentChapter = this.#questController.currentChapter;
 
 		// Calculate derived values
 		const level = currentChapter?.id ?? "";
 		const chapterData = currentChapter;
 
-		const isRewardCollected = questState.isRewardCollected?.get() ?? false;
-		const hasCollectedItem = questState.hasCollectedItem?.get() ?? false;
+		const isRewardCollected =
+			this.#questState.isRewardCollected?.get() ?? false;
+		const hasCollectedItem = this.#questState.hasCollectedItem?.get() ?? false;
 		const hotSwitchState =
-			heroState.hotSwitchState?.get() ?? HotSwitchStates.LEGACY;
+			this.#heroState.hotSwitchState?.get() ?? HotSwitchStates.LEGACY;
 
-		const themeMode =
-			this.options.themeService?.themeMode?.get() ?? ThemeModes.LIGHT;
+		const themeMode = this.#themeService?.themeMode?.get() ?? ThemeModes.LIGHT;
 
 		const suit = {
 			image: chapterData?.hero

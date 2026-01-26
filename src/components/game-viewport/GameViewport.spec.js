@@ -5,7 +5,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { aiContext } from "../../contexts/ai-context.js";
 import { localizationContext } from "../../contexts/localization-context.js";
 import { questControllerContext } from "../../contexts/quest-controller-context.js";
-import { questLoaderContext } from "../../contexts/quest-loader-context.js";
 import { sessionContext } from "../../contexts/session-context.js";
 import { themeContext } from "../../contexts/theme-context.js";
 import { voiceContext } from "../../contexts/voice-context.js";
@@ -24,13 +23,11 @@ import "./game-viewport.js";
 /** @typedef {import('../../game/interfaces.js').IQuestStateService} IQuestStateService */
 /** @typedef {import('../../game/interfaces.js').IWorldStateService} IWorldStateService */
 /** @typedef {import('../../services/interfaces.js').IQuestController} IQuestController */
-/** @typedef {import('../../services/interfaces.js').IQuestLoaderService} IQuestLoaderService */
 /** @typedef {import('../../services/interfaces.js').ISessionService} ISessionService */
 /** @typedef {import('../../services/interfaces.js').ILocalizationService} ILocalizationService */
 /** @typedef {import('../../services/interfaces.js').IThemeService} IThemeService */
 /** @typedef {import('../../services/interfaces.js').IAIService} IAIService */
 /** @typedef {import('../../services/interfaces.js').IVoiceSynthesisService} IVoiceSynthesisService */
-/** @typedef {import('../../services/quest-loader-service.js').QuestLoaderService} QuestLoaderService */
 /** @typedef {import('../../services/session-service.js').SessionService} SessionService */
 /** @typedef {import('../../services/localization-service.js').LocalizationService} LocalizationService */
 /** @typedef {import('../../services/theme-service.js').ThemeService} ThemeService */
@@ -47,7 +44,6 @@ class TestContextWrapper extends LitElement {
 		questState: { type: Object },
 		worldState: { type: Object },
 		questController: { type: Object },
-		questLoader: { type: Object },
 		sessionService: { type: Object },
 		localizationService: { type: Object },
 		themeService: { type: Object },
@@ -65,8 +61,6 @@ class TestContextWrapper extends LitElement {
 		this.worldState = undefined;
 		/** @type {IQuestController | undefined} */
 		this.questController = undefined;
-		/** @type {IQuestLoaderService | undefined} */
-		this.questLoader = undefined;
 		/** @type {ISessionService | undefined} */
 		this.sessionService = undefined;
 		/** @type {ILocalizationService | undefined} */
@@ -89,9 +83,6 @@ class TestContextWrapper extends LitElement {
 		});
 		this.questControllerProvider = new ContextProvider(this, {
 			context: questControllerContext,
-		});
-		this.questLoaderProvider = new ContextProvider(this, {
-			context: questLoaderContext,
 		});
 		this.sessionProvider = new ContextProvider(this, {
 			context: sessionContext,
@@ -130,11 +121,6 @@ class TestContextWrapper extends LitElement {
 		) {
 			this.questControllerProvider.setValue(
 				/** @type {IQuestController} */ (this.questController),
-			);
-		}
-		if (changedProperties.has("questLoader") && this.questLoader != null) {
-			this.questLoaderProvider.setValue(
-				/** @type {IQuestLoaderService} */ (this.questLoader),
 			);
 		}
 		if (

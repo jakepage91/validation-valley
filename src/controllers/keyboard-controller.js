@@ -1,5 +1,6 @@
 /**
  * @typedef {import('lit').ReactiveController} ReactiveController
+ * @typedef {import('lit').ReactiveControllerHost} ReactiveControllerHost
  */
 
 /**
@@ -8,22 +9,29 @@
  */
 
 /**
+ * @typedef {Object} HostWithCallbacks
+ * @property {(dx: number, dy: number) => void} [handleMove] - Movement callback
+ * @property {() => void} [handleInteract] - Interaction callback
+ * @property {() => void} [handlePause] - Pause callback
+ */
+
+/**
  * KeyboardController - Lit Reactive Controller for keyboard input
  *
  * Handles:
- * - Movement keys (WASD, Arrow keys) -> HERO_MOVE_INPUT
- * - Interaction key (Space) -> interaction.handleInteract()
- * - Pause key (Escape) -> worldState.setPaused()
+ * - Movement keys (WASD, Arrow keys) -> host.handleMove(dx, dy)
+ * - Interaction key (Space) -> host.handleInteract()
+ * - Pause key (Escape) -> host.handlePause()
  *
  * @implements {ReactiveController}
  */
 export class KeyboardController {
 	/**
-	 * @param {import('lit').ReactiveControllerHost} host
+	 * @param {ReactiveControllerHost} host
 	 * @param {Partial<KeyboardOptions>} [options]
 	 */
 	constructor(host, options = {}) {
-		/** @type {import('lit').ReactiveControllerHost} */
+		/** @type {ReactiveControllerHost} */
 		this.host = host;
 		this.options = {
 			speed: 2.5,
@@ -34,36 +42,29 @@ export class KeyboardController {
 	}
 
 	hostConnected() {
-		this.handleKeyDown = this.handleKeyDown.bind(this);
-		window.addEventListener("keydown", this.handleKeyDown);
+		window.addEventListener("keydown", this.#handleKeyDown);
 	}
 
 	hostDisconnected() {
-		window.removeEventListener("keydown", this.handleKeyDown);
+		window.removeEventListener("keydown", this.#handleKeyDown);
 	}
 
 	/**
 	 * Handle keyboard events
 	 * @param {KeyboardEvent} e
 	 */
-	handleKeyDown(e) {
+	#handleKeyDown = (e) => {
 		// Handle Pause (Escape) - Always allowed
 		if (e.code === "Escape") {
 			e.preventDefault();
-			if (typeof (/** @type {any} */ (this.host).handlePause) === "function") {
-				/** @type {any} */ (this.host).handlePause();
-			}
+			this.#callHostMethod("handlePause");
 			return;
 		}
 
 		// Handle interaction (Space)
 		if (e.code === "Space" || e.key === " ") {
 			e.preventDefault();
-			if (
-				typeof (/** @type {any} */ (this.host).handleInteract) === "function"
-			) {
-				/** @type {any} */ (this.host).handleInteract();
-			}
+			this.#callHostMethod("handleInteract");
 			return;
 		}
 
@@ -74,25 +75,32 @@ export class KeyboardController {
 
 		if (["ArrowUp", "w", "W"].includes(e.key)) {
 			moveY -= speed;
-			e.preventDefault();
 		}
 		if (["ArrowDown", "s", "S"].includes(e.key)) {
 			moveY += speed;
-			e.preventDefault();
 		}
 		if (["ArrowLeft", "a", "A"].includes(e.key)) {
 			moveX -= speed;
-			e.preventDefault();
 		}
 		if (["ArrowRight", "d", "D"].includes(e.key)) {
 			moveX += speed;
-			e.preventDefault();
 		}
 
 		if (moveX !== 0 || moveY !== 0) {
-			if (typeof (/** @type {any} */ (this.host).handleMove) === "function") {
-				/** @type {any} */ (this.host).handleMove(moveX, moveY);
-			}
+			e.preventDefault();
+			this.#callHostMethod("handleMove", moveX, moveY);
+		}
+	};
+
+	/**
+	 * Safely call a method on the host if it exists
+	 * @param {keyof HostWithCallbacks} methodName
+	 * @param {...any} args
+	 */
+	#callHostMethod(methodName, ...args) {
+		const host = /** @type {any} */ (this.host);
+		if (typeof host[methodName] === "function") {
+			host[methodName](...args);
 		}
 	}
 }

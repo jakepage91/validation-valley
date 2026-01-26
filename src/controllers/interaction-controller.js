@@ -1,36 +1,29 @@
+import { ContextConsumer } from "@lit/context";
+import { gameConfig } from "../config/game-configuration.js";
+import { loggerContext } from "../contexts/logger-context.js";
+import { questControllerContext } from "../contexts/quest-controller-context.js";
+import { UIEvents } from "../core/events.js";
+import { heroStateContext } from "../game/contexts/hero-context.js";
+import { questStateContext } from "../game/contexts/quest-context.js";
+
 /**
  * @typedef {import('lit').ReactiveController} ReactiveController
- */
-
-import { gameConfig } from "../config/game-configuration.js";
-import { UIEvents } from "../core/events.js";
-
-/**
- * @typedef {import('../game/interfaces.js').HotSwitchState} HotSwitchState
- * @typedef {import('../content/quests/quest-types.js').LevelConfig} LevelConfig
-
- * @typedef {import('../game/interfaces.js').IWorldStateService} WorldStateService
- * @typedef {import('../game/interfaces.js').IQuestStateService} QuestStateService
+ * @typedef {import('lit').ReactiveControllerHost} ReactiveControllerHost
+ * @typedef {import('lit').ReactiveElement} ReactiveElement
  */
 
 /**
- * @typedef {Object} InteractionState
- * @property {string} level - Current level ID
- * @property {LevelConfig} [chapterData] - Configuration for key game objects
- * @property {{x: number, y: number}} heroPos - Current hero position {x,y}
- * @property {HotSwitchState} hotSwitchState - API context state
- * @property {boolean} hasCollectedItem - Whether reward is collected
+ * @typedef {import('../game/interfaces.js').IHeroStateService} IHeroStateService
+ * @typedef {import('../game/interfaces.js').IQuestStateService} IQuestStateService
+ * @typedef {import('../services/interfaces.js').IQuestController} IQuestController
+ * @typedef {import('../services/interfaces.js').ILoggerService} ILoggerService
+ * @typedef {import('../use-cases/interact-with-npc.js').InteractWithNpcUseCase} InteractWithNpcUseCase
  */
 
 /**
  * @typedef {Object} InteractionOptions
-
- * @property {WorldStateService} [worldState] - World state service (UI, Pause)
- * @property {QuestStateService} [questState] - Quest state service (Locked messages)
  * @property {number} [interactionDistance] - Max distance to interact (default: from config)
- * @property {() => InteractionState} [getState] - Accessor for game state
- * @property {() => ({x: number, y: number} | null)} [getNpcPosition] - Accessor for NPC coordinates
- * @property {import('../use-cases/interact-with-npc.js').InteractWithNpcUseCase} interactWithNpcUseCase
+ * @property {InteractWithNpcUseCase} interactWithNpcUseCase
  */
 
 /**
@@ -39,29 +32,31 @@ import { UIEvents } from "../core/events.js";
  * Handles:
  * - Distance calculation to NPCs
  * - Proximity detection
- * - Interaction validation (Level 6 victory conditions)
+ * - Interaction validation
  * - Dialog triggering
  *
  * @implements {ReactiveController}
  */
 export class InteractionController {
+	/** @type {ILoggerService | null} */
+	#logger = null;
+	/** @type {IQuestController | null} */
+	#questController = null;
+	/** @type {IHeroStateService | null} */
+	#heroState = null;
+	/** @type {IQuestStateService | null} */
+	#questState = null;
+
 	/**
-	 * @param {import('lit').ReactiveControllerHost} host
+	 * @param {ReactiveControllerHost} host
 	 * @param {Partial<InteractionOptions>} [options]
 	 */
 	constructor(host, options = {}) {
-		/** @type {import('lit').ReactiveControllerHost} */
+		/** @type {ReactiveControllerHost} */
 		this.host = host;
 		/** @type {InteractionOptions} */
 		this.options = {
 			interactionDistance: gameConfig.gameplay.interactionDistance,
-			getState: () => ({
-				level: "",
-				heroPos: { x: 0, y: 0 },
-				hotSwitchState: /** @type {any} */ (null),
-				hasCollectedItem: false,
-			}),
-			getNpcPosition: () => null,
 			interactWithNpcUseCase: /** @type {any} */ (null),
 			...options,
 		};
@@ -72,21 +67,54 @@ export class InteractionController {
 			);
 		}
 
+		const hostElement = /** @type {ReactiveElement} */ (
+			/** @type {unknown} */ (this.host)
+		);
+
+		// Initialize Context Consumers
+		new ContextConsumer(hostElement, {
+			context: loggerContext,
+			subscribe: true,
+			callback: (service) => {
+				this.#logger = /** @type {ILoggerService} */ (service);
+			},
+		});
+
+		new ContextConsumer(hostElement, {
+			context: questControllerContext,
+			subscribe: true,
+			callback: (service) => {
+				this.#questController = /** @type {IQuestController} */ (service);
+			},
+		});
+
+		new ContextConsumer(hostElement, {
+			context: heroStateContext,
+			subscribe: true,
+			callback: (service) => {
+				this.#heroState = /** @type {IHeroStateService} */ (service);
+			},
+		});
+
+		new ContextConsumer(hostElement, {
+			context: questStateContext,
+			subscribe: true,
+			callback: (service) => {
+				this.#questState = /** @type {IQuestStateService} */ (service);
+			},
+		});
+
 		host.addController(this);
 	}
 
-	hostConnected() {
-		// keeping for interface consistency, though empty
-	}
+	hostConnected() {}
 
-	hostDisconnected() {
-		// keeping for interface consistency, though empty
-	}
+	hostDisconnected() {}
 
 	/**
 	 * Calculate distance between hero and target
 	 * @param {{x: number, y: number}} heroPos
-	 * @param {{x: number, y: number}} [targetPos]
+	 * @param {{x: number, y: number} | null} [targetPos]
 	 * @returns {number} Distance
 	 */
 	calculateDistance(heroPos, targetPos) {
@@ -101,12 +129,12 @@ export class InteractionController {
 	 * @returns {boolean}
 	 */
 	isCloseToNpc() {
-		const state = this.options.getState?.();
-		const npcPos = this.options.getNpcPosition?.();
+		const heroPos = this.#heroState?.pos.get();
+		const npcPos = this.#questController?.currentChapter?.npc?.position;
 
-		if (!state?.heroPos || !npcPos) return false;
+		if (!heroPos || !npcPos) return false;
 
-		const distance = this.calculateDistance(state.heroPos, npcPos);
+		const distance = this.calculateDistance(heroPos, npcPos);
 		const maxDistance =
 			this.options.interactionDistance ||
 			gameConfig.gameplay.interactionDistance;
@@ -117,38 +145,52 @@ export class InteractionController {
 	 * Handle interaction attempt
 	 */
 	handleInteract() {
-		const state = this.options.getState?.();
-		if (!state) return;
+		if (!this.#heroState || !this.#questController || !this.#questState) {
+			this.#logger?.warn?.("Cannot interact: Services not ready");
+			return;
+		}
 
 		const isClose = this.isCloseToNpc();
-		const { chapterData, hasCollectedItem } = state;
+		const currentChapter = this.#questController.currentChapter;
+
+		const state = {
+			level: currentChapter?.id || "",
+			heroPos: this.#heroState.pos.get(),
+			hotSwitchState: this.#heroState.hotSwitchState.get(),
+			hasCollectedItem: this.#questState.hasCollectedItem.get(),
+		};
 
 		const result = this.options.interactWithNpcUseCase.execute({
 			isClose,
-			chapterData: /** @type {any} */ (chapterData),
+			chapterData: /** @type {any} */ (currentChapter),
 			gameState: state,
-			hasCollectedItem,
+			hasCollectedItem: state.hasCollectedItem,
 		});
 
 		if (result.action === "showDialog") {
-			/** @type {import('lit').ReactiveElement} */ (
-				/** @type {any} */ (this.host)
-			).dispatchEvent(
-				new CustomEvent(UIEvents.REQUEST_DIALOG, {
-					bubbles: true,
-					composed: true,
-				}),
-			);
+			this.#dispatchEvent(UIEvents.REQUEST_DIALOG);
 		} else if (result.action === "showLocked") {
-			/** @type {import('lit').ReactiveElement} */ (
-				/** @type {any} */ (this.host)
-			).dispatchEvent(
-				new CustomEvent(UIEvents.SHOW_LOCKED_MESSAGE, {
-					detail: { message: result.message || null },
-					bubbles: true,
-					composed: true,
-				}),
-			);
+			this.#dispatchEvent(UIEvents.SHOW_LOCKED_MESSAGE, {
+				message: result.message || null,
+			});
 		}
+	}
+
+	/**
+	 * Helper to dispatch events from the host
+	 * @param {string} eventName
+	 * @param {any} [detail]
+	 */
+	#dispatchEvent(eventName, detail) {
+		const host = /** @type {ReactiveElement} */ (
+			/** @type {any} */ (this.host)
+		);
+		host.dispatchEvent(
+			new CustomEvent(eventName, {
+				detail,
+				bubbles: true,
+				composed: true,
+			}),
+		);
 	}
 }

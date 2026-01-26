@@ -51,7 +51,6 @@ describe("LegacysEndApp Integration", () => {
 		expect(element.questState).toBeDefined();
 		expect(element.worldState).toBeDefined();
 		expect(element.progressService).toBeDefined();
-		expect(element.questLoader).toBeDefined();
 		expect(element.router).toBeDefined();
 		expect(element.questController).toBeDefined();
 
@@ -68,5 +67,32 @@ describe("LegacysEndApp Integration", () => {
 		// Let's verify with .toBeDefined() or check actual logic.
 		// But first fix property name.
 		expect(/** @type {any} */ (element).isLoading).toBeDefined();
+	});
+
+	it("renders quest cards in the hub after initialization", async () => {
+		// Wait for game initialization
+		await element.gameInitialized;
+		await element.updateComplete;
+
+		// The App should be in hub mode initially
+		expect(element.isInHub).toBe(true);
+
+		// Query quest-hub and check its rendered content
+		const hub = /** @type {any} */ (
+			element.shadowRoot?.querySelector("quest-hub")
+		);
+		expect(hub).toBeDefined();
+
+		if (hub) {
+			await hub.updateComplete;
+			const cards = hub.shadowRoot?.querySelectorAll("quest-card");
+			// We expect at least the available quests to be rendered
+			expect(cards?.length).toBeGreaterThan(0);
+
+			// Check if first card has quest data
+			const firstCard = /** @type {any} */ (cards?.[0]);
+			expect(firstCard.quest).toBeDefined();
+			expect(firstCard.quest.id).toBeDefined();
+		}
 	});
 });

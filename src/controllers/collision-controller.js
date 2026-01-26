@@ -1,7 +1,18 @@
+import { ContextConsumer } from "@lit/context";
+import { questControllerContext } from "../contexts/quest-controller-context.js";
+import { heroStateContext } from "../game/contexts/hero-context.js";
+import { questStateContext } from "../game/contexts/quest-context.js";
+
 /**
  * @typedef {import("lit").ReactiveController} ReactiveController
  * @typedef {import("lit").ReactiveControllerHost} ReactiveControllerHost
- * @typedef {import("../core/game-context.js").IGameContext} IGameContext
+ * @typedef {import("lit").ReactiveElement} ReactiveElement
+ */
+
+/**
+ * @typedef {import('../game/interfaces.js').IHeroStateService} IHeroStateService
+ * @typedef {import('../game/interfaces.js').IQuestStateService} IQuestStateService
+ * @typedef {import('../services/interfaces.js').IQuestController} IQuestController
  */
 
 /**
@@ -30,23 +41,54 @@
  * @implements {ReactiveController}
  */
 export class CollisionController {
+	/** @type {IHeroStateService | null} */
+	#heroState = null;
+	/** @type {IQuestStateService | null} */
+	#questState = null;
+	/** @type {IQuestController | null} */
+	#questController = null;
+
 	/**
 	 * @param {ReactiveControllerHost} host
-	 * @param {Object} dependencies
-	 * @param {import('../game/interfaces.js').IHeroStateService} dependencies.heroState
-	 * @param {import('../game/interfaces.js').IQuestStateService} dependencies.questState
-	 * @param {import('../services/interfaces.js').IQuestController} [dependencies.questController]
-	 * @param {{ heroSize?: number }} [config]
+	 * @param {CollisionOptions} [options]
 	 */
-	constructor(host, { heroState, questState, questController }, config = {}) {
+	constructor(host, options = {}) {
+		/** @type {ReactiveControllerHost} */
 		this.host = host;
-		this.heroState = heroState;
-		this.questState = questState;
-		this.questController = questController;
-		this.config = {
+		this.options = {
 			heroSize: 2.5,
-			...config,
+			...options,
 		};
+
+		const hostElement = /** @type {ReactiveElement} */ (
+			/** @type {unknown} */ (this.host)
+		);
+
+		// Initialize Context Consumers
+		new ContextConsumer(hostElement, {
+			context: heroStateContext,
+			subscribe: true,
+			callback: (service) => {
+				this.#heroState = /** @type {IHeroStateService} */ (service);
+			},
+		});
+
+		new ContextConsumer(hostElement, {
+			context: questStateContext,
+			subscribe: true,
+			callback: (service) => {
+				this.#questState = /** @type {IQuestStateService} */ (service);
+			},
+		});
+
+		new ContextConsumer(hostElement, {
+			context: questControllerContext,
+			subscribe: true,
+			callback: (service) => {
+				this.#questController = /** @type {IQuestController} */ (service);
+			},
+		});
+
 		host.addController(this);
 	}
 
@@ -55,9 +97,12 @@ export class CollisionController {
 	hostDisconnected() {}
 
 	hostUpdate() {
-		const pos = this.heroState.pos.get();
-		const hasCollectedItem = this.questState.hasCollectedItem.get();
-		const currentChapter = this.questController?.currentChapter;
+		if (!this.#heroState || !this.#questState) return;
+
+		const pos = this.#heroState.pos.get();
+		const hasCollectedItem = this.#questState.hasCollectedItem.get();
+		const currentChapter = this.#questController?.currentChapter;
+
 		if (currentChapter?.exitZone) {
 			this.checkExitZone(
 				pos.x,
@@ -72,7 +117,7 @@ export class CollisionController {
 	 * Check if hero collides with exit zone
 	 * @param {number} x - Hero X position
 	 * @param {number} y - Hero Y position
-	 * @param {Box} exitZone - Exit zone definition
+	 * @param {Box|null} exitZone - Exit zone definition
 	 * @param {boolean} hasCollectedItem - Whether hero has collected the item
 	 * @returns {boolean} True if collision occurred
 	 */
@@ -81,7 +126,7 @@ export class CollisionController {
 			return false;
 		}
 
-		const heroHalfSize = this.config.heroSize;
+		const heroHalfSize = this.options.heroSize;
 
 		// Hero bounding box
 		const hLeft = x - heroHalfSize;

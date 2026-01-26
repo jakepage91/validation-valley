@@ -1,25 +1,29 @@
+import { ContextConsumer } from "@lit/context";
+import { Task, TaskStatus } from "@lit/task";
+import { apiClientsContext } from "../contexts/api-clients-context.js";
+import { questControllerContext } from "../contexts/quest-controller-context.js";
+import { HotSwitchStates } from "../core/constants.js";
+import { heroStateContext } from "../game/contexts/hero-context.js";
+import { ServiceType } from "../services/user-api-client.js";
+
 /**
  * @typedef {import('lit').ReactiveController} ReactiveController
+ * @typedef {import('lit').ReactiveControllerHost} ReactiveControllerHost
+ * @typedef {import('lit').ReactiveElement} ReactiveElement
  */
-
-import { Task, TaskStatus } from "@lit/task";
-import { HotSwitchStates } from "../core/constants.js";
-import { ServiceType } from "../services/user-api-client.js";
 
 /** @typedef {import("../services/user-api-client.js").IUserApiClient} IUserApiClient */
 /** @typedef {import("../services/user-api-client.js").UserData} UserData */
+/** @typedef {import("../contexts/api-clients-context.js").UserApiClients} UserApiClients */
 
 /**
- * @typedef {Object} ServiceMap
- * @property {IUserApiClient} [legacy]
- * @property {IUserApiClient} [mock]
- * @property {IUserApiClient} [new]
+ * @typedef {import('../game/interfaces.js').IHeroStateService} IHeroStateService
+ * @typedef {import('../services/interfaces.js').IQuestController} IQuestController
  */
+
 /**
  * @typedef {Object} ServiceControllerOptions
- * @property {ServiceMap} [services] - Map of service instances {legacy, mock, new}
  * @property {import('@lit/context').ContextProvider<any, any> | null} [profileProvider] - Profile context provider
- * @property {() => IUserApiClient|null} [getActiveService] - Function to get active service
  */
 
 /**
@@ -33,20 +37,54 @@ import { ServiceType } from "../services/user-api-client.js";
  * @implements {ReactiveController}
  */
 export class ServiceController {
+	/** @type {IHeroStateService | null} */
+	#heroState = null;
+	/** @type {IQuestController | null} */
+	#questController = null;
+	/** @type {UserApiClients | null} */
+	#apiClients = null;
+
 	/**
-	 * @param {import('lit').ReactiveControllerHost} host
+	 * @param {ReactiveControllerHost} host
 	 * @param {Partial<ServiceControllerOptions>} [options]
 	 */
 	constructor(host, options = {}) {
-		/** @type {import('lit').ReactiveControllerHost} */
+		/** @type {ReactiveControllerHost} */
 		this.host = host;
 		/** @type {ServiceControllerOptions} */
 		this.options = {
-			services: {},
 			profileProvider: null,
-			getActiveService: () => null,
 			...options,
 		};
+
+		const hostElement = /** @type {ReactiveElement} */ (
+			/** @type {unknown} */ (this.host)
+		);
+
+		// Initialize Context Consumers
+		new ContextConsumer(hostElement, {
+			context: heroStateContext,
+			subscribe: true,
+			callback: (service) => {
+				this.#heroState = /** @type {IHeroStateService} */ (service);
+			},
+		});
+
+		new ContextConsumer(hostElement, {
+			context: questControllerContext,
+			subscribe: true,
+			callback: (service) => {
+				this.#questController = /** @type {IQuestController} */ (service);
+			},
+		});
+
+		new ContextConsumer(hostElement, {
+			context: apiClientsContext,
+			subscribe: true,
+			callback: (services) => {
+				this.#apiClients = /** @type {UserApiClients} */ (services);
+			},
+		});
 
 		this.userTask = new Task(host, {
 			task: async ([service], { signal: _signal }) => {
@@ -54,7 +92,11 @@ export class ServiceController {
 				// ID is hardcoded to 1 as noted by user, currently only single user context exists.
 				return service.fetchUserData(1);
 			},
-			args: () => [this.options.getActiveService?.() ?? null],
+			args: () => {
+				const hotSwitchState = this.#heroState?.hotSwitchState.get();
+				const serviceType = this.#questController?.currentChapter?.serviceType;
+				return [this.getActiveService(serviceType, hotSwitchState)];
+			},
 		});
 
 		host.addController(this);
@@ -82,19 +124,24 @@ export class ServiceController {
 		const error = this.userTask.error;
 		const value = this.userTask.value;
 
+		const activeService = this.getActiveService(
+			this.#questController?.currentChapter?.serviceType,
+			this.#heroState?.hotSwitchState.get(),
+		);
+
 		this.options.profileProvider.setValue({
 			name: value?.name,
 			role: value?.role,
 			loading: status === TaskStatus.PENDING || status === TaskStatus.INITIAL,
 			error: error ? String(error) : null,
-			serviceName: this.options.getActiveService?.()?.getServiceName(),
+			serviceName: activeService?.getServiceName(),
 		});
 	}
 
 	/**
 	 * Get active service based on service type and hot switch state
-	 * @param {import('../services/user-api-client.js').ServiceType | string | null} serviceType - ServiceType from chapter data
-	 * @param {import('../game/interfaces.js').HotSwitchState} hotSwitchState - Current zone state (for dynamic injection)
+	 * @param {import('../services/user-api-client.js').ServiceType | string | null | undefined} serviceType - ServiceType from chapter data
+	 * @param {import('../game/interfaces.js').HotSwitchState | undefined} hotSwitchState - Current zone state (for dynamic injection)
 	 * @returns {IUserApiClient | null} Active service or null
 	 */
 	getActiveService(serviceType, hotSwitchState) {
@@ -103,17 +150,16 @@ export class ServiceController {
 		// If service type is NEW (dynamic), check hotSwitchState
 		if (serviceType === ServiceType.NEW) {
 			if (hotSwitchState === HotSwitchStates.LEGACY)
-				return this.options.services?.legacy ?? null;
+				return this.#apiClients?.legacy ?? null;
 			if (hotSwitchState === HotSwitchStates.NEW)
-				return this.options.services?.new ?? null;
+				return this.#apiClients?.new ?? null;
 			return null; // Neutral zone - no service active
 		}
 
 		// Static service mapping
 		if (serviceType === ServiceType.LEGACY)
-			return this.options.services?.legacy ?? null;
-		if (serviceType === ServiceType.MOCK)
-			return this.options.services?.mock ?? null;
+			return this.#apiClients?.legacy ?? null;
+		if (serviceType === ServiceType.MOCK) return this.#apiClients?.mock ?? null;
 
 		return null;
 	}

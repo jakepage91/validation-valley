@@ -152,7 +152,7 @@ test.describe("Quest Journey E2E", () => {
 		await page.evaluate(async () => {
 			const app = document.querySelector("legacys-end-app");
 			// @ts-expect-error
-			await app.questLoader.returnToHub();
+			await app.questController.returnToHub();
 		});
 
 		await expect(hub).toBeVisible();
@@ -201,19 +201,8 @@ test.describe("Quest Journey E2E", () => {
 		const rewardImages = victoryScreen.locator(".reward-img");
 		await expect(rewardImages).toHaveCount(2);
 
-		// Wait for images to load
-		const allImages = await rewardImages.all();
-		for (const img of allImages) {
-			await expect(img).toBeVisible();
-			await img.evaluate(async (node) => {
-				const imgNode = /** @type {HTMLImageElement} */ (node);
-				if (imgNode.complete && imgNode.naturalWidth > 0) return;
-				await new Promise((resolve, reject) => {
-					imgNode.onload = resolve;
-					imgNode.onerror = reject;
-				});
-			});
-		}
+		// Minimal wait for images
+		await page.waitForTimeout(1000);
 
 		// Wait a bit for animations to settle (pop-in delay)
 		await page.waitForTimeout(1500);

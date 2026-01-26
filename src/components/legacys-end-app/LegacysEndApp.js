@@ -8,25 +8,32 @@ import "../pause-menu/pause-menu.js";
 import "@awesome.me/webawesome/dist/components/spinner/spinner.js";
 import { ROUTES } from "../../constants/routes.js";
 import { aiContext } from "../../contexts/ai-context.js";
+import { apiClientsContext } from "../../contexts/api-clients-context.js";
+import { characterContext } from "../../contexts/character-context.js";
 import { localizationContext } from "../../contexts/localization-context.js";
 import { loggerContext } from "../../contexts/logger-context.js";
+import { preloaderContext } from "../../contexts/preloader-context.js";
+import { profileContext } from "../../contexts/profile-context.js";
 import { progressContext } from "../../contexts/progress-context.js";
 import { questControllerContext } from "../../contexts/quest-controller-context.js";
-import { questLoaderContext } from "../../contexts/quest-loader-context.js";
+import { questRegistryContext } from "../../contexts/quest-registry-context.js";
 import { sessionContext } from "../../contexts/session-context.js";
 import { themeContext } from "../../contexts/theme-context.js";
 import { voiceContext } from "../../contexts/voice-context.js";
+import { CharacterContextController } from "../../controllers/character-context-controller.js";
+import { QuestController } from "../../controllers/quest-controller.js";
+import { ServiceController } from "../../controllers/service-controller.js";
 import { ThemeModes } from "../../core/constants.js";
 import { GameBootstrapper } from "../../core/game-bootstrapper.js";
 import { heroStateContext } from "../../game/contexts/hero-context.js";
 import { questStateContext } from "../../game/contexts/quest-context.js";
 import { worldStateContext } from "../../game/contexts/world-context.js";
-import { ContextMixin } from "../../mixins/context-mixin.js";
 import { legacysEndAppStyles } from "./LegacysEndApp.styles.js";
 import "@awesome.me/webawesome/dist/styles/webawesome.css";
 import "../../pixel.css";
 import { AIService } from "../../services/ai-service.js";
 import { VoiceSynthesisService } from "../../services/voice-synthesis-service.js";
+
 /**
  * @typedef {import("@awesome.me/webawesome/dist/components/dialog/dialog.js").default} DialogElement
  */
@@ -35,13 +42,7 @@ import { VoiceSynthesisService } from "../../services/voice-synthesis-service.js
  * @element legacys-end-app
  * @extends {LitElement}
  */
-
-export class LegacysEndApp extends SignalWatcher(
-	/** @type {new (...args: unknown[]) => import('lit').ReactiveElement} */ (
-		ContextMixin(LitElement)
-	),
-) {
-	// Services
+export class LegacysEndApp extends SignalWatcher(LitElement) {
 	// Services
 	/** @type {import('../../services/progress-service.js').ProgressService} */
 	progressService =
@@ -59,8 +60,6 @@ export class LegacysEndApp extends SignalWatcher(
 		/** @type {import('../../services/interfaces.js').ILoggerService} */ (
 			/** @type {unknown} */ (null)
 		);
-	/** @type {import('@lit/context').ContextProvider<any, any> | null} */
-	themeProvider = null;
 	/** @type {import('../../services/interfaces.js').IAIService} */
 	aiService = /** @type {import('../../services/interfaces.js').IAIService} */ (
 		/** @type {unknown} */ (null)
@@ -77,8 +76,6 @@ export class LegacysEndApp extends SignalWatcher(
 	/** @type {import('@lit/context').ContextProvider<any, any> | null} */
 	questControllerProvider = null;
 	/** @type {import('@lit/context').ContextProvider<any, any> | null} */
-	questLoaderProvider = null;
-	/** @type {import('@lit/context').ContextProvider<any, any> | null} */
 	localizationProvider = null;
 	/** @type {import('@lit/context').ContextProvider<any, any> | null} */
 	aiProvider = null;
@@ -94,6 +91,18 @@ export class LegacysEndApp extends SignalWatcher(
 	worldStateProvider = null;
 	/** @type {import('@lit/context').ContextProvider<any, any> | null} */
 	sessionProvider = null;
+	/** @type {import('@lit/context').ContextProvider<any, any> | null} */
+	apiClientsProvider = null;
+	/** @type {import('@lit/context').ContextProvider<any, any> | null} */
+	profileProvider = null;
+	/** @type {import('@lit/context').ContextProvider<any, any> | null} */
+	characterProvider = null;
+	/** @type {import('@lit/context').ContextProvider<any, any> | null} */
+	themeProvider = null;
+	/** @type {import('@lit/context').ContextProvider<any, any> | null} */
+	questRegistryProvider = null;
+	/** @type {import('@lit/context').ContextProvider<any, any> | null} */
+	preloaderProvider = null;
 
 	// Router
 	/** @type {import('../../utils/router.js').Router} */
@@ -117,48 +126,12 @@ export class LegacysEndApp extends SignalWatcher(
 		/** @type {import('../../controllers/character-context-controller.js').CharacterContextController} */ (
 			/** @type {unknown} */ (null)
 		);
-	/** @type {import('../../controllers/interaction-controller.js').InteractionController} */
-	interaction =
-		/** @type {import('../../controllers/interaction-controller.js').InteractionController} */ (
-			/** @type {unknown} */ (null)
-		);
-	/** @type {import('../../controllers/keyboard-controller.js').KeyboardController} */
-	keyboard =
-		/** @type {import('../../controllers/keyboard-controller.js').KeyboardController} */ (
-			/** @type {unknown} */ (null)
-		);
-	/** @type {import('../../controllers/game-controller.js').GameController} */
-	gameController =
-		/** @type {import('../../controllers/game-controller.js').GameController} */ (
-			/** @type {unknown} */ (null)
-		);
-	/** @type {import('../../controllers/game-zone-controller.js').GameZoneController} */
-	zones =
-		/** @type {import('../../controllers/game-zone-controller.js').GameZoneController} */ (
-			/** @type {unknown} */ (null)
-		);
-	/** @type {import('../../controllers/collision-controller.js').CollisionController} */
-	collision =
-		/** @type {import('../../controllers/collision-controller.js').CollisionController} */ (
-			/** @type {unknown} */ (null)
-		);
-
-	// Additional providers
-	/** @type {import('@lit/context').ContextProvider<any, any> | null} */
-	suitProvider = null;
-	/** @type {import('@lit/context').ContextProvider<any, any> | null} */
-	gearProvider = null;
-	/** @type {import('@lit/context').ContextProvider<any, any> | null} */
-	powerProvider = null;
-	/** @type {import('@lit/context').ContextProvider<any, any> | null} */
-	masteryProvider = null;
 
 	/** @override */
 	static properties = {
 		chapterId: { type: String },
 		hasSeenIntro: { type: Boolean },
 		sessionService: { state: true },
-		questLoader: { state: true },
 		themeService: { state: true },
 		questState: { state: true },
 		worldState: { state: true },
@@ -185,16 +158,17 @@ export class LegacysEndApp extends SignalWatcher(
 		this.storageAdapter = context.storageAdapter;
 		this.services = context.services;
 		this.sessionService = context.sessionService;
-		this.questLoader = context.questLoader;
 		this.aiService = new AIService();
 		this.voiceSynthesisService = new VoiceSynthesisService();
 		this.localizationService = context.localizationService;
 		this.heroState = context.heroState;
 		this.questState = context.questState;
 		this.worldState = context.worldState;
+		this.preloaderService = context.preloader;
+		this.registry = context.registry;
 		this.themeService = context.themeService;
 		this.router = context.router;
-		this.questController = context.questController;
+		this.evaluateChapterTransition = context.evaluateChapterTransition;
 
 		// Providers
 		this.themeProvider = new ContextProvider(this, {
@@ -222,14 +196,14 @@ export class LegacysEndApp extends SignalWatcher(
 			initialValue: this.progressService,
 		});
 
-		this.questControllerProvider = new ContextProvider(this, {
-			context: questControllerContext,
-			initialValue: this.questController,
+		this.questRegistryProvider = new ContextProvider(this, {
+			context: questRegistryContext,
+			initialValue: this.registry,
 		});
 
-		this.questLoaderProvider = new ContextProvider(this, {
-			context: questLoaderContext,
-			initialValue: this.questLoader,
+		this.preloaderProvider = new ContextProvider(this, {
+			context: preloaderContext,
+			initialValue: this.preloaderService,
 		});
 
 		this.localizationProvider = new ContextProvider(this, {
@@ -255,6 +229,55 @@ export class LegacysEndApp extends SignalWatcher(
 		this.sessionProvider = new ContextProvider(this, {
 			context: sessionContext,
 			initialValue: this.sessionService,
+		});
+
+		this.apiClientsProvider = new ContextProvider(this, {
+			context: apiClientsContext,
+			initialValue: this.services,
+		});
+
+		this.profileProvider = new ContextProvider(this, {
+			context: profileContext,
+			initialValue: { loading: true },
+		});
+
+		this.characterProvider = new ContextProvider(this, {
+			context: characterContext,
+			initialValue: {
+				suit: {},
+				gear: {},
+				power: {},
+				mastery: {},
+			},
+		});
+
+		this.serviceController = new ServiceController(this, {
+			profileProvider: this.profileProvider,
+		});
+
+		this.characterContexts = new CharacterContextController(this, {
+			characterProvider: this.characterProvider,
+		});
+
+		// Setup QuestController
+		this.questController = new QuestController(this, {
+			logger: this.logger,
+			registry: this.registry,
+			progressService: this.progressService,
+			preloaderService: this.preloaderService,
+			state: this.questState,
+			sessionService: this.sessionService,
+			worldState: this.worldState,
+			heroState: this.heroState,
+			router: this.router,
+		});
+
+		this.questControllerProvider = new ContextProvider(this, {
+			context: questControllerContext,
+			initialValue:
+				/** @type {import("../../services/interfaces.js").IQuestController} */ (
+					this.questController
+				),
 		});
 
 		this.router.init();
@@ -315,11 +338,6 @@ export class LegacysEndApp extends SignalWatcher(
 		this.hasSeenIntro = true;
 	}
 
-	#handleRewardCollected() {
-		this.questState?.setIsRewardCollected(true);
-		this.requestUpdate();
-	}
-
 	get isLoading() {
 		return this.sessionService?.isLoading.get() || false;
 	}
@@ -341,7 +359,6 @@ export class LegacysEndApp extends SignalWatcher(
 
 		const isLoading = this.isLoading;
 		const isInHub = this.isInHub;
-		this.localizationService?.getLocale();
 
 		return html`
 			<main>
@@ -363,10 +380,10 @@ export class LegacysEndApp extends SignalWatcher(
 
 	/**
 	 * Gets all quests with their current progress and status
-	 * @returns {import('../../content/quests/quest-types.js').Quest[]}
+	 * @returns {Array<import('../../content/quests/quest-types.js').Quest & { progress: number, isCompleted: boolean, isLocked: boolean, inProgress: boolean }>}
 	 */
 	getQuests() {
-		if (!this.questController) return [];
+		if (!this.questController || !this.progressService) return [];
 		const quests = this.questController.getAvailableQuests();
 		return quests.map(
 			(
@@ -388,8 +405,8 @@ export class LegacysEndApp extends SignalWatcher(
 				.quests="${this.getQuests()}"
 				.comingSoonQuests="${this.questController?.getComingSoonQuests() || []}"
 				.localizationService="${this.localizationService}"
-				@quest-select="${(/** @type {CustomEvent} */ e) => this.questLoader?.startQuest(e.detail.questId)}"
-				@quest-continue="${(/** @type {CustomEvent} */ e) => this.questLoader?.continueQuest(e.detail.questId)}"
+				@quest-select="${(/** @type {CustomEvent} */ e) => this.questController?.startQuest(e.detail.questId)}"
+				@quest-continue="${(/** @type {CustomEvent} */ e) => this.questController?.continueQuest(e.detail.questId)}"
 				@reset-progress="${() => this.progressService.resetProgress()}"
 			></quest-hub>
 		`;
@@ -413,7 +430,7 @@ export class LegacysEndApp extends SignalWatcher(
 		return html`
 			<quest-view
 				@close-dialog="${() => this.#handleCloseDialog()}"
-				@reward-collected="${() => this.#handleRewardCollected()}"
+				@reward-collected="${() => this.questController?.handleRewardCollected()}"
 			></quest-view>
 		`;
 	}
