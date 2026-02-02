@@ -58,6 +58,6 @@ export function executeVoiceAction(action, controller, lang = null) {
 	if (handler) {
 		handler();
 	} else {
-		console.warn(`Unknown action: ${action}`);
+		controller.logger?.warn(`Unknown action: ${action}`);
 	}
 }

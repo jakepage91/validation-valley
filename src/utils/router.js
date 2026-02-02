@@ -14,13 +14,17 @@
  */
 
 export class Router {
-	constructor() {
+	/**
+	 * @param {import('../services/interfaces.js').ILoggerService} [logger]
+	 */
+	constructor(logger) {
 		/** @type {RouteDefinition[]} */
 		this.routes = [];
 		this.currentPath = "";
 		this._onPopState = this._onPopState.bind(this);
 		// Get base path from Vite's import.meta.env.BASE_URL
 		this.basePath = import.meta.env.BASE_URL.replace(/\/$/, ""); // Remove trailing slash
+		this.logger = logger;
 	}
 
 	/**
@@ -97,7 +101,7 @@ export class Router {
 				return;
 			}
 		}
-		console.warn(`No route matched for: ${path}`);
+		this.logger?.warn(`No route matched for: ${path}`);
 	}
 
 	/**

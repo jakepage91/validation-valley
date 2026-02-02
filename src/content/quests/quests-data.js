@@ -56,15 +56,9 @@ export async function loadQuest(questId) {
 			QUEST_LOADERS
 		)[questId];
 	if (!loader) {
-		console.warn(`No loader found for quest: ${questId}`);
-		return undefined;
+		throw new Error(`No loader found for quest: ${questId}`);
 	}
-	try {
-		return await loader();
-	} catch (error) {
-		console.error(`Failed to load quest ${questId}:`, error);
-		return undefined;
-	}
+	return await loader();
 }
 
 // Re-export QUESTS from manifest for backward compatibility or direct metadata access

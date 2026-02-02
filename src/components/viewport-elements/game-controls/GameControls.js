@@ -10,6 +10,9 @@ import "@awesome.me/webawesome/dist/components/details/details.js";
 import "@awesome.me/webawesome/dist/components/icon/icon.js";
 import "@awesome.me/webawesome/dist/components/button-group/button-group.js";
 
+import { consume } from "@lit/context";
+import { loggerContext } from "../../../contexts/logger-context.js";
+
 /**
  * @element game-controls
  * @summary Displays game controls instructions.
@@ -17,6 +20,13 @@ import "@awesome.me/webawesome/dist/components/button-group/button-group.js";
 export class GameControls extends SignalWatcher(LitElement) {
 	/** @override */
 	static styles = gameControlsStyles;
+
+	/** @type {import('../../../services/interfaces.js').ILoggerService} */
+	@consume({ context: loggerContext })
+	accessor logger =
+		/** @type {import('../../../services/interfaces.js').ILoggerService} */ (
+			/** @type {unknown} */ (null)
+		);
 
 	#hasTouch = window.matchMedia("(pointer: coarse)").matches;
 	#hasKeyboard = window.matchMedia("(any-pointer: fine)").matches;
@@ -206,7 +216,7 @@ export class GameControls extends SignalWatcher(LitElement) {
 		if (this.voice) {
 			await this.voice.toggle();
 		} else {
-			console.warn("Voice controller not initialized");
+			this.logger?.warn("Voice controller not initialized");
 		}
 	}
 }

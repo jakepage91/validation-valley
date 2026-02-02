@@ -65,7 +65,7 @@ export class GameBootstrapper {
 		logger.info("GameBootstrapper: Starting initialization...");
 
 		const context = await this.#setupServices();
-		const router = new Router();
+		const router = new Router(logger);
 
 		logger.info("GameBootstrapper: Initialization complete.");
 

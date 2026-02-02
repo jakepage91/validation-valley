@@ -4,10 +4,17 @@ import { Router } from "./router.js";
 describe("SimpleRouter", () => {
 	/** @type {Router} */
 	let router;
+	/** @type {{ warn: import('vitest').Mock }} */
+	let mockLogger;
 
 	beforeEach(() => {
 		// Reset mocks
 		vi.resetAllMocks();
+
+		// Mock logger
+		mockLogger = {
+			warn: vi.fn(),
+		};
 
 		// Reset URL to root (JSDOM native)
 		window.history.replaceState(null, "", "/");
@@ -28,7 +35,7 @@ describe("SimpleRouter", () => {
 	describe("Initialization", () => {
 		it("should handle base path from env", () => {
 			vi.stubEnv("BASE_URL", "/app/");
-			router = new Router();
+			router = new Router(/** @type {any} */ (mockLogger));
 			expect(router.basePath).toBe("/app");
 		});
 
@@ -36,7 +43,7 @@ describe("SimpleRouter", () => {
 			vi.stubEnv("BASE_URL", "/app/");
 			window.history.pushState(null, "", "/app/dashboard");
 
-			router = new Router();
+			router = new Router(/** @type {any} */ (mockLogger));
 			const callback = vi.fn();
 			router.addRoute("/dashboard", callback);
 			router.init();
@@ -49,7 +56,7 @@ describe("SimpleRouter", () => {
 			vi.stubEnv("BASE_URL", "/app/");
 			window.history.pushState(null, "", "/app");
 
-			router = new Router();
+			router = new Router(/** @type {any} */ (mockLogger));
 			router.init();
 
 			expect(router.currentPath).toBe("/");
@@ -58,7 +65,7 @@ describe("SimpleRouter", () => {
 
 	describe("Matching Logic", () => {
 		beforeEach(() => {
-			router = new Router();
+			router = new Router(/** @type {any} */ (mockLogger));
 			// Note: We do NOT init here, to allow tests to setup routes first
 		});
 
@@ -106,7 +113,7 @@ describe("SimpleRouter", () => {
 		it("should warn when no route matches (via navigate)", () => {
 			router.init();
 			router.navigate("/unknown");
-			expect(console.warn).toHaveBeenCalledWith(
+			expect(mockLogger.warn).toHaveBeenCalledWith(
 				"No route matched for: /unknown",
 			);
 		});
@@ -132,7 +139,7 @@ describe("SimpleRouter", () => {
 
 	describe("Navigation", () => {
 		beforeEach(() => {
-			router = new Router();
+			router = new Router(/** @type {any} */ (mockLogger));
 			router.init();
 		});
 
@@ -160,7 +167,7 @@ describe("SimpleRouter", () => {
 			vi.stubEnv("BASE_URL", "/app/");
 			window.history.pushState(null, "", "/app/");
 
-			router = new Router();
+			router = new Router(/** @type {any} */ (mockLogger));
 			router.init();
 
 			const pushSpy = vi.spyOn(window.history, "pushState");
