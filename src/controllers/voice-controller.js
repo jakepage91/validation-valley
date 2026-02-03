@@ -164,8 +164,7 @@ export class VoiceController {
 		this._dialogConsumer = new ContextConsumer(hostElement, {
 			context: dialogStateContext,
 			subscribe: true,
-			callback: (value) => {
-				const state = /** @type {DialogState} */ (value);
+			callback: (state) => {
 				const oldState = this._dialogContext;
 				this._dialogContext = state;
 

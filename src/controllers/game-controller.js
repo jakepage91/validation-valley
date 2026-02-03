@@ -2,8 +2,6 @@ import { ContextConsumer } from "@lit/context";
 import { loggerContext } from "../contexts/logger-context.js";
 import { questControllerContext } from "../contexts/quest-controller-context.js";
 import { heroStateContext } from "../game/contexts/hero-context.js";
-import { questStateContext } from "../game/contexts/quest-context.js";
-import { worldStateContext } from "../game/contexts/world-context.js";
 
 /**
  * @typedef {import("lit").ReactiveController} ReactiveController
@@ -14,8 +12,6 @@ import { worldStateContext } from "../game/contexts/world-context.js";
 /**
  * @typedef {import('../services/interfaces.js').ILoggerService} ILoggerService
  * @typedef {import('../game/interfaces.js').IHeroStateService} IHeroStateService
- * @typedef {import('../game/interfaces.js').IQuestStateService} IQuestStateService
- * @typedef {import('../game/interfaces.js').IWorldStateService} IWorldStateService
  * @typedef {import('../services/interfaces.js').IQuestController} IQuestController
  */
 
@@ -77,22 +73,6 @@ export class GameController {
 			subscribe: true,
 			callback: (service) => {
 				this.#heroState = /** @type {IHeroStateService} */ (service);
-			},
-		});
-
-		new ContextConsumer(this.host, {
-			context: questStateContext,
-			subscribe: true,
-			callback: () => {
-				// No longer needed locally but consumed to satisfy hostUpdate if needed
-			},
-		});
-
-		new ContextConsumer(this.host, {
-			context: worldStateContext,
-			subscribe: true,
-			callback: () => {
-				// No longer needed locally
 			},
 		});
 
