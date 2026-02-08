@@ -1,6 +1,6 @@
 # Validation Valley
 
-> A fork of [Legacy's End](https://github.com/nicholasgriffintn/legacys-end) by [Jorge Del Casar](https://github.com/jorgecasar)
+> A fork of [Legacy's End](https://github.com/jorgecasar/legacys-end) by [Jorge Del Casar](https://github.com/jorgecasar)
 
 We're incredibly grateful to Jorge for creating such a well-architected, beautifully designed RPG-style web application. His work on Legacy's End provided the perfect foundation for our project. The Clean Architecture, reactive state management, and component-driven design made it possible for us to focus on our content while standing on solid ground.
 
