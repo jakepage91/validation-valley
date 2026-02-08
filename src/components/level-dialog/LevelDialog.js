@@ -14,9 +14,13 @@ import { getSlides, getSlideText } from "./utils/slide-utils.js";
 
 import "./slides/analysis/level-dialog-slide-analysis.js";
 import "./slides/code/level-dialog-slide-code.js";
+import "./slides/common-denominator/level-dialog-slide-common-denominator.js";
 import "./slides/confirmation/level-dialog-slide-confirmation.js";
+import "./slides/content/level-dialog-slide-content.js";
 import "./slides/narrative/level-dialog-slide-narrative.js";
 import "./slides/problem/level-dialog-slide-problem.js";
+import "./slides/solution/level-dialog-slide-solution.js";
+import "./slides/timeline/level-dialog-slide-timeline.js";
 import "./components/LevelDialogFooter.js";
 
 /** @typedef {import('../../content/quests/quest-types.js').LevelConfig} LevelConfig */
@@ -139,6 +143,10 @@ export class LevelDialog extends SignalWatcher(LitElement) {
 
 		if (currentIndex < slides.length - 1) {
 			this.worldState.nextSlide();
+		} else if (config.skipConfirmation) {
+			// When skipConfirmation is true, just close the dialog without completing
+			// The chapter completes when the player reaches the exit zone
+			this.#dispatchClose();
 		} else {
 			this.#dispatchComplete();
 		}
@@ -185,13 +193,24 @@ export class LevelDialog extends SignalWatcher(LitElement) {
 		"code-end": (config) =>
 			html`<level-dialog-slide-code .snippets="${config.codeSnippets?.end || []}" type="end"></level-dialog-slide-code>`,
 		problem: (config) =>
-			html`<level-dialog-slide-problem .problemDesc="${config.problemDesc}"></level-dialog-slide-problem>`,
+			html`<level-dialog-slide-problem .problemDesc="${config.problemDesc || ""}"></level-dialog-slide-problem>`,
 		narrative: (config) =>
 			html`<level-dialog-slide-narrative .description="${config.description || ""}"></level-dialog-slide-narrative>`,
+		solution: (config) =>
+			html`<level-dialog-slide-solution .solutionDesc="${config.solutionDesc || ""}"></level-dialog-slide-solution>`,
+		"common-denominator": (config) =>
+			html`<level-dialog-slide-common-denominator .commonDenominator="${config.commonDenominator || ""}"></level-dialog-slide-common-denominator>`,
 		analysis: (config) =>
 			html`<level-dialog-slide-analysis .architecturalChanges="${config.architecturalChanges || []}"></level-dialog-slide-analysis>`,
 		confirmation: (config) =>
-			html`<level-dialog-slide-confirmation .reward="${config.reward}"></level-dialog-slide-confirmation>`,
+			html`<level-dialog-slide-confirmation
+				.reward="${config.reward}"
+				.rewardExplanation="${config.rewardExplanation}"
+				.confirmationTitle="${config.confirmationTitle}"
+				.confirmationMessage="${config.confirmationMessage}"
+			></level-dialog-slide-confirmation>`,
+		timeline: () =>
+			html`<level-dialog-slide-timeline></level-dialog-slide-timeline>`,
 	};
 
 	/**
@@ -201,12 +220,23 @@ export class LevelDialog extends SignalWatcher(LitElement) {
 		const custom = this.renderCustomSlide(type);
 		if (custom) return custom;
 
+		const config = this.questController?.currentChapter;
+		if (!config) return nothing;
+
+		// Handle dynamic content-N slides
+		if (type.startsWith("content-")) {
+			const index = parseInt(type.split("-")[1] ?? "0", 10);
+			const content = config.contentSlides?.[index];
+			return content
+				? html`<level-dialog-slide-content .content="${content}"></level-dialog-slide-content>`
+				: nothing;
+		}
+
 		const renderer =
 			/** @type {((config: LevelConfig) => import("lit").TemplateResult) | undefined} */ (
 				this.#SLIDE_RENDERERS[type]
 			);
-		const config = this.questController?.currentChapter;
-		return renderer && config ? renderer(config) : nothing;
+		return renderer ? renderer(config) : nothing;
 	}
 
 	/** @override */

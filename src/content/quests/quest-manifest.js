@@ -7,6 +7,66 @@ import { Difficulty, QuestStatus } from "./quest-types.js";
  */
 
 /** @returns {QuestMetadata} */
+export const getBottleneckShiftMetadata = () => ({
+	id: "the-bottleneck-shift",
+	name: msg("The Bottleneck Shift"),
+	subtitle: msg("Validation in the Age of AI"),
+	description: msg(
+		"AI has transformed how we generate code, documentation, and contributions. But generation was never the hard part. Journey through Validation Valley to understand why validation is now the constraint—and what we can do about it.",
+	),
+	difficulty: Difficulty.BEGINNER,
+	estimatedTime: msg("15-20 min"),
+	icon: "scale-balanced",
+	status: QuestStatus.AVAILABLE,
+	prerequisites: [],
+});
+
+/** @returns {QuestMetadata} */
+export const getBottleneckCanyonMetadata = () => ({
+	id: "the-bottleneck-canyon",
+	name: msg("The Bottleneck Canyon"),
+	subtitle: msg("Bottlenecks in the Age of AI-Generated Code"),
+	description: msg(
+		"AI code generation has shifted where software bottlenecks exist—but has not eliminated the need for validation. Journey through the canyon to discover three major bottlenecks and learn why validation is the bottleneck breaker.",
+	),
+	difficulty: Difficulty.BEGINNER,
+	estimatedTime: msg("20-25 min"),
+	icon: "mountain",
+	status: QuestStatus.AVAILABLE,
+	prerequisites: [],
+});
+
+/** @returns {QuestMetadata} */
+export const getLLMsOnKubernetesMetadata = () => ({
+	id: "llms-on-kubernetes",
+	name: msg("LLMs on Kubernetes"),
+	subtitle: msg("Same Cluster, Different Threat Model"),
+	description: msg(
+		"LLMs take untrusted user input and decide what to do with it—a security problem Kubernetes doesn't solve. Explore the OWASP LLM Top 10, build an LLM gateway for policy enforcement, and validate it with mirrord.",
+	),
+	difficulty: Difficulty.INTERMEDIATE,
+	estimatedTime: msg("25-30 min"),
+	icon: "brain",
+	status: QuestStatus.COMING_SOON,
+	prerequisites: [],
+});
+
+/** @returns {QuestMetadata} */
+export const getLimitsOfVibeCodingMetadata = () => ({
+	id: "limits-of-vibe-coding",
+	name: msg("The Limits of Vibe Coding"),
+	subtitle: msg("What Happens When AI-Generated Code Lands in Your Cluster"),
+	description: msg(
+		"AI-generated code lands inside systems that already have keys to everything. Learn the specific risks—pod security, secret management, network exposure—and build open-source security skills for your AI coding assistant.",
+	),
+	difficulty: Difficulty.INTERMEDIATE,
+	estimatedTime: msg("25-30 min"),
+	icon: "wand-magic-sparkles",
+	status: QuestStatus.COMING_SOON,
+	prerequisites: [],
+});
+
+/** @returns {QuestMetadata} */
 export const getAuraOfSovereigntyMetadata = () => ({
 	id: "the-aura-of-sovereignty",
 	name: msg("The Aura of Sovereignty"),
@@ -157,17 +217,11 @@ export const getOracleOfSiliconMetadata = () => ({
 });
 
 export const getQuestManifest = () => {
+	// Only show the Validation Valley quests (MetalBear talks)
 	const manifests = [
-		getAuraOfSovereigntyMetadata(),
-		getTokenOfAgnosticismMetadata(),
-		getOrbOfInquiryMetadata(),
-		getStateManagementRaidMetadata(),
-		getGateOfIdentityMetadata(),
-		getMirrorOfVeracityMetadata(),
-		getScryingPoolOfChaosMetadata(),
-		getScrollOfTonguesMetadata(),
-		getUnseenHarmonyMetadata(),
-		getOracleOfSiliconMetadata(),
+		getBottleneckCanyonMetadata(),
+		getLLMsOnKubernetesMetadata(),
+		getLimitsOfVibeCodingMetadata(),
 	];
 
 	return manifests.reduce(

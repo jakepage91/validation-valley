@@ -1,0 +1,126 @@
+/**
+ * Validation Valley - Brand Colors
+ *
+ * Override WebAwesome theme colors with MetalBear brand palette.
+ *
+ * Brand Colors:
+ * - Main Purple: #756DF3 (primary surfaces, headers, buttons)
+ * - Yellow: #FFCB7D (highlights, CTAs, accents)
+ * - Black: #000000 (text, outlines)
+ * - Light Grey: #FAFAFD (backgrounds)
+ * - Medium Purple: #E4E3FD (panels, secondary surfaces)
+ * - Dark Purple: #232141 (illustration-only, deep surfaces)
+ * - Dark Grey: #ACACAC (illustration-only)
+ * - Blush Red: #F36869 (errors, warnings)
+ * - Bear Grey: #EEEEEE (illustration-only, subtle fills)
+ */
+
+:root {
+	/* Brand color palette as CSS variables */
+	--brand-main-purple: #756df3;
+	--brand-yellow: #ffcb7d;
+	--brand-black: #000000;
+	--brand-light-grey: #fafafd;
+	--brand-medium-purple: #e4e3fd;
+	--brand-dark-purple: #232141;
+	--brand-dark-grey: #acacac;
+	--brand-blush-red: #f36869;
+	--brand-bear-grey: #eeeeee;
+
+	/* Override WebAwesome brand colors with our purple */
+	--wa-color-brand-05: #1a1635;
+	--wa-color-brand-10: #232141;
+	--wa-color-brand-20: #3d3875;
+	--wa-color-brand-30: #5650a8;
+	--wa-color-brand-40: #6660d8;
+	--wa-color-brand-50: #756df3;
+	--wa-color-brand-60: #8a84f5;
+	--wa-color-brand-70: #a09af7;
+	--wa-color-brand-80: #c5c2fa;
+	--wa-color-brand-90: #e4e3fd;
+	--wa-color-brand-95: #f2f1fe;
+
+	/* Warning colors use our yellow */
+	--wa-color-warning-05: #3d2f00;
+	--wa-color-warning-10: #5c4700;
+	--wa-color-warning-20: #8a6b00;
+	--wa-color-warning-30: #b88f00;
+	--wa-color-warning-40: #e6b300;
+	--wa-color-warning-50: #ffcb7d;
+	--wa-color-warning-60: #ffd699;
+	--wa-color-warning-70: #ffe0b3;
+	--wa-color-warning-80: #ffebcc;
+	--wa-color-warning-90: #fff5e6;
+	--wa-color-warning-95: #fffaf2;
+
+	/* Danger colors use our blush red */
+	--wa-color-danger-05: #2d0f0f;
+	--wa-color-danger-10: #4a1919;
+	--wa-color-danger-20: #7a2a2a;
+	--wa-color-danger-30: #aa3b3b;
+	--wa-color-danger-40: #d94c4c;
+	--wa-color-danger-50: #f36869;
+	--wa-color-danger-60: #f58687;
+	--wa-color-danger-70: #f7a4a5;
+	--wa-color-danger-80: #fac2c3;
+	--wa-color-danger-90: #fce0e1;
+	--wa-color-danger-95: #fef0f0;
+
+	/* Neutral colors use light grey base */
+	--wa-color-neutral-05: #0a0a0a;
+	--wa-color-neutral-10: #1a1a1a;
+	--wa-color-neutral-20: #333333;
+	--wa-color-neutral-30: #4d4d4d;
+	--wa-color-neutral-40: #666666;
+	--wa-color-neutral-50: #808080;
+	--wa-color-neutral-60: #999999;
+	--wa-color-neutral-70: #acacac;
+	--wa-color-neutral-80: #cccccc;
+	--wa-color-neutral-90: #eeeeee;
+	--wa-color-neutral-95: #fafafd;
+
+	/* Success colors - keep green but harmonize */
+	--wa-color-success-50: #4ade80;
+}
+
+/* Light theme surface overrides */
+.wa-light,
+.wa-theme-pixel.wa-light,
+.wa-theme-pixel .wa-light {
+	--wa-color-surface-raised: #ffffff;
+	--wa-color-surface-default: var(--brand-light-grey);
+	--wa-color-surface-lowered: var(--brand-medium-purple);
+}
+
+/* Dark theme surface overrides */
+.wa-dark,
+.wa-theme-pixel.wa-dark,
+.wa-theme-pixel .wa-dark {
+	--wa-color-surface-raised: #1f1d36;
+	--wa-color-surface-default: var(--brand-dark-purple);
+	--wa-color-surface-lowered: #1a1830;
+}
+
+/* Focus ring uses brand purple */
+:root {
+	--wa-color-focus: var(--brand-main-purple);
+}
+
+/* Custom accent class for yellow highlights */
+.brand-accent {
+	color: var(--brand-yellow);
+}
+
+.brand-accent-bg {
+	background-color: var(--brand-yellow);
+	color: var(--brand-black);
+}
+
+/* Key line styling - yellow callout */
+.key-line {
+	background: var(--brand-yellow);
+	color: var(--brand-black);
+	padding: 1rem 1.5rem;
+	border-left: 4px solid var(--brand-black);
+	font-weight: bold;
+}

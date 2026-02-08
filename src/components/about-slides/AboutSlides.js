@@ -25,13 +25,24 @@ export class AboutSlides extends LitElement {
 	render() {
 		const slides = getAboutSlidesContent();
 		return html`
-			<wa-dialog label="${msg("About Legacy's End")}" class="about-dialog" style="--width: 800px;">
+			<wa-dialog label="${msg("About Validation Valley")}" class="about-dialog" style="--width: 800px;">
 				<wa-carousel navigation pagination mouseDragging>
 					${slides.map(
 						(slide) => html`
 						<wa-carousel-item>
 							<h2>${slide.title}</h2>
 							${slide.lines.map((line) => html`<p>${line}</p>`)}
+							${
+								slide.link
+									? html`
+								<p style="margin-top: 1rem;">
+									<a href="${slide.link.url}" target="_blank" rel="noopener noreferrer" style="color: var(--brand-main-purple);">
+										${slide.link.text}
+									</a>
+								</p>
+							`
+									: ""
+							}
 						</wa-carousel-item>
 					`,
 					)}

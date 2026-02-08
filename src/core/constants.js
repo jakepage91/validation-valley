@@ -58,6 +58,7 @@ export const GameConstants = {
 export const ZoneTypes = {
 	THEME_CHANGE: "THEME_CHANGE",
 	CONTEXT_CHANGE: "CONTEXT_CHANGE",
+	OPEN_URL: "OPEN_URL",
 	NONE: "NONE",
 };
 

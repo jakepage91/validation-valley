@@ -159,7 +159,7 @@ export class HeroProfile extends SignalWatcher(
 							srcset="${ifDefined(processImageSrcset(this.suitData?.suit?.image || imageSrc))}"
 							sizes="15vw"
 							class="character-img" 
-							alt="Alarion" 
+							alt="Humble Developer" 
 						/>
         `
 						: ""
@@ -172,7 +172,7 @@ export class HeroProfile extends SignalWatcher(
 						: error
 							? html`<span class="error">${error}</span>`
 							: html`
-                  <wa-tag variant="neutral" size="small" class="name-tag">${name || "Alarion"}</wa-tag>
+                  <wa-tag variant="neutral" size="small" class="name-tag">${name || html`Humble<br>Developer`}</wa-tag>
                 `
 				}
     `;

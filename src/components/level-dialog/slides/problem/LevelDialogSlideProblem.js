@@ -32,9 +32,6 @@ export class LevelDialogSlideProblem extends SignalWatcher(LitElement) {
 	render() {
 		return html`
 			<div class="slide-content-centered">
-				<div class="narrative-icon problem-icon">
-					<wa-icon name="triangle-exclamation" class="problem-icon-inner"></wa-icon>
-				</div>
 				<div class="narrative-text">
 					${this.problemDesc}
 				</div>

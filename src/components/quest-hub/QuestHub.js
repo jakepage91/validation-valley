@@ -1,11 +1,12 @@
 import { msg, updateWhenLocaleChanges } from "@lit/localize";
-import { html, LitElement, nothing } from "lit";
+import { html, LitElement } from "lit";
 import { questHubStyles } from "./QuestHub.styles.js";
 import "@awesome.me/webawesome/dist/components/button/button.js";
 import "@awesome.me/webawesome/dist/components/icon/icon.js";
 import "../about-slides/about-slides.js";
 import "../language-selector/language-selector.js";
 import "./components/quest-card/quest-card.js";
+import metalbearMascot from "../../assets/validation-clearing/metalbear.png";
 import { UIEvents } from "../../core/events.js";
 
 /**
@@ -81,14 +82,6 @@ export class QuestHub extends LitElement {
 		this.isFullscreen = !!document.fullscreenElement;
 	}
 
-	/**
-	 * Toggles the full description visibility
-	 */
-	#toggleDescription() {
-		this.showFullDescription = !this.showFullDescription;
-	}
-
-	/** @override */
 	/** @override */
 	render() {
 		return html`
@@ -111,98 +104,36 @@ export class QuestHub extends LitElement {
 					</nav>
 
 					<div class="header-content">
-						<h1 class="hub-title">${msg("LEGACY'S END")}</h1>
-						<p class="hub-subtitle">${msg("Tired of legacy code? It's time for transformation!")}</p>
-						
+						<h1 class="hub-title">${msg("VALIDATION VALLEY")}</h1>
+						<p class="hub-subtitle">${msg("Where the Legacy Dev Loop Ends")}</p>
+
 						<div class="hub-description">
-							<p>${msg("LEGACY'S END is your epic journey to master clean, portable, and maintainable frontend architecture. Join Alarion, the code acolyte, as he unlocks powerful architectural skills to turn chaos into mastery.")}</p>
-							
-							${
-								this.showFullDescription
-									? html`
-								<p>${msg("Each chapter is an interactive mission where you'll refactor real code, learning to:")}</p>
-								<div class="learning-objectives">
-									<wa-card appearance="filled">
-										<div slot="header">${msg("🛡️ Encapsulate Code")}</div>
-										${msg("Master Web Components and Shadow DOM to build truly autonomous UI elements.")}
-									</wa-card>
-									<wa-card appearance="filled">
-										<div slot="header">${msg("🎨 Themeable UI")}</div>
-										${msg("Architect flexible design systems using CSS Tokens that adapt to any brand.")}
-									</wa-card>
-									<wa-card appearance="filled">
-										<div slot="header">${msg("🌐 Decouple Services")}</div>
-										${msg("Isolate business logic from infrastructure to enable seamless backend swaps.")}
-									</wa-card>
-									<wa-card appearance="filled">
-										<div slot="header">${msg("❤️ Reactive State")}</div>
-										${msg("Control data flow with modern signals and observers for predictable updates.")}
-									</wa-card>
-									<wa-card appearance="filled">
-										<div slot="header">${msg("🔒 Robust Security")}</div>
-										${msg("Centralize authentication and authorization to keep your application resilient.")}
-									</wa-card>
-									<wa-card appearance="filled">
-										<div slot="header">${msg("✅ Ultimate Testing")}</div>
-										${msg("Implement anti-regression shields with unit, integration, and E2E tests.")}
-									</wa-card>
-									<wa-card appearance="filled">
-										<div slot="header">${msg("🧩 Scalable Patterns")}</div>
-										${msg("Master Dependency Injection and Command patterns for enterprise-grade code.")}
-									</wa-card>
-									<wa-card appearance="filled">
-										<div slot="header">${msg("📝 Self-Documentation")}</div>
-										${msg("Leverage JSDoc and standard conventions to keep your codebase readable.")}
-									</wa-card>
-									<wa-card appearance="filled">
-										<div slot="header">${msg("🏎️ High Performance")}</div>
-										${msg("Minimize rendering cycles and optimize bundles for a lightning-fast experience.")}
-									</wa-card>
-									<wa-card appearance="filled">
-										<div slot="header">${msg("🤖 Built-in AI")}</div>
-										${msg("Leverage the power of the browser's 1st-class AI APIs for natural interaction.")}
-									</wa-card>
-									<wa-card appearance="filled">
-										<div slot="header">${msg("♿ Accessibility")}</div>
-										${msg("Master ARIA and focus management to build inclusive experiences for all.")}
-									</wa-card>
-								</div>
-							`
-									: html`
-								<wa-button @click="${this.#toggleDescription}" variant="neutral">
-									${msg("Read More")}
-								</wa-button>
-							`
-							}
+							<p>${msg("VALIDATION VALLEY is your journey through the bottlenecks of modern software development. Discover how AI has shifted where constraints exist—and learn why validation is the new frontier.")}</p>
 						</div>
 					</div>
 				</header>
 
-				<section class="quests-section">
+				<section class="quests-header">
 					<h2 class="section-title">${msg("Choose your next adventure...")}</h2>
+					<div class="mascot-container">
+						<img src="${metalbearMascot}" alt="MetalBear mascot" class="mascot-image" />
+					</div>
+				</section>
+
+				<section class="quests-section">
 					<div class="wa-grid">
 						${this.quests.map(
 							(quest) => html`
 							<quest-card .quest=${quest}></quest-card>
 						`,
 						)}
+						${this.comingSoonQuests.map(
+							(quest) => html`
+							<quest-card .quest=${quest} .isComingSoon=${true}></quest-card>
+						`,
+						)}
 					</div>
 				</section>
-
-				${
-					this.comingSoonQuests.length > 0
-						? html`<section class="coming-soon-section">
-						<h2 class="section-title">${msg("Coming Soon")}</h2>
-						<div class="wa-grid">
-							${this.comingSoonQuests.map(
-								(quest) => html`
-								<quest-card .quest=${quest} .isComingSoon=${true}></quest-card>
-							`,
-							)}
-						</div>
-					</section>`
-						: nothing
-				}
 
 				<footer class="hub-footer">
 					<wa-button variant="danger" @click="${this.#dispatchReset}">

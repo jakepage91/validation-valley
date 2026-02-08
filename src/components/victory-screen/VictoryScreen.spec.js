@@ -119,10 +119,11 @@ describe("VictoryScreen", () => {
 		await wrapper.updateComplete;
 		await element.updateComplete;
 
-		expect(element.shadowRoot?.textContent).toContain("Epic Quest");
-		expect(element.shadowRoot?.textContent).toContain("Hero Badge");
-		expect(element.shadowRoot?.textContent).toContain("Super Jump");
+		expect(element.shadowRoot?.textContent).toContain("Your Journey Complete");
 		expect(element.shadowRoot?.textContent).toContain("Gold");
+		expect(element.shadowRoot?.textContent).toContain(
+			"AI accelerates generation",
+		);
 	});
 
 	it("calls onReturn when button is clicked", async () => {

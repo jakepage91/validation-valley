@@ -7,9 +7,10 @@ export const questCardStyles = css`
 
 	.quest-card {
 		height: 100%;
-		--spacing: var(--wa-space-m);
+		--spacing: var(--wa-space-s);
 		display: flex;
 		flex-direction: column;
+		font-size: var(--wa-font-size-xs);
 	}
 
 	.quest-card::part(base) {
@@ -88,21 +89,28 @@ export const questCardStyles = css`
 	.card-footer-actions {
 		display: flex;
 		justify-content: flex-end;
-		gap: var(--wa-space-s);
+		gap: var(--wa-space-xs);
 		width: 100%;
 		flex-wrap: wrap;
 	}
 
 	.card-footer-actions wa-button {
-		flex: 1 1 auto;
+		flex: 0 1 auto;
 		min-width: 0;
 		max-width: 100%;
+		font-size: var(--wa-font-size-2xs);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
-	
-	@media (min-width: 400px) {
-		.card-footer-actions wa-button {
-			flex: 0 1 auto;
-		}
+
+	.quest-header {
+		font-size: var(--wa-font-size-s);
+	}
+
+	.quest-description {
+		font-size: var(--wa-font-size-2xs);
+		line-height: 1.4;
 	}
 
 `;

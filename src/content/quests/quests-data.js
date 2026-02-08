@@ -3,6 +3,14 @@
  * Maps quest IDs to dynamic import functions
  */
 const QUEST_LOADERS = {
+	"the-bottleneck-shift": () =>
+		import("./the-bottleneck-shift/index.js").then((m) =>
+			m.getBottleneckShiftQuest(),
+		),
+	"the-bottleneck-canyon": () =>
+		import("./the-bottleneck-canyon/index.js").then((m) =>
+			m.getBottleneckCanyonQuest(),
+		),
 	"the-aura-of-sovereignty": () =>
 		import("./the-aura-of-sovereignty/index.js").then((m) =>
 			m.getAuraOfSovereigntyQuest(),

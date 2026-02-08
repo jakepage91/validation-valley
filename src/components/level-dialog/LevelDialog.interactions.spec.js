@@ -563,6 +563,7 @@ describe("QuestView Integration", () => {
 				/** @type {unknown} */ ({
 					isPaused: new Signal.State(false),
 					showDialog: new Signal.State(true), // Dialog open
+					setShowDialog: vi.fn(),
 					setCurrentDialogText: vi.fn(),
 					setNextDialogText: vi.fn(),
 					currentSlideIndex: new Signal.State(0),
@@ -570,7 +571,10 @@ describe("QuestView Integration", () => {
 			);
 		wrapper.questState =
 			/** @type {import("../../game/interfaces.js").IQuestStateService} */ (
-				/** @type {unknown} */ ({ isQuestCompleted: new Signal.State(false) })
+				/** @type {unknown} */ ({
+					isQuestCompleted: new Signal.State(false),
+					setHasCollectedItem: vi.fn(),
+				})
 			);
 		wrapper.heroState =
 			/** @type {import("../../game/interfaces.js").IHeroStateService} */ (
@@ -626,7 +630,10 @@ describe("QuestView Integration", () => {
 			);
 		wrapper.questState =
 			/** @type {import("../../game/interfaces.js").IQuestStateService} */ (
-				/** @type {unknown} */ ({ isQuestCompleted: new Signal.State(false) })
+				/** @type {unknown} */ ({
+					isQuestCompleted: new Signal.State(false),
+					setHasCollectedItem: vi.fn(),
+				})
 			);
 		wrapper.heroState =
 			/** @type {import("../../game/interfaces.js").IHeroStateService} */ (

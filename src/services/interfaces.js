@@ -86,6 +86,7 @@
  * @property {(questId: string) => Promise<QuestResult>} continueQuest - Continue from last chapter
  * @property {(questId: string, chapterId: string) => Promise<void>} loadChapter - Load specific chapter
  * @property {(chapterId: string) => boolean} jumpToChapter - Jump to specific chapter
+ * @property {(chapterId: string) => boolean} forceJumpToChapter - Force jump bypassing sequential check
  * @property {() => EnrichedChapter|null} getCurrentChapterData - Get current chapter data
  * @property {() => void} completeChapter - Complete current chapter
  * @property {() => Promise<void>} advanceChapter - Advance to next chapter

@@ -9,13 +9,13 @@ export const questHubStyles = [
 			width: 100%;
 			height: 100%;
 			overflow-y: auto;
-			background-color: var(--wa-color-surface-default);
-			color: var(--wa-color-text-normal);
+			background-color: var(--brand-dark-purple);
+			color: var(--brand-light-grey);
 			--wa-font-sans: 'Press Start 2P', monospace;
 		}
 
 		.hub-container {
-			max-width: 1400px;
+			max-width: 1200px;
 			margin: 0 auto;
 			padding: var(--wa-space-m);
 		}
@@ -27,7 +27,7 @@ export const questHubStyles = [
 		}
 
 		.hub-header {
-			margin-bottom: var(--wa-space-xl);
+			margin-bottom: var(--wa-space-l);
 		}
 
 		.hub-navbar {
@@ -49,48 +49,66 @@ export const questHubStyles = [
 		}
 
 		.hub-title {
-			font-size: var(--wa-font-size-3xl);
+			font-size: var(--wa-font-size-4xl);
 			margin: 0 0 var(--wa-space-xs) 0;
 			font-family: var(--wa-font-family-heading);
+			color: var(--brand-main-purple);
 			text-shadow: var(--wa-shadow-small);
-			color: var(--wa-color-warning-fill-loud);
 		}
 
 		.hub-subtitle {
-			font-size: var(--wa-font-size-l);
+			font-size: var(--wa-font-size-xl);
 			margin: 0;
-			opacity: 0.9;
+			color: var(--brand-medium-purple);
 		}
-
-
 
 		.quests-section {
-			margin-bottom: var(--wa-space-4xl);
-		}
-
-		.coming-soon-section {
-			opacity: 0.7;
+			margin-bottom: var(--wa-space-xl);
 		}
 
 		.hub-description {
-			margin: 1.5rem auto 0 auto;
+			margin: 1rem auto 0 auto;
+			max-width: 700px;
 			font-size: var(--wa-font-size-s);
 			line-height: 1.6;
-			color: var(--wa-color-text-quiet);
+			color: var(--brand-dark-grey);
 		}
 
-		.learning-objectives {
-			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-			gap: var(--wa-space-m);
-			margin-top: var(--wa-space-l);
-			text-align: left;
+		.section-title {
+			color: var(--brand-light-grey);
 		}
-
 
 		.hub-footer {
-			margin-top: var(--wa-space-4xl);
+			margin-top: var(--wa-space-xl);
 			text-align: center;
+		}
+
+		.quests-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: var(--wa-space-s);
+		}
+
+		.mascot-container {
+			flex-shrink: 0;
+		}
+
+		.mascot-image {
+			width: 80px;
+			height: auto;
+		}
+
+		@media (max-width: 600px) {
+			.quests-header {
+				flex-direction: column;
+				text-align: center;
+				gap: var(--wa-space-m);
+			}
+
+			.mascot-image {
+				width: 60px;
+			}
 		}
 	`,
 ];

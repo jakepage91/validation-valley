@@ -83,8 +83,8 @@ describe("QuestHub Component", () => {
 		const el = /** @type {QuestHub} */ (container.querySelector("quest-hub"));
 		await el.updateComplete;
 
-		// Verify coming soon section is rendered
-		const section = el.shadowRoot?.querySelector(".coming-soon-section");
+		// Verify quests section is rendered
+		const section = el.shadowRoot?.querySelector(".quests-section");
 		expect(section).toBeTruthy();
 
 		// Verify quest-card component is rendered with isComingSoon

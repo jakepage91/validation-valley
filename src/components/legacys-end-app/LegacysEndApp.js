@@ -31,6 +31,7 @@ import { worldStateContext } from "../../game/contexts/world-context.js";
 import { legacysEndAppStyles } from "./LegacysEndApp.styles.js";
 import "@awesome.me/webawesome/dist/styles/webawesome.css";
 import "../../pixel.css";
+import "../../brand-colors.css";
 import { AIService } from "../../services/ai-service.js";
 import { VoiceSynthesisService } from "../../services/voice-synthesis-service.js";
 

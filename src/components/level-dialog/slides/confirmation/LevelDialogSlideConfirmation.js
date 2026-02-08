@@ -22,6 +22,29 @@ export class LevelDialogSlideConfirmation extends SignalWatcher(LitElement) {
 	@property({ type: Object })
 	accessor reward = undefined;
 
+	/**
+	 * @type {string | import('lit').TemplateResult | undefined}
+	 * @public
+	 */
+	@property({ type: Object })
+	accessor rewardExplanation = undefined;
+
+	/**
+	 * Custom title for the confirmation slide
+	 * @type {string | undefined}
+	 * @public
+	 */
+	@property({ type: String })
+	accessor confirmationTitle = undefined;
+
+	/**
+	 * Custom message for the confirmation slide
+	 * @type {string | import('lit').TemplateResult | undefined}
+	 * @public
+	 */
+	@property({ type: Object })
+	accessor confirmationMessage = undefined;
+
 	/** @override */
 	static styles = levelDialogStyles;
 
@@ -39,25 +62,39 @@ export class LevelDialogSlideConfirmation extends SignalWatcher(LitElement) {
 
 	/** @override */
 	render() {
+		const title = this.confirmationTitle || msg("Level Complete!");
+		const defaultMessage = msg(
+			"Acquired! This item has been added to your inventory.",
+		);
+
 		return html`
 			<div class="slide-content-between">
 				<div></div>
 				<div class="quest-complete-container">
-					<h2 class="quest-complete-title">${msg("Level Complete!")}</h2>
+					<h2 class="quest-complete-title">${title}</h2>
+					${
+						this.confirmationMessage
+							? html`<p class="confirmation-message" style="text-align: center; margin-bottom: 1.5rem;">${this.confirmationMessage}</p>`
+							: nothing
+					}
 					${
 						this.reward
 							? html`
 							<div class="reward-preview">
-								<img 
-									src="${ifDefined(processImagePath(this.reward.image))}" 
+								<img
+									src="${ifDefined(processImagePath(this.reward.image))}"
 									srcset="${ifDefined(processImageSrcset(this.reward.image))}"
 									sizes="(max-width: 600px) 200px, 400px"
-									alt="${this.reward.name}" 
-									class="reward-img" 
+									alt="${this.reward.name}"
+									class="reward-img"
 								/>
 								<div class="reward-info">
 									<h6 class="reward-name">${this.reward.name}</h6>
-									<p class="reward-desc">${msg("Acquired! This item has been added to your inventory.")}</p>
+									${
+										this.rewardExplanation
+											? html`<div class="reward-desc">${this.rewardExplanation}</div>`
+											: html`<p class="reward-desc">${defaultMessage}</p>`
+									}
 								</div>
 							</div>
 						`

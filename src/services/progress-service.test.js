@@ -53,7 +53,7 @@ describe("ProgressService", () => {
 		it("should load default progress if storage is empty", () => {
 			expect(service.progress.completedQuests).toEqual([]);
 			expect(service.progress.unlockedQuests).toContain(
-				"the-aura-of-sovereignty",
+				"the-bottleneck-canyon",
 			);
 			expect(mockStorage.getItem).toHaveBeenCalled();
 		});
@@ -173,7 +173,7 @@ describe("ProgressService", () => {
 			service.progress.completedQuests = ["q1"];
 			service.resetProgress();
 			expect(service.progress.completedQuests).toEqual([]);
-			expect(service.progress.unlockedQuests).toHaveLength(1); // Default
+			expect(service.progress.unlockedQuests).toHaveLength(3); // Default: the-bottleneck-canyon, llms-on-kubernetes, limits-of-vibe-coding
 		});
 
 		it("should reset specific quest progress", () => {

@@ -471,6 +471,50 @@ export class QuestController {
 	}
 
 	/**
+	 * Force jump to a specific chapter (bypasses sequential check)
+	 * Useful for presentations where you need to skip around
+	 * @param {string} chapterId
+	 * @returns {boolean}
+	 */
+	forceJumpToChapter(chapterId) {
+		if (!this.currentQuest || !this.#progressService) return false;
+
+		const chapterIds = this.currentQuest.chapterIds || [];
+		const index = chapterIds.indexOf(chapterId);
+
+		if (index !== -1) {
+			this.currentChapterIndex = index;
+			this.currentChapter = this.#getChapterByIndex(index);
+			this.#progressService.setCurrentQuest(this.currentQuest.id, chapterId);
+
+			// Reset state for the new chapter
+			this.#state?.resetChapterState();
+			this.#worldState?.setShowDialog(false);
+			this.#worldState?.setPaused(false);
+			this.#worldState?.resetSlideIndex();
+
+			// Sync hero position
+			if (this.currentChapter) {
+				this.#syncHeroState(this.currentChapter);
+			}
+
+			// Update router
+			if (this.#router) {
+				this.#router.navigate(
+					`/quest/${this.currentQuest.id}/chapter/${chapterId}`,
+				);
+			}
+
+			this.#updateState();
+			this.host.requestUpdate();
+			this.#logger?.info(`⏭️ Force jumped to chapter: ${chapterId}`);
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Sync local state with progress service
 	 */
 	#syncWithProgress() {

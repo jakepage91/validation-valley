@@ -58,6 +58,9 @@ export class GameZoneController {
 		/** @type {{x: number, y: number, hasCollectedItem: boolean} | null} */
 		this.lastPos = null;
 
+		/** @type {Set<string>} */
+		this.triggeredUrls = new Set();
+
 		const hostElement = /** @type {ReactiveElement} */ (
 			/** @type {unknown} */ (this.host)
 		);
@@ -163,6 +166,19 @@ export class GameZoneController {
 			if (currentContext !== contextChange.payload) {
 				this.#heroState.setHotSwitchState(contextChange.payload);
 			}
+		}
+
+		// Handle OPEN_URL (opens external URL in new tab, only once per session)
+		const openUrl = [...results]
+			.reverse()
+			.find((r) => r.type === ZoneTypes.OPEN_URL);
+		if (
+			openUrl &&
+			openUrl.payload &&
+			!this.triggeredUrls.has(openUrl.payload)
+		) {
+			this.triggeredUrls.add(openUrl.payload);
+			window.open(openUrl.payload, "_blank");
 		}
 	}
 }

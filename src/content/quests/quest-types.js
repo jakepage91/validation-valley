@@ -119,11 +119,14 @@ export const ServiceBrandMap = {
  * @property {string} id
  * @property {number} [powerLevel]
  * @property {string} title
- * @property {string} description
- * @property {string} problemTitle
- * @property {string | import('lit').TemplateResult} problemDesc
+ * @property {string} [description]
+ * @property {string} [problemTitle]
+ * @property {string | import('lit').TemplateResult} [problemDesc]
  * @property {string} [solutionTitle]
- * @property {string} [solutionDesc]
+ * @property {string | import('lit').TemplateResult} [solutionDesc]
+ * @property {string | import('lit').TemplateResult} [commonDenominator]
+ * @property {string | import('lit').TemplateResult} [rewardExplanation]
+ * @property {(string | import('lit').TemplateResult)[]} [contentSlides]
  * @property {string[]} [architecturalChanges]
  * @property {CodeSnippetsConfig} [codeSnippets]
  * @property {GameStats} [stats]
@@ -138,6 +141,11 @@ export const ServiceBrandMap = {
  * @property {HeroConfig} [hero]
  * @property {Zone[]} [zones]
  * @property {Rect[]} [obstacles]
+ * @property {boolean} [showTimeline]
+ * @property {PlacedConfig[]} [mapObjects]
+ * @property {string} [confirmationTitle]
+ * @property {string | import('lit').TemplateResult} [confirmationMessage]
+ * @property {boolean} [skipConfirmation] - Skip the confirmation slide (useful when completion happens elsewhere)
  */
 
 /**

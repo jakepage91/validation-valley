@@ -433,6 +433,7 @@ export class GameViewport extends SignalWatcher(
 
 				${this._renderNPC()}
 				${this._renderReward()}
+				${this._renderMapObjects()}
 				${this._renderHero()}
 			</div>
 			<game-controls 
@@ -512,5 +513,20 @@ export class GameViewport extends SignalWatcher(
 		return html`
 			<hero-profile></hero-profile>
 		`;
+	}
+
+	_renderMapObjects() {
+		const config = this.questController?.currentChapter;
+		if (!config?.mapObjects || config.mapObjects.length === 0) return nothing;
+
+		return config.mapObjects.map(
+			(obj) => html`
+				<reward-element
+					.image="${obj.image}"
+					.x="${obj.position.x}"
+					.y="${obj.position.y}"
+				></reward-element>
+			`,
+		);
 	}
 }

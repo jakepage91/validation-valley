@@ -30,8 +30,8 @@ describe("UserApiClients", () => {
 			const data = await promise;
 			expect(data).toEqual({
 				id: 123,
-				name: "Alarion",
-				role: "Monolith Dweller",
+				name: "Humble Developer",
+				role: "Humble Traveler",
 				hp: 50,
 				avatarColor: "#ef4444",
 			});
@@ -76,8 +76,8 @@ describe("UserApiClients", () => {
 			const data = await promise;
 			expect(data).toEqual({
 				id: 789,
-				name: "Alarion",
-				role: "System Walker",
+				name: "Humble Developer",
+				role: "Humble Traveler",
 				hp: 100,
 				avatarColor: "#22c55e",
 			});

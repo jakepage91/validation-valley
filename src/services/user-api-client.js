@@ -48,8 +48,8 @@ export class LegacyUserApiClient {
 		await delay(500);
 		return {
 			id,
-			name: "Alarion",
-			role: "Monolith Dweller",
+			name: "Humble Developer",
+			role: "Humble Traveler",
 			hp: 50,
 			avatarColor: "#ef4444", // Red
 		};
@@ -108,8 +108,8 @@ export class NewUserApiClient {
 		await delay(500);
 		return {
 			id,
-			name: "Alarion",
-			role: "System Walker",
+			name: "Humble Developer",
+			role: "Humble Traveler",
 			hp: 100,
 			avatarColor: "#22c55e", // Green
 		};

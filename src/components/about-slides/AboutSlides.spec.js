@@ -28,7 +28,7 @@ describe("AboutSlides Component", () => {
 
 		const dialog = el.shadowRoot?.querySelector("wa-dialog");
 		expect(dialog).toBeTruthy();
-		expect(dialog?.getAttribute("label")).toBe("About Legacy's End");
+		expect(dialog?.getAttribute("label")).toBe("About Validation Valley");
 	});
 
 	it("shows and hides dialog", async () => {

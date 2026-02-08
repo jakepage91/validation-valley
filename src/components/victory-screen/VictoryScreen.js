@@ -4,7 +4,10 @@ import { consume } from "@lit/context";
 import { msg, updateWhenLocaleChanges } from "@lit/localize";
 import { SignalWatcher } from "@lit-labs/signals";
 import { html, LitElement } from "lit";
+import { property } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
+import metalbearLogo from "../../assets/validation-clearing/metalbear.png";
+import mirrordQrCode from "../../assets/validation-clearing/mirrord-qr.png";
 import { questControllerContext } from "../../contexts/quest-controller-context.js";
 import { sessionContext } from "../../contexts/session-context.js";
 import { processImagePath } from "../../utils/process-assets.js";
@@ -43,9 +46,17 @@ export class VictoryScreen extends SignalWatcher(
 	/** @override */
 	static styles = victoryScreenStyles;
 
+	/** @type {boolean} */
+	@property({ type: Boolean })
+	accessor showQrCode = false;
+
 	constructor() {
 		super();
 		updateWhenLocaleChanges(this);
+	}
+
+	#toggleView() {
+		this.showQrCode = !this.showQrCode;
 	}
 
 	/** @override */
@@ -69,28 +80,49 @@ export class VictoryScreen extends SignalWatcher(
 
 		return html`
 			<div class="victory-screen">
-				<h1 class="victory-title">${msg("QUEST COMPLETE!")}</h1>
-				<p class="victory-text"><small>
-					${msg("Congratulations, hero! You have successfully completed the quest:")}
-					<strong>${quest.name}</strong>.
-				</small></p>
+				<img src="${metalbearLogo}" alt="MetalBear" class="metalbear-logo" />
+				<h1 class="victory-title">${msg("Your Journey Complete")}</h1>
 
-				<ul class="rewards-list" role="list">
-					${collectedRewards.map(
-						(reward, index) => html`
-						<li class="reward-item" style="--index: ${index}">
-							<img src="${ifDefined(processImagePath(reward.image))}" alt="${reward.name}" class="reward-img" />
-							<span class="reward-name">${reward.name}</span>
-						</li>
-					`,
-					)}
-				</ul>
+				<div class="carousel-container">
+					<div class="carousel-track ${this.showQrCode ? "show-qr" : ""}">
+						<!-- Rewards Panel -->
+						<div class="carousel-panel rewards-panel">
+							<p class="victory-text">
+								${msg("Along the way, you gathered these insights:")}
+							</p>
+							<ul class="rewards-list" role="list">
+								${collectedRewards.map(
+									(reward, index) => html`
+									<li class="reward-item" style="--index: ${index}">
+										<img src="${ifDefined(processImagePath(reward.image))}" alt="${reward.name}" class="reward-img" />
+										<span class="reward-name">${reward.name}</span>
+									</li>
+								`,
+								)}
+							</ul>
+							<p class="victory-text" style="font-style: italic; opacity: 0.9;">
+								${msg("AI accelerates generation. Validation remains the key.")}
+							</p>
+						</div>
 
-				<p class="victory-text"><small>
-					${msg("You earned the badge:")} <b>"${quest?.reward?.badge}"</b>
-					<br/>
-					${msg("Ability gained:")} <b>"${quest?.reward?.ability}"</b>
-				</small></p>
+						<!-- QR Code Panel -->
+						<div class="carousel-panel qr-panel">
+							<p class="victory-text">${msg("Try mirrord yourself")}</p>
+							<img src="${mirrordQrCode}" alt="Scan to visit metalbear.com/mirrord" class="qr-code" />
+							<p class="qr-label">metalbear.com/mirrord</p>
+							<p class="github-ask">
+								${msg("If you find it useful, we'd appreciate a")}
+								<a href="https://github.com/metalbear-co/mirrord" target="_blank" rel="noopener">⭐ ${msg("on GitHub")}</a>
+							</p>
+						</div>
+					</div>
+
+					<!-- Arrow Button -->
+					<button class="carousel-arrow ${this.showQrCode ? "flipped" : ""}" @click="${this.#toggleView}" aria-label="${this.showQrCode ? "Show rewards" : "Show QR code"}">
+						<wa-icon name="chevron-right"></wa-icon>
+					</button>
+				</div>
+
 				<wa-button class="ng-btn" @click="${() => this.questController?.returnToHub()}">
 					<wa-icon slot="start" name="house"></wa-icon>
 					${msg("RETURN TO HUB")}

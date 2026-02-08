@@ -89,7 +89,11 @@ export class ProgressService {
 			completedChapters: [],
 			currentQuest: null,
 			currentChapter: null,
-			unlockedQuests: ["the-aura-of-sovereignty"],
+			unlockedQuests: [
+				"the-bottleneck-canyon",
+				"llms-on-kubernetes",
+				"limits-of-vibe-coding",
+			],
 			achievements: [],
 			stats: {
 				totalPlayTime: 0,
@@ -141,9 +145,13 @@ export class ProgressService {
 		// My _getDefaultState has empty array. I should fix that to match original behavior if that was intended.
 		// Looking at usage, setup-game probably unlocks it.
 		// But let's check the original code from view_file.
-		// It had: unlockedQuests: ["the-aura-of-sovereignty"], // First quest always unlocked
+		// It had: unlockedQuests: ["the-bottleneck-shift", "the-aura-of-sovereignty"], // First quest always unlocked
 		// I will update _getDefaultState to include it.
-		this.progress.unlockedQuests = ["the-aura-of-sovereignty"];
+		this.progress.unlockedQuests = [
+			"the-bottleneck-canyon",
+			"llms-on-kubernetes",
+			"limits-of-vibe-coding",
+		];
 		this.saveProgress();
 	}
 

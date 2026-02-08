@@ -10,6 +10,7 @@ import "../game-viewport/game-viewport.js";
 import "../level-dialog/level-dialog.js";
 import "../pause-menu/pause-menu.js";
 import "../victory-screen/victory-screen.js";
+import "../quest-progress/QuestProgress.js";
 import { UIEvents } from "../../core/events.js";
 import { questViewStyles } from "./quest-view.css.js";
 
@@ -92,6 +93,7 @@ export class QuestView extends SignalWatcher(
 
 		return html`
 			<pause-menu></pause-menu>
+			<quest-progress></quest-progress>
 
 			${
 				this.questState.isQuestCompleted.get()
@@ -114,7 +116,7 @@ export class QuestView extends SignalWatcher(
 					? html`
 				<level-dialog
 					@complete="${() => this.#handleLevelComplete()}"
-					@close="${() => this.dispatchEvent(new CustomEvent(UIEvents.CLOSE_DIALOG))}"
+					@close="${() => this.#handleDialogClose()}"
 					@slide-changed="${(/** @type {CustomEvent} */ e) => this.#handleSlideChanged(e)}"
 				></level-dialog>
 			`
@@ -133,5 +135,16 @@ export class QuestView extends SignalWatcher(
 
 	#handleLevelComplete() {
 		this.questController?.completeChapter();
+	}
+
+	#handleDialogClose() {
+		// If skipConfirmation is true, we need to set hasCollectedItem
+		// so the exit zone becomes visible, without completing the chapter
+		const chapter = this.questController?.currentChapter;
+		if (chapter?.skipConfirmation) {
+			this.questState?.setHasCollectedItem(true);
+		}
+		this.worldState?.setShowDialog(false);
+		this.dispatchEvent(new CustomEvent(UIEvents.CLOSE_DIALOG));
 	}
 }

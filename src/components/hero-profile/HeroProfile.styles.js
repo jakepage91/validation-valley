@@ -21,6 +21,10 @@ export const heroProfileStyles = [
       bottom: -2rem;
       pointer-events: none;
       z-index: 20;
+    }
+
+    .loading,
+    .error {
       white-space: nowrap;
     }
 
@@ -40,6 +44,13 @@ export const heroProfileStyles = [
 
     .name-tag {
       box-shadow: var(--wa-shadow-small);
+      white-space: normal;
+      text-align: center;
+      line-height: 1.3;
+      font-size: var(--wa-font-size-3xs, 9px);
+      padding: 0.4em 0.6em;
+      min-height: auto;
+      height: auto;
     }
 
     /* Character Image */
