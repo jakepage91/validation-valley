@@ -30,7 +30,7 @@ import floodedGateNpc from "../../../assets/flooded-gate/npc.png";
 import floodedGateReward from "../../../assets/flooded-gate/reward.png";
 import tideliftLogo from "../../../assets/flooded-gate/tidelift-logo.png";
 // Validation Clearing assets
-import demoDiagram from "../../../assets/validation-clearing/demo-diagram.png";
+import honeyDiagram from "../../../assets/validation-clearing/honey-diagram.png";
 import mirrordDiagram from "../../../assets/validation-clearing/mirrord-diagram.png";
 import ornateHandMirror from "../../../assets/validation-clearing/ornate-hand-mirror.png";
 import validationClearingReward from "../../../assets/validation-clearing/reward.png";
@@ -97,9 +97,6 @@ export const getBottleneckCanyonChapters = () => ({
 				</div>
 				<h3 style="margin: 0 0 1.5rem 0; color: var(--brand-main-purple); font-size: 1.8rem;">${msg("The Common Denominator: Validation")}</h3>
 				<div style="display: flex; flex-direction: column; gap: 1rem; max-width: 550px; margin: 0 auto;">
-					<div style="padding: 1.5rem; background: rgba(117, 109, 243, 0.1); border-radius: 12px;">
-						<p style="margin: 0; font-size: 1.2rem;">${msg("Both domains suffer from the same bottleneck. AI accelerates generation, but validation remains stubbornly human and time-consuming.")}</p>
-					</div>
 					<div style="padding: 1.5rem; background: rgba(117, 109, 243, 0.2); border-radius: 12px; border: 2px solid var(--brand-main-purple);">
 						<p style="margin: 0; font-size: 1.3rem;"><strong>${msg("Better validation is the bottleneck breaker.")}</strong></p>
 					</div>
@@ -169,10 +166,10 @@ export const getBottleneckCanyonChapters = () => ({
 							<p style="margin: 0; font-size: 1.2rem;">${msg("The incentive structure rewards volume over accuracy.")}</p>
 						</div>
 						<div style="padding: 1.25rem; background: rgba(117, 109, 243, 0.1); border-radius: 12px;">
-							<p style="margin: 0; font-size: 1.2rem;">${msg("Open source projects like Django and Curl have offered bug bounties, financial rewards for real vulnerability reports, through platforms like HackerOne.")}</p>
+							<p style="margin: 0; font-size: 1.2rem;">${msg("Open source projects like Django and Curl offer bug bounties through platforms like HackerOne.")}</p>
 						</div>
 						<div style="padding: 1.25rem; background: rgba(243, 104, 105, 0.15); border-radius: 12px; border: 2px solid var(--brand-blush-red);">
-							<p style="margin: 0; font-size: 1.2rem;"><strong>${msg("If 1 report in 106 is accepted, that's still money in the bank.")}</strong></p>
+							<p style="margin: 0; font-size: 1.2rem;"><strong>${msg("If 1 report in 100 is accepted, that's still money in the bank.")}</strong></p>
 						</div>
 					</div>
 					<div style="flex-shrink: 0;">
@@ -219,25 +216,6 @@ export const getBottleneckCanyonChapters = () => ({
 					</div>
 					<p style="margin-top: 1.5rem; opacity: 1;">${msg("Each report requires multiple maintainers to investigate.")}</p>
 					<p><strong>${msg("The math doesn't add up.")}</strong></p>
-				</div>
-			`,
-			// Slide 4b: The time cost
-			html`
-				<div style="display: flex; gap: 2rem; align-items: center; flex-wrap: wrap; justify-content: center;">
-					<div style="flex-shrink: 0;">
-						<img src="${maintainerTeam}" alt="Maintainer team" style="width: 200px; height: auto;" />
-					</div>
-					<div style="flex: 1; min-width: 280px; max-width: 450px; display: flex; flex-direction: column; gap: 1rem;">
-						<div style="padding: 1.25rem; background: rgba(117, 109, 243, 0.1); border-radius: 12px;">
-							<p style="margin: 0; font-size: 1.2rem;">${msg("Three people read the report. One tries to reproduce. Another examines source code. A third checks for similar vulnerabilities.")}</p>
-						</div>
-						<div style="padding: 1.25rem; background: rgba(117, 109, 243, 0.1); border-radius: 12px;">
-							<p style="margin: 0; font-size: 1.2rem;">${msg("After 1.5 hours of combined effort: the report is garbage. Hallucinated function names. Impossible attack vectors.")}</p>
-						</div>
-						<div style="padding: 1.25rem; background: rgba(243, 104, 105, 0.15); border-radius: 12px; border: 2px solid var(--brand-blush-red);">
-							<p style="margin: 0; font-size: 1.2rem;"><strong>${msg("You don't get those hours back. And tomorrow, two more arrive.")}</strong></p>
-						</div>
-					</div>
 				</div>
 			`,
 			// Slide 5: Real HackerOne interactions
@@ -345,7 +323,7 @@ export const getBottleneckCanyonChapters = () => ({
 					<div style="flex: 1; min-width: 250px; max-width: 350px; display: flex; flex-direction: column; gap: 1rem;">
 						<h3 style="margin: 0; color: var(--brand-main-purple);">${msg("The CVE Program")}</h3>
 						<div style="padding: 1.25rem; background: rgba(117, 109, 243, 0.1); border-radius: 12px;">
-							<p style="margin: 0; font-size: 1.1rem;">${msg("The MITRE Corporation, an American not-for-profit organization providing independent technical expertise for national challenges, was maintaining this database.")}</p>
+							<p style="margin: 0; font-size: 1.1rem;">${msg("MITRE, a US not-for-profit, was maintaining this database.")}</p>
 						</div>
 						<div style="padding: 1.25rem; background: rgba(243, 104, 105, 0.15); border-radius: 12px; border: 2px solid var(--brand-blush-red);">
 							<p style="margin: 0; font-size: 1.2rem;"><strong style="color: var(--brand-blush-red);">${msg("The contract lapsed in April 2025.")}</strong></p>
@@ -366,9 +344,6 @@ export const getBottleneckCanyonChapters = () => ({
 						<h3 style="margin: 0; color: var(--brand-main-purple);">${msg("CISA Steps In")}</h3>
 						<div style="padding: 1.25rem; background: rgba(117, 109, 243, 0.1); border-radius: 12px;">
 							<p style="margin: 0; font-size: 1.2rem;">${msg("The Cybersecurity and Infrastructure Security Agency extended MITRE's CVE contract at the last minute by about 11 months, until March 2026.")}</p>
-						</div>
-						<div style="padding: 1.25rem; background: rgba(117, 109, 243, 0.15); border-radius: 12px; border-left: 4px solid var(--brand-main-purple);">
-							<p style="margin: 0; font-size: 1.2rem; font-style: italic;">${msg('"While this avoided disruption, it exposed how fragile a piece of critical infrastructure can be."')}</p>
 						</div>
 					</div>
 				</div>
@@ -400,13 +375,13 @@ export const getBottleneckCanyonChapters = () => ({
 						<h3 style="margin-bottom: 1.5rem; color: var(--brand-blush-red);">${msg("What's at Stake")}</h3>
 						<div style="display: flex; flex-direction: column; gap: 1rem;">
 							<div style="padding: 1rem; background: rgba(243, 104, 105, 0.1); border-radius: 8px;">
-								<p style="margin: 0;">${msg("The vulnerability tracking system everyone relies on is becoming less trustworthy , exactly when we need it most.")}</p>
+								<p style="margin: 0;">${msg("The vulnerability tracking system is becoming less trustworthy, exactly when we need it most.")}</p>
 							</div>
 							<div style="padding: 1rem; background: rgba(243, 104, 105, 0.1); border-radius: 8px;">
-								<p style="margin: 0;">${msg("Security teams can't rely on assigned CVEs to prioritize their work.")}</p>
+								<p style="margin: 0;">${msg("Security teams can't rely on CVEs to prioritize.")}</p>
 							</div>
 							<div style="padding: 1rem; background: rgba(243, 104, 105, 0.1); border-radius: 8px;">
-								<p style="margin: 0;">${msg("Developers don't trust vulnerability scanners anymore , false-positive rates are extremely high.")}</p>
+								<p style="margin: 0;">${msg("Developers don't trust vulnerability scanners — false-positive rates are too high.")}</p>
 							</div>
 						</div>
 					</div>
@@ -422,13 +397,13 @@ export const getBottleneckCanyonChapters = () => ({
 						<h3 style="margin-bottom: 1.5rem; color: var(--brand-blush-red);">${msg("What's at Stake")}</h3>
 						<div style="display: flex; flex-direction: column; gap: 1rem; opacity: 0.85;">
 							<div style="padding: 1rem; background: rgba(243, 104, 105, 0.1); border-radius: 8px;">
-								<p style="margin: 0;">${msg("The vulnerability tracking system everyone relies on is becoming less trustworthy , exactly when we need it most.")}</p>
+								<p style="margin: 0;">${msg("The vulnerability tracking system is becoming less trustworthy, exactly when we need it most.")}</p>
 							</div>
 							<div style="padding: 1rem; background: rgba(243, 104, 105, 0.1); border-radius: 8px;">
-								<p style="margin: 0;">${msg("Security teams can't rely on assigned CVEs to prioritize their work.")}</p>
+								<p style="margin: 0;">${msg("Security teams can't rely on CVEs to prioritize.")}</p>
 							</div>
 							<div style="padding: 1rem; background: rgba(243, 104, 105, 0.1); border-radius: 8px;">
-								<p style="margin: 0;">${msg("Developers don't trust vulnerability scanners anymore , false-positive rates are extremely high.")}</p>
+								<p style="margin: 0;">${msg("Developers don't trust vulnerability scanners — false-positive rates are too high.")}</p>
 							</div>
 						</div>
 						<p style="margin-top: 1.5rem; font-size: 1.3em; padding: 1rem; background: rgba(243, 104, 105, 0.2); border: 2px solid var(--brand-blush-red); border-radius: 8px; text-align: center;">
@@ -447,7 +422,7 @@ export const getBottleneckCanyonChapters = () => ({
 					<div style="text-align: left;">
 						<div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(117, 109, 243, 0.1); border-radius: 8px;">
 							<strong>${msg("AI Disclosure")}</strong>
-							<p style="margin: 0.5rem 0 0 0; font-size: 1.1rem; opacity: 1;">${msg("Curl and Django already ask submitters whether AI was used in the submission.")}</p>
+							<p style="margin: 0.5rem 0 0 0; font-size: 1.1rem; opacity: 1;">${msg("Curl and Django now ask submitters whether AI was used.")}</p>
 						</div>
 					</div>
 				</div>
@@ -459,11 +434,11 @@ export const getBottleneckCanyonChapters = () => ({
 					<div style="text-align: left;">
 						<div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(117, 109, 243, 0.1); border-radius: 8px; opacity: 0.855;">
 							<strong>${msg("AI Disclosure")}</strong>
-							<p style="margin: 0.5rem 0 0 0; font-size: 1.1rem; opacity: 1;">${msg("Curl and Django already ask submitters whether AI was used in the submission.")}</p>
+							<p style="margin: 0.5rem 0 0 0; font-size: 1.1rem; opacity: 1;">${msg("Curl and Django now ask submitters whether AI was used.")}</p>
 						</div>
 						<div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(117, 109, 243, 0.1); border-radius: 8px;">
 							<strong>${msg("Rethinking Incentives")}</strong>
-							<p style="margin: 0.5rem 0 0 0; font-size: 1.1rem; opacity: 1;">${msg("Daniel and the curl team have already removed the financial aspect from their bug bounty program.")}</p>
+							<p style="margin: 0.5rem 0 0 0; font-size: 1.1rem; opacity: 1;">${msg("Curl has removed financial rewards from their bug bounty program.")}</p>
 						</div>
 					</div>
 				</div>
@@ -475,15 +450,15 @@ export const getBottleneckCanyonChapters = () => ({
 					<div style="text-align: left;">
 						<div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(117, 109, 243, 0.1); border-radius: 8px; opacity: 0.855;">
 							<strong>${msg("AI Disclosure")}</strong>
-							<p style="margin: 0.5rem 0 0 0; font-size: 1.1rem; opacity: 1;">${msg("Curl and Django already ask submitters whether AI was used in the submission.")}</p>
+							<p style="margin: 0.5rem 0 0 0; font-size: 1.1rem; opacity: 1;">${msg("Curl and Django now ask submitters whether AI was used.")}</p>
 						</div>
 						<div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(117, 109, 243, 0.1); border-radius: 8px; opacity: 0.855;">
 							<strong>${msg("Rethinking Incentives")}</strong>
-							<p style="margin: 0.5rem 0 0 0; font-size: 1.1rem; opacity: 1;">${msg("Daniel and the curl team have already removed the financial aspect from their bug bounty program.")}</p>
+							<p style="margin: 0.5rem 0 0 0; font-size: 1.1rem; opacity: 1;">${msg("Curl has removed financial rewards from their bug bounty program.")}</p>
 						</div>
 						<div style="padding: 1rem; background: rgba(243, 104, 105, 0.15); border-radius: 8px; border: 2px solid var(--brand-blush-red);">
 							<strong style="color: var(--brand-blush-red);">${msg("What Everyone Agrees On")}</strong>
-							<p style="margin: 0.5rem 0 0 0; font-size: 1.1rem;">${msg("Stricter submission requirements , including proven validation. Improved ways of validating are what's required.")}</p>
+							<p style="margin: 0.5rem 0 0 0; font-size: 1.1rem;">${msg("Stricter submission requirements with proven validation.")}</p>
 						</div>
 					</div>
 				</div>
@@ -710,7 +685,7 @@ export const getBottleneckCanyonChapters = () => ({
 					</div>
 					<div style="display: flex; justify-content: center;">
 						<img
-							src="${demoDiagram}"
+							src="${honeyDiagram}"
 							alt="${msg("Demo voting app architecture")}"
 							style="max-width: 100%; max-height: 400px; border-radius: 12px; box-shadow: 0 4px 20px rgba(117, 109, 243, 0.3);"
 						/>
@@ -751,7 +726,7 @@ export const getBottleneckCanyonChapters = () => ({
 				height: 25,
 				label: msg("🪞 Try Demo"),
 				type: ZoneTypes.OPEN_URL,
-				payload: "http://vote-staging.212.2.240.247.sslip.io/",
+				payload: "https://honey-we-have-a-problem.freeddns.org/",
 			},
 		],
 		// Exit to complete the quest
